@@ -93,6 +93,8 @@ class RabbitChecker(object):
 
                 channel = self.__check_opening_channel(connection)
                 success = True
+
+                connection.close()
                 break # success, leave loop
 
             except ValueError as e:
