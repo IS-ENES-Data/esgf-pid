@@ -73,7 +73,7 @@ class Checker(object):
     def __log_solr_error_occured(self, exception):
         msg = ('No dataset integrity test could be run. Message: '+exception.message)
         self.__message_why_not = msg
-        LOGGER.info(msg)
+        loginfo(LOGGER, msg, show=True)
 
     def __log_previously_stored_files_found(self):
         concat_files = ', '.join(self.__list_of_previous_files)
