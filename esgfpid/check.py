@@ -5,6 +5,7 @@ from esgfpid.utils import add_missing_optional_args_with_value_none
 import esgfpid.defaults
 import esgfpid.rabbit.rabbitutils
 import esgfpid.utils as utils
+import esgfpid.exceptions
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -21,7 +22,7 @@ class RabbitChecker(object):
 
     def __init__(self, **args):
         mandatory_args = ['messaging_service_username', 'messaging_service_password']
-        optional_args = ['messaging_service_url_preferred', 'messaging_service_urls', 'print_to_console']
+        optional_args = ['messaging_service_url_preferred', 'messaging_service_urls', 'print_to_console', 'messaging_service_exchange_name']
         check_presence_of_mandatory_args(args, mandatory_args)
         add_missing_optional_args_with_value_none(args, optional_args)
         self.__check_if_any_url_specified(args)
@@ -65,6 +66,8 @@ class RabbitChecker(object):
         self.__current_rabbit_host = args['url_preferred']
         if args['print_to_console'] is not None and args['print_to_console'] == True:
             self.__print_to_console = True
+        if args['messaging_service_exchange_name'] is not None:
+            self.__exchange_name = args['messaging_service_exchange_name']
 
 
     #
@@ -102,6 +105,8 @@ class RabbitChecker(object):
                     print_conn = True
 
                 channel = self.__check_opening_channel(connection)
+                self.__check_exchange_existence(channel)
+
                 success = True
 
                 connection.close()
@@ -116,6 +121,7 @@ class RabbitChecker(object):
 
                 else: # definitive fail, leave loop
                     break
+
         return success
             
     def __is_url_left(self):
@@ -130,10 +136,25 @@ class RabbitChecker(object):
     # Building connections:
     #
 
+    def __check_exchange_existence(self, channel):
+
+        if self.__exchange_name is not None:
+            try:
+                self.__loginfo(' .. checking exchange ...')
+                channel.exchange_declare(self.__exchange_name, passive=True)
+                self.__loginfo(' .. checking exchange ... ok.')
+            except (pika.exceptions.ChannelClosed) as e:
+                self.__loginfo(' .. checking exchange ... failed.')
+                self.__add_error_message_no_exchange()
+                raise ValueError('The exchange %s does not exist on messaging service host %s' % (self.__exchange_name, self.__current_rabbit_host))
+        else:
+            pass # No exchange name was given
+
+
     def __check_opening_channel(self, connection):
         channel = None
         try:
-            self.__open_channel(connection)
+            channel = self.__open_channel(connection)
             self.__loginfo(' .. checking channel ... ok.')
 
         except pika.exceptions.ChannelClosed:
@@ -198,6 +219,10 @@ class RabbitChecker(object):
 
     def __add_error_message_channel_closed(self):
         msg = ' - host "%s": Channel failure.' % self.__current_rabbit_host
+        self.__error_messages.append(msg)
+
+    def __add_error_message_no_exchange(self):
+        msg = ' - host "%s": Exchange %s does not exist.' % (self.__current_rabbit_host, self.__exchange_name)
         self.__error_messages.append(msg)
 
     def __add_error_message_authentication_error(self):
