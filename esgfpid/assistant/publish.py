@@ -1,0 +1,280 @@
+import logging
+import uuid
+import json
+import sys
+import esgfpid.exceptions
+import esgfpid.assistant.consistency
+import esgfpid.assistant.messages
+import esgfpid.utils as utils
+
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.addHandler(logging.NullHandler())
+
+class DatasetPublicationAssistant(object):
+
+    def __init__(self, **args):
+        utils.logdebug(LOGGER, 'Constructor for Publication assistant for dataset "%s", version "%s" at host "%s".',
+            args['drs_id'],
+            args['version_number'],
+            args['data_node']
+        )
+
+        # Check args
+        mandatory_args = ['drs_id', 'version_number', 'data_node', 'prefix',
+                          'thredds_service_path', 'is_replica', 'coupler']
+        optional_args = []
+        utils.check_presence_of_mandatory_args(args, mandatory_args)
+        utils.add_missing_optional_args_with_value_none(args, optional_args)
+        self.__enforce_integer_version_number(args)
+        self.__enforce_boolean_replica_flag(args)
+
+        # Init methods...
+        self.__store_args_in_attributes(args)
+        self.__define_other_attributes()
+        self.__create_and_store_dataset_handle()
+        self.__init_state_machine()
+
+        utils.logdebug(LOGGER, 'Done: Constructor for Publication assistant for dataset "%s", version "%i" at host "%s".',
+            args['drs_id'],
+            args['version_number'],
+            args['data_node']
+        )
+
+    def __enforce_integer_version_number(self, args):
+        try:
+            args['version_number'] = int(args['version_number'])
+        except ValueError:
+            raise esgfpid.exceptions.ArgumentError('Dataset version number is not an integer')
+
+    def __enforce_boolean_replica_flag(self, args):
+        try:
+            args['is_replica'] = utils.get_boolean(args['is_replica'])
+        except ValueError:
+            msg = ('Replica flag "%s" could not be parsed to boolean. '
+                   'Please pass a boolean or "True" or "true" or "False" or "false"'
+                   % args['is_replica'])
+            raise esgfpid.exceptions.ArgumentError(msg)
+
+    def __enforce_integer_file_size(self, args):
+        try:
+            args['file_size'] = int(args['file_size'])
+        except ValueError:
+            raise esgfpid.exceptions.ArgumentError('File size is not an integer')
+
+    def __enforce_string_file_version(self, args):
+        args['file_version'] = str(args['file_version'])
+
+    def __define_other_attributes(self):
+        self.__dataset_handle = None
+        self.__list_of_file_handles = []
+        self.__list_of_file_messages = []
+        self.__message_timestamp = utils.get_now_utc_as_formatted_string()
+
+    def __store_args_in_attributes(self, args):
+        self.__drs_id = args['drs_id']
+        self.__version_number = args['version_number']
+        self.__data_node = args['data_node']
+        self.__prefix = args['prefix']
+        self.__thredds_service_path = args['thredds_service_path']
+        self.__is_replica = args['is_replica']
+        self.__coupler = args['coupler']
+
+    def __init_state_machine(self):
+        self.__machine_states = {'dataset_added':0, 'files_added':1, 'publication_finished':2}
+        self.__machine_state = self.__machine_states['dataset_added']
+
+    def __create_and_store_dataset_handle(self):
+        self.__dataset_handle = utils.make_handle_from_drsid_and_versionnumber(
+            drs_id=self.__drs_id,
+            version_number=self.__version_number,
+            prefix=self.__prefix
+        )
+
+
+    def get_dataset_handle(self):
+        return self.__dataset_handle
+
+    # work horses:
+
+    def add_file(self, **args):
+
+        # Check if allowed:
+        self.__check_if_adding_files_allowed_right_now()
+
+        # Check if args ok:
+        mandatory_args = ['file_name', 'file_handle', 'file_size',
+                          'checksum', 'publish_path', 'checksum_type',
+                          'file_version']
+        utils.check_presence_of_mandatory_args(args, mandatory_args)
+        self.__enforce_integer_file_size(args)
+        self.__enforce_string_file_version(args)
+
+        # Add file:
+        self.__check_and_correct_handle_syntax(args)
+        self.__add_file(**args)
+
+    def __check_and_correct_handle_syntax(self, args):
+        self.__make_sure_hdl_is_added(args)
+        self.__check_if_prefix_is_there(args['file_handle'])
+
+    def __add_file(self, **args):
+        utils.logdebug(LOGGER, 'Adding file "%s" with handle "%s".', args['file_name'], args['file_handle'])
+        self.__add_file_to_datasets_children(args['file_handle'])
+        self.__adapt_file_args(args)
+        self.__create_and_store_file_publication_message(args)        
+        self.__set_machine_state_to_files_added()
+        utils.logdebug(LOGGER, 'Adding file done.')
+
+    def __add_file_to_datasets_children(self, file_handle):
+        self.__list_of_file_handles.append(file_handle)
+
+    def __make_sure_hdl_is_added(self, args):
+        if not args['file_handle'].startswith('hdl:'):
+            args['file_handle'] = 'hdl:'+args['file_handle']
+
+    def __check_if_prefix_is_there(self, file_handle):
+        if not file_handle.startswith('hdl:'+self.__prefix+'/'):
+
+            expected = self.__prefix + '/'+ file_handle.lstrip('hdl:')
+            msg = ('\nThis file\'s tracking_id "%s" does not have the expected handle prefix "%s".'
+                   '\nExpected "%s" or "%s"' % (file_handle, self.__prefix, expected, 'hdl:'+expected))
+
+            if '/' in file_handle:
+                maybe_prefix = file_handle.split('/')[0].lstrip('hdl:')
+                msg += ('.\nIf "%s" was meant to be the prefix, it does not correspond to '
+                        'the prefix specified when initializing this library' % maybe_prefix)
+
+            raise esgfpid.exceptions.ESGFException(msg)
+
+
+    def __adapt_file_args(self, args):
+        url = self.__create_file_url(args['publish_path'])
+        args['data_url'] = url
+        del args['publish_path']
+
+    def __create_file_url(self, publish_path):
+        url = self.__data_node +'/'+ self.__thredds_service_path +'/'+ publish_path.strip('/')
+        if not url.startswith('http'):
+            url = 'http://'+url
+        return url
+
+    def __create_and_store_file_publication_message(self, args):
+        message = self.__create_file_publication_message(args)
+        self.__list_of_file_messages.append(message)
+
+    def __set_machine_state_to_files_added(self):
+        self.__machine_state = self.__machine_states['files_added']
+
+    def __check_if_adding_files_allowed_right_now(self):
+        dataset_added = self.__machine_state == self.__machine_states['dataset_added']
+        files_added = self.__machine_state == self.__machine_states['files_added']
+        if dataset_added or files_added:
+            pass
+        else:
+            msg = 'Too late to add files!'
+            utils.logwarn(LOGGER, msg)
+            raise esgfpid.exceptions.OperationUnsupportedException(msg)
+
+    def dataset_publication_finished(self, ignore_exception=False):
+        '''
+        This is the "commit". It triggers the creation/update of handles.
+         - Check if the set of files corresponds to the previously published set (if applicable, and if solr url given, and if solr replied)
+         - The dataset publication message is created and sent to the queue.
+         - All file publication messages are sent to the queue.
+
+        '''
+        self.__check_if_dataset_publication_allowed_right_now()
+        self.__check_data_consistency(ignore_exception)
+        self.__coupler.start_rabbit_business() # Synchronous: Opens connection. Asynchronous: Ignored.
+        self.__create_and_send_dataset_publication_message_to_queue()
+        self.__send_existing_file_messages_to_queue()
+        self.__coupler.done_with_rabbit_business() # Synchronous: Closes connection. Asynchronous: Ignored.
+        self.__set_machine_state_to_finished()
+
+    def __check_if_dataset_publication_allowed_right_now(self):
+        if not self.__machine_state == self.__machine_states['files_added']:
+            msg = None
+        
+            if self.__machine_state == self.__machine_states['dataset_added']:
+                msg = 'No file added yet.'
+            else:
+                msg = 'Publication was already done.'
+
+            utils.logwarn(LOGGER, msg)
+            raise esgfpid.exceptions.OperationUnsupportedException(msg)
+
+
+    def __check_data_consistency(self, ignore_exception):
+        checker = esgfpid.assistant.consistency.Checker(
+            coupler=self.__coupler,
+            drs_id=self.__drs_id,
+            version_number=self.__version_number,
+            data_node=self.__data_node
+        )
+        check_possible = checker.can_run_check()
+        if check_possible:
+            check_passed = checker.data_consistency_check(self.__list_of_file_handles)
+            if check_passed:
+                utils.loginfo(LOGGER, 'Data consistency check passed for dataset %s.', self.__dataset_handle)
+            else:
+                msg = 'Dataset consistency check failed'
+                utils.logwarn(LOGGER, msg)
+                if not ignore_exception:
+                    raise esgfpid.exceptions.InconsistentFilesetException(msg)
+        else:
+            utils.logdebug(LOGGER, 'No consistency check was carried out.')
+
+    def __create_and_send_dataset_publication_message_to_queue(self):
+        message = self.__create_dataset_publication_message()
+        self.__send_message_to_queue(message)
+        utils.logdebug(LOGGER, 'Dataset publication message sent to queue.')
+        utils.logtrace(LOGGER, 'Dataset publication message: %s (%s, version %s).', self.__dataset_handle, self.__drs_id, self.__version_number)
+
+    def __send_existing_file_messages_to_queue(self):
+        for i in xrange(0, len(self.__list_of_file_messages)):
+            self.__try_to_send_one_file_message(i)
+        msg = 'All file publication jobs sent to queue.'
+        utils.logdebug(LOGGER, msg)
+        
+    def __try_to_send_one_file_message(self, list_index):
+        msg = self.__list_of_file_messages[list_index]
+        success = self.__send_message_to_queue(msg)
+        utils.logdebug(LOGGER, 'File publication message sent to queue: %s (%s)', msg['handle'], msg['file_name'])
+        return success
+
+    def __set_machine_state_to_finished(self):
+        self.__machine_state = self.__machine_states['publication_finished']
+
+    def __create_file_publication_message(self, args):
+        
+        message = esgfpid.assistant.messages.publish_file(
+            file_handle=args['file_handle'],
+            file_size=args['file_size'],
+            file_name=args['file_name'],
+            checksum=args['checksum'],
+            data_url=args['data_url'],
+            parent_dataset=self.__dataset_handle,
+            checksum_type=args['checksum_type'],
+            file_version=args['file_version'],
+            is_replica=self.__is_replica,
+            timestamp=self.__message_timestamp,
+        )
+        return message
+
+    def __create_dataset_publication_message(self):
+
+        message = esgfpid.assistant.messages.publish_dataset(
+            dataset_handle=self.__dataset_handle,
+            is_replica=self.__is_replica,
+            drs_id=self.__drs_id,
+            version_number=self.__version_number,
+            list_of_files=self.__list_of_file_handles,
+            data_node=self.__data_node,
+            timestamp=self.__message_timestamp
+        )
+        return message
+
+    def __send_message_to_queue(self, message):
+        success = self.__coupler.send_message_to_queue(message)
+        return success
