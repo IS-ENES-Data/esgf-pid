@@ -1,0 +1,19 @@
+{
+    "defaults_files": {
+        "publish_path":"test_publish_path",
+        "checksum":"foo",
+        "checksum_type":"MD5",
+        "file_size":200,
+        "file_version":"1"
+    },
+    "defaults_connector": {
+        "data_node":"esgf-dkrz.de",
+        "prefix": "10876.test",
+        "solr_url":"solr.url.de",
+        "thredds_service_path":"test_thredds_path",
+        "url_messaging_service":"rabbit.url.de",
+        "messaging_exchange":"testexchange",
+        "rabbit_username":"guest",
+        "rabbit_password":"guest"
+    }
+}

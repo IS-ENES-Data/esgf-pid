@@ -1,0 +1,365 @@
+{
+    "testcase_1_1": {
+        "dataset1": {
+            "files":["10876.test/esgf_testfile_temperature.nc_883cnu81"],
+            "was_published_before":false,
+            "handle":"10876.test/34416145-1309-3984-aee7-a77cdd571862",
+            "is_replica":false,
+            "host":"esgf-dkrz.de",
+            "was_published_before_sure":true,
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"dataset",
+            "version_number":11,
+            "drs_id":"esgf_testdataset/climate/historical",
+            "testcase_identifier":"testcase_1_1",
+            "testmessage_identifier":"dataset1"
+        },
+        "file1": {
+            "was_published_before":false,
+            "handle":"10876.test/esgf_testfile_temperature.nc_883cnu81",
+            "is_replica":false,
+            "file_name":"temperature.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/temperature.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/34416145-1309-3984-aee7-a77cdd571862",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_1_1",
+            "testmessage_identifier":"file1"
+        }
+    },
+    "testcase_1_2": {
+        "dataset1": {
+            "files":[
+                "10876.test/esgf_testfile_temperature.nc_73jd941",
+                "10876.test/esgf_testfile_humidity.nc_h347o1"
+            ],
+            "was_published_before":false,
+            "handle":"10876.test/aa15a3b0-90b3-356c-b414-4529e3ac286d",
+            "is_replica":false,
+            "host":"esgf-dkrz.de",
+            "was_published_before_sure":true,
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"dataset",
+            "version_number":12,
+            "drs_id":"esgf_testdataset/climate/france",
+            "testcase_identifier":"testcase_1_2",
+            "testmessage_identifier":"dataset1"
+        },
+        "file1": {
+            "was_published_before":false,
+            "handle":"10876.test/esgf_testfile_temperature.nc_73jd941",
+            "is_replica":false,
+            "file_name":"temperature.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/temperature.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/aa15a3b0-90b3-356c-b414-4529e3ac286d",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_1_2",
+            "testmessage_identifier":"file1"
+        },
+        "file2": {
+            "was_published_before":false,
+            "handle":"10876.test/esgf_testfile_humidity.nc_h347o1",
+            "is_replica":false,
+            "file_name":"humidity.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/humidity.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/aa15a3b0-90b3-356c-b414-4529e3ac286d",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_1_2",
+            "testmessage_identifier":"file2"
+        }
+    },
+    "testcase_2_1": {
+        "dataset1": {
+            "files":[
+                "10876.test/esgf_testfile_rainfall.nc_sldk31",
+                "10876.test/esgf_testfile_snowheight.nc_678j1"
+            ],
+            "was_published_before":false,
+            "handle":"10876.test/2f8d3b18-bc04-3481-b28d-93c2a7b4631a",
+            "is_replica":false,
+            "host":"esgf-dkrz.de",
+            "was_published_before_sure":true,
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"dataset",
+            "version_number":21,
+            "drs_id":"esgf_testdataset/climate/france",
+            "testcase_identifier":"testcase_2_1",
+            "testmessage_identifier":"dataset1"
+        },
+        "file1": {
+            "was_published_before":false,
+            "handle":"10876.test/esgf_testfile_rainfall.nc_sldk31",
+            "is_replica":false,
+            "file_name":"rainfall.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/rainfall.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/2f8d3b18-bc04-3481-b28d-93c2a7b4631a",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_2_1",
+            "testmessage_identifier":"file1"
+        },
+        "file2": {
+            "was_published_before":false,
+            "handle":"10876.test/esgf_testfile_snowheight.nc_678j1",
+            "is_replica":false,
+            "file_name":"snowheight.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/snowheight.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/2f8d3b18-bc04-3481-b28d-93c2a7b4631a",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_2_1",
+            "testmessage_identifier":"file2"
+        }
+    },
+    "testcase_2_2": {
+        "dataset1": {
+            "files":[
+                "10876.test/esgf_testfile_windvelocity.nc_w348h1",
+                "10876.test/esgf_testfile_snowheight.nc_678j1"
+            ],
+            "was_published_before":false,
+            "handle":"10876.test/386d0b7a-4f26-3bef-8bfb-89f95431a713",
+            "is_replica":false,
+            "host":"esgf-dkrz.de",
+            "was_published_before_sure":true,
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"dataset",
+            "version_number":22,
+            "drs_id":"esgf_testdataset/climate/france",
+            "testcase_identifier":"testcase_2_2",
+            "testmessage_identifier":"dataset1"
+        },
+        "file1": {
+            "was_published_before":false,
+            "handle":"10876.test/esgf_testfile_windvelocity.nc_w348h1",
+            "is_replica":false,
+            "file_name":"windvelocity.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/windvelocity.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/386d0b7a-4f26-3bef-8bfb-89f95431a713",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_2_2",
+            "testmessage_identifier":"file1"
+        },
+        "file2": {
+            "was_published_before":false,
+            "handle":"10876.test/esgf_testfile_snowheight.nc_678j1",
+            "is_replica":false,
+            "file_name":"snowheight.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/snowheight.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/386d0b7a-4f26-3bef-8bfb-89f95431a713",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_2_2",
+            "testmessage_identifier":"file2"
+        }
+    },
+    "testcase_2_3": {
+        "dataset1": {
+            "files":[
+                "10876.test/esgf_testfile_rainfall.nc_ruti324",
+                "10876.test/esgf_testfile_snowheight.nc_4jker4"
+            ],
+            "was_published_before":false,
+            "handle":"10876.test/39715308-20d2-3cc0-b893-ac364368975a",
+            "is_replica":false,
+            "host":"esgf-dkrz.de",
+            "was_published_before_sure":true,
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"dataset",
+            "version_number":23,
+            "drs_id":"esgf_testdataset/climate/france",
+            "testcase_identifier":"testcase_2_3",
+            "testmessage_identifier":"dataset1"
+        },
+        "file1": {
+            "was_published_before":false,
+            "handle":"10876.test/esgf_testfile_rainfall.nc_ruti324",
+            "is_replica":false,
+            "file_name":"rainfall.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/rainfall.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":4,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/39715308-20d2-3cc0-b893-ac364368975a",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_2_3",
+            "testmessage_identifier":"file1"
+        },
+        "file2": {
+            "was_published_before":false,
+            "handle":"10876.test/esgf_testfile_snowheight.nc_4jker4",
+            "is_replica":false,
+            "file_name":"snowheight.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/snowheight.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":4,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/39715308-20d2-3cc0-b893-ac364368975a",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_2_3",
+            "testmessage_identifier":"file2"
+        }
+    },
+    "testcase_3_3": {
+        "comment":"This is like 1_1, except that was_published_before is true!",
+        "dataset1": {
+            "files":[
+                "10876.test/esgf_testfile_temperature.nc_883cnu81"
+            ],
+            "was_published_before":true,
+            "handle":"10876.test/34416145-1309-3984-aee7-a77cdd571862",
+            "is_replica":false,
+            "host":"esgf-dkrz.de",
+            "was_published_before_sure":true,
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"dataset",
+            "version_number":11,
+            "drs_id":"esgf_testdataset/climate/historical",
+            "testcase_identifier":"testcase_3_3",
+            "testmessage_identifier":"dataset1"
+        },
+        "file1": {
+            "was_published_before":true,
+            "handle":"10876.test/esgf_testfile_temperature.nc_883cnu81",
+            "is_replica":false,
+            "file_name":"temperature.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/test_publish_path/temperature.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/34416145-1309-3984-aee7-a77cdd571862",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_3_3",
+            "testmessage_identifier":"file1"
+        }
+    },
+    "testcase_3_4": {
+        "comment":"This is like 1_1, except that was_published_before is true!",
+        "dataset1": {
+            "files":[
+                "10876.test/esgf_testfile_temperature.nc_883cnu81"
+            ],
+            "was_published_before":true,
+            "handle":"10876.test/34416145-1309-3984-aee7-a77cdd571862",
+            "is_replica":false,
+            "host":"esgf-dkrz.de",
+            "was_published_before_sure":true,
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"dataset",
+            "version_number":11,
+            "drs_id":"esgf_testdataset/climate/historical",
+            "testcase_identifier":"testcase_3_4",
+            "testmessage_identifier":"dataset1"
+        },
+        "file1": {
+
+            "was_published_before":true,
+            "handle":"10876.test/esgf_testfile_temperature.nc_883cnu81",
+            "is_replica":false,
+            "file_name":"temperature.nc",
+            "data_url":"http://esgf-dkrz.de/test_thredds_path/different_publish_path/temperature.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/34416145-1309-3984-aee7-a77cdd571862",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_3_4",
+            "testmessage_identifier":"file1"
+        }
+    },
+    "testcase_3_5": {
+        "comment":"This is like 1_1, except that was_published_before is true!",
+        "dataset1": {
+            "files":[
+                "10876.test/esgf_testfile_temperature.nc_883cnu81"
+            ],
+            "was_published_before":true,
+            "handle":"10876.test/34416145-1309-3984-aee7-a77cdd571862",
+            "is_replica":false,
+            "host":"esgf-france.fr",
+            "was_published_before_sure":true,
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"dataset",
+            "version_number":11,
+            "drs_id":"esgf_testdataset/climate/historical",
+            "testcase_identifier":"testcase_3_5",
+            "testmessage_identifier":"dataset1"
+            },
+        "file1": {
+
+            "was_published_before":true,
+            "handle":"10876.test/esgf_testfile_temperature.nc_883cnu81",
+            "is_replica":false,
+            "file_name":"temperature.nc",
+            "data_url":"http://esgf-france.fr/test_thredds_path/different_publish_path/temperature.nc",
+            "file_size":"200",
+            "publication_date":"anydate",
+            "operation":"publish",
+            "aggregation_level":"file",
+            "version_number":1,
+            "checksum":"foo",
+            "parent_dataset":"10876.test/34416145-1309-3984-aee7-a77cdd571862",
+            "checksum_type":"MD5",
+            "testcase_identifier":"testcase_3_5",
+            "testmessage_identifier":"file1"
+        }
+    }
+}
