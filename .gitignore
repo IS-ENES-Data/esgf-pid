@@ -1,0 +1,26 @@
+
+# Ignore all compiled, build, ...
+*.pyc
+/build
+/dist
+esgfpid.egg-info/
+
+# Ignore coverage related:
+.coverage
+/coverage
+htmlcov/
+
+
+# Ignore logs in any directory and its content:
+**logs
+**/logs/**
+*.log
+
+# Individual files:
+/OLD/*
+IGNORE
+
+# Ignore built docs
+/docs/build
+/docs/build/
+
