@@ -214,8 +214,6 @@ class RabbitChecker(object):
         self.__logwarn(error_message_string)
 
     def __loginfo(self, msg):
-        if self.__print_to_console == True:
-            print(msg)
         utils.loginfo(LOGGER, msg)
 
     def __logwarn(self, msg):
