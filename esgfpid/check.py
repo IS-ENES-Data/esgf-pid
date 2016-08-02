@@ -12,7 +12,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 def check_pid_queue_availability(**args):
     rabbit_checker = RabbitChecker(**args)
-    rabbit_checker.check_and_inform()
+    return rabbit_checker.check_and_inform()
 
 class RabbitChecker(object):
 
