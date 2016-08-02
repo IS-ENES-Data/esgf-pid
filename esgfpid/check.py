@@ -20,8 +20,8 @@ class RabbitChecker(object):
     #
 
     def __init__(self, **args):
-        mandatory_args = ['messaging_service_username', 'messaging_service_password', 'print_to_console']
-        optional_args = ['messaging_service_url_preferred', 'messaging_service_urls']
+        mandatory_args = ['messaging_service_username', 'messaging_service_password']
+        optional_args = ['messaging_service_url_preferred', 'messaging_service_urls', 'print_to_console']
         check_presence_of_mandatory_args(args, mandatory_args)
         add_missing_optional_args_with_value_none(args, optional_args)
         self.__rename_url_args(args)
@@ -53,7 +53,7 @@ class RabbitChecker(object):
         self.__rabbit_password = args['messaging_service_password']
         self.__rabbit_hosts = args['urls_fallback']
         self.__current_rabbit_host = args['url_preferred']
-        if args['print_to_console'] == True:
+        if args['print_to_console'] is not None and args['print_to_console'] == True:
             self.__print_to_console = True
 
 
