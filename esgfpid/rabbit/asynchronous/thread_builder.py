@@ -92,8 +92,9 @@ class ConnectionBuilder(object):
                 logdebug(LOGGER_IOLOOP, 'Connection is ready. Ioloop about to be started.', show=True)
                 self.thread._connection.ioloop.start()
                 return True
-            except pika.exceptions.ProbableAuthenticationError: # TODO
-                logerror(LOGGER_IOLOOP, 'Caught Authentication Exception.')
+            except pika.exceptions.ProbableAuthenticationError as e: # TODO
+                LOGGER_IOLOOP.exception('Error when creating ioloop: '+e.message)
+                logerror(LOGGER_IOLOOP, 'Caught Authentication Exception: '+e.message)
                 return True # If we return False, it will reconnect!
             except Exception as e: # TODO
                 logerror(LOGGER_IOLOOP, 'Unexpected error: '+str(e.message))
