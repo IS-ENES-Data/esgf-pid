@@ -24,6 +24,7 @@ class RabbitChecker(object):
         optional_args = ['messaging_service_url_preferred', 'messaging_service_urls', 'print_to_console']
         check_presence_of_mandatory_args(args, mandatory_args)
         add_missing_optional_args_with_value_none(args, optional_args)
+        self.__check_if_any_url_specified(args)
         self.__rename_url_args(args)
         self.__adapt_url_args(args)
         self.__define_all_attributes()
@@ -37,6 +38,15 @@ class RabbitChecker(object):
         self.__rabbit_password = None
         self.__rabbit_hosts = None # all passed hosts that are NOT the current one!
         self.__current_rabbit_host = None # the only host OR the preferred OR a randomly chosen
+        self.__exchange_name = None
+
+    def __check_if_any_url_specified(self, args):
+        preferred_given = args['messaging_service_url_preferred'] is not None
+        other1 = args['messaging_service_urls'] is not None
+        other2 = len(args['messaging_service_urls']) > 0
+        other_given = (other1 and other2)
+        if not (preferred_given or other_given):
+            raise esgfpid.exceptions.ArgumentError('At least one messaging service URL has to be specified.') 
 
     def __rename_url_args(self, args):
         args['urls_fallback'] = args['messaging_service_urls']
