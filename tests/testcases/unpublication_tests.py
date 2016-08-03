@@ -76,7 +76,8 @@ class UnpublicationTestCase(unittest.TestCase):
             prefix=self.prefix,
             coupler=self.coupler,
             data_node=self.data_node,
-            message_timestamp='some_moment'
+            message_timestamp='some_moment',
+            consumer_solr_url='fake_solr_foo'
         )
         return assistant
 
@@ -183,7 +184,8 @@ class UnpublicationTestCase(unittest.TestCase):
             "message_timestamp": "anydate",
             "drs_id": self.drs_id,
             "data_node": self.data_node,
-            "ROUTING_KEY": "unpublish_all_versions"
+            "ROUTING_KEY": "unpublish_all_versions",
+            "consumer_solr_url":"fake_solr_foo"
         }
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(self.coupler, 0)
         messagesOk = tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task)
