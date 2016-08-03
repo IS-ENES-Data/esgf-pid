@@ -27,7 +27,8 @@ def logdebug(logger, msg, *args, **kwargs):
         logger.debug(msg, *args, **kwargs)
 
 def _is_show(kwargs):
-    show_this_message = 'show' in kwargs and kwargs['show'] == True
+    show_this_message = ('show' in kwargs) and (kwargs['show'] == True)
+    kwargs.pop('show', None) # Need to remove show=xyz before passing kwargs to logger!
     if show_this_message and esgfpid.defaults.LOG_SHOW_TO_INFO:
         return True
     return False
