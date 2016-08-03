@@ -35,7 +35,8 @@ class PublishTestCase(unittest.TestCase):
             is_replica=False,
             thredds_service_path=TESTVALUES['thredds_service_path'],
             data_node=TESTVALUES['data_node'],
-            coupler=testcoupler
+            coupler=testcoupler,
+            consumer_solr_url='does_not_matter'
         )
 
     def __get_normal_rabbit_task_dataset(self):
@@ -50,7 +51,8 @@ class PublishTestCase(unittest.TestCase):
             "files":[filehandle],
             "is_replica":False,
             "data_node":TESTVALUES['data_node'],
-            "ROUTING_KEY": "publication_dataset"
+            "ROUTING_KEY": "publication_dataset",
+            "consumer_solr_url": "does_not_matter"
         }
 
     def __get_normal_file_args(self):
