@@ -100,7 +100,7 @@ class Connector(object):
     def unpublish_all_versions(self, **args):
 
         # Check args
-        mandatory_args = ['drs_id']
+        mandatory_args = ['drs_id', 'consumer_solr_url']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
         # Check if solr has access:
@@ -113,7 +113,8 @@ class Connector(object):
             data_node = self.__data_node,
             prefix=self.prefix,
             coupler=self.__coupler,
-            message_timestamp=esgfpid.utils.get_now_utc_as_formatted_string()
+            message_timestamp=esgfpid.utils.get_now_utc_as_formatted_string(),
+            consumer_solr_url = args['consumer_solr_url'] # may be None
         )
         assistant.unpublish_all_dataset_versions()
 

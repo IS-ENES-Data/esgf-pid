@@ -88,6 +88,9 @@ class AssistantAllVersions(AssistantOneVersion):
 
     def __init__(self, **args):
         super(AssistantAllVersions, self).__init__(**args)
+        if 'consumer_solr_url' not in args.keys():
+            raise esgfpid.exceptions.ArgumentError('Missing "consumer_solr_url" in args!')
+        self.__consumer_solr_url = args['consumer_solr_url']
 
     def unpublish_all_dataset_versions(self):
 
@@ -126,7 +129,8 @@ class AssistantAllVersions(AssistantOneVersion):
         message = esgfpid.assistant.messages.unpublish_allversions_consumer_must_find_versions(
             timestamp=message_timestamp,
             drs_id=self._drs_id,
-            data_node=self._data_node)
+            data_node=self._data_node,
+            consumer_solr_url=self.__consumer_solr_url)
         return message
 
     def __get_all_handles_or_versionnumbers(self):

@@ -39,7 +39,6 @@ def publish_file(**args):
 
     return message
 
-
 def publish_dataset(**args):
 
     # Check args:
@@ -84,6 +83,10 @@ def unpublish_allversions_consumer_must_find_versions(**args):
         drs_id = args['drs_id'],
         data_node=args['data_node']
     )
+
+    # Optional:
+    if args['consumer_solr_url'] is not None:
+        message['consumer_solr_url'] = args['consumer_solr_url']
 
     routing_key = 'unpublish_all_versions'
     message[JSON_KEY_ROUTING_KEY] = routing_key
