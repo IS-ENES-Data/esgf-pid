@@ -49,7 +49,7 @@ class Connector(object):
 
         # Check args
         LOGGER.debug('Creating publication assistant..')
-        mandatory_args = ['drs_id', 'version_number', 'is_replica']
+        mandatory_args = ['drs_id', 'version_number', 'is_replica', 'consumer_solr_url']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
         # Check if solr has access:
@@ -73,6 +73,7 @@ class Connector(object):
             prefix=self.prefix,
             coupler=self.__coupler,
             is_replica=args['is_replica'],
+            consumer_solr_url=args['consumer_solr_url'] # may be None
         )
         LOGGER.debug('Creating publication assistant.. done')
         return assistant

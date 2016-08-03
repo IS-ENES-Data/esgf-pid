@@ -22,7 +22,8 @@ class DatasetPublicationAssistant(object):
 
         # Check args
         mandatory_args = ['drs_id', 'version_number', 'data_node', 'prefix',
-                          'thredds_service_path', 'is_replica', 'coupler']
+                          'thredds_service_path', 'is_replica', 'coupler',
+                          'consumer_solr_url']
         optional_args = []
         utils.check_presence_of_mandatory_args(args, mandatory_args)
         utils.add_missing_optional_args_with_value_none(args, optional_args)

@@ -60,6 +60,10 @@ def publish_dataset(**args):
         message_timestamp = args['timestamp']
     )
 
+    # Optional:
+    if args['consumer_solr_url'] is not None:
+        message['consumer_solr_url'] = args['consumer_solr_url']
+
     # Routing key:
     routing_key = 'publication_dataset'
     if args['is_replica'] == True: # Publish Assistant parses this to boolean!
