@@ -4,6 +4,7 @@
 /build
 /dist
 esgfpid.egg-info/
+/.eggs
 
 # Ignore coverage related:
 .coverage
