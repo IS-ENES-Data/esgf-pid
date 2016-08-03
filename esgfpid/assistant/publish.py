@@ -74,9 +74,9 @@ class DatasetPublicationAssistant(object):
     def __store_args_in_attributes(self, args):
         self.__drs_id = args['drs_id']
         self.__version_number = args['version_number']
-        self.__data_node = args['data_node']
+        self.__data_node = args['data_node'].rstrip('/')
         self.__prefix = args['prefix']
-        self.__thredds_service_path = args['thredds_service_path']
+        self.__thredds_service_path = args['thredds_service_path'].rstrip('/')
         self.__is_replica = args['is_replica']
         self.__coupler = args['coupler']
 
