@@ -191,6 +191,48 @@ class UnpublicationTestCase(unittest.TestCase):
         messagesOk = tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task)
         self.assertIsNone(messagesOk, messagesOk)
 
+
+    def test_unpublish_all_versions_nosolr_consumer_must_find_versions_solr_none(self):        
+
+        # Preparations:
+        assistant = esgfpid.assistant.unpublish.AssistantAllVersions(
+            drs_id=self.drs_id,
+            prefix=self.prefix,
+            coupler=self.coupler,
+            data_node=self.data_node,
+            message_timestamp='some_moment',
+            consumer_solr_url=None
+        )
+
+        # Run code to be tested:
+        assistant.unpublish_all_dataset_versions()
+
+        # Check result:
+        expected_rabbit_task = {
+            "operation": "unpublish_all_versions",
+            "aggregation_level": "dataset",
+            "message_timestamp": "anydate",
+            "drs_id": self.drs_id,
+            "data_node": self.data_node,
+            "ROUTING_KEY": "unpublish_all_versions",
+        }
+        received_rabbit_task = self.__get_received_message_from_rabbit_mock(self.coupler, 0)
+        messagesOk = tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task)
+        self.assertIsNone(messagesOk, messagesOk)
+
+    def test_unpublish_all_versions_nosolr_consumer_must_find_versions_no_solr(self):        
+
+        # Check exception:
+
+        with self.assertRaises(esgfpid.exceptions.ArgumentError):
+            assistant = esgfpid.assistant.unpublish.AssistantAllVersions(
+                drs_id=self.drs_id,
+                prefix=self.prefix,
+                coupler=self.coupler,
+                data_node=self.data_node,
+                message_timestamp='some_moment',
+            )
+
     def test_unpublish_all_versions_by_handles_ok(self):
 
         # Test variables
