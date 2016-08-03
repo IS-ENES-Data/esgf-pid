@@ -80,7 +80,7 @@ class PublishTestCase(unittest.TestCase):
             "file_size":TESTVALUES['file_size1'],
             "checksum":TESTVALUES['checksum1'],
             "checksum_type":TESTVALUES['checksum_type1'],
-            "version_number":TESTVALUES['file_version1'],
+            "file_version":TESTVALUES['file_version1'],
             "parent_dataset":"hdl:"+TESTVALUES['prefix']+'/'+TESTVALUES['suffix1'],
             "ROUTING_KEY": "publication_file"
         }
