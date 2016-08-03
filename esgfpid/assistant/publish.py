@@ -80,6 +80,7 @@ class DatasetPublicationAssistant(object):
         self.__thredds_service_path = args['thredds_service_path'].rstrip('/')
         self.__is_replica = args['is_replica']
         self.__coupler = args['coupler']
+        self.__consumer_solr_url = args['consumer_solr_url']
 
     def __init_state_machine(self):
         self.__machine_states = {'dataset_added':0, 'files_added':1, 'publication_finished':2}
@@ -272,7 +273,8 @@ class DatasetPublicationAssistant(object):
             version_number=self.__version_number,
             list_of_files=self.__list_of_file_handles,
             data_node=self.__data_node,
-            timestamp=self.__message_timestamp
+            timestamp=self.__message_timestamp,
+            consumer_solr_url=self.__consumer_solr_url
         )
         return message
 
