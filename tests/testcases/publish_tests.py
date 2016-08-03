@@ -176,6 +176,35 @@ class PublishTestCase(unittest.TestCase):
         self.assertIsInstance(assistant, esgfpid.assistant.publish.DatasetPublicationAssistant,
             'Constructor failed.')
 
+    def test_init_no_consumer_solr_url(self):
+
+        # Preparations:
+        testcoupler = self.__make_patched_testcoupler()
+        self.__patch_coupler_with_solr_mock(testcoupler, None) # Solr returns []
+        args = self.__get_normal_init_args_dataset(testcoupler)
+        args['is_replica'] = False
+        del args['consumer_solr_url']
+
+        # Run code to be tested and check exception:
+        with self.assertRaises(esgfpid.exceptions.ArgumentError):
+            assistant = esgfpid.assistant.publish.DatasetPublicationAssistant(**args)
+
+    def test_init_consumer_solr_url_is_none(self):
+
+        # Preparations:
+        testcoupler = self.__make_patched_testcoupler()
+        self.__patch_coupler_with_solr_mock(testcoupler, None) # Solr returns []
+        args = self.__get_normal_init_args_dataset(testcoupler)
+        args['is_replica'] = False
+        args['consumer_solr_url'] = None
+
+        # Run code to be tested:
+        assistant = esgfpid.assistant.publish.DatasetPublicationAssistant(**args)
+
+        # Check result:
+        self.assertIsInstance(assistant, esgfpid.assistant.publish.DatasetPublicationAssistant,
+            'Constructor failed.')
+
     def test_init_string_replica_flag_ok(self):
 
         # Preparations:
