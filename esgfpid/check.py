@@ -44,7 +44,7 @@ class RabbitChecker(object):
     def __check_if_any_url_specified(self, args):
         preferred_given = args['messaging_service_url_preferred'] is not None
         other1 = args['messaging_service_urls'] is not None
-        other2 = len(args['messaging_service_urls']) > 0
+        other2 = len(args['messaging_service_urls']) > 0 if other1 else False
         other_given = (other1 and other2)
         if not (preferred_given or other_given):
             raise esgfpid.exceptions.ArgumentError('At least one messaging service URL has to be specified.') 
