@@ -32,7 +32,7 @@ class RabbitChecker(object):
         self.__fill_all_attributes(args)
 
     def __define_all_attributes(self):
-        self.__print_to_console = False
+        self.__print_errors_to_console = False
         self.__print_success_to_console = False
         self.__default_log_level = logging.DEBUG
         self.__error_messages = []
@@ -66,7 +66,7 @@ class RabbitChecker(object):
         self.__rabbit_hosts = args['urls_fallback']
         self.__current_rabbit_host = args['url_preferred']
         if args['print_to_console'] is not None and args['print_to_console'] == True:
-            self.__print_to_console = True
+            self.__print_errors_to_console = True
         if args['print_success_to_console'] is not None and args['print_success_to_console'] == True:
             self.__print_success_to_console = True
         if args['messaging_service_exchange_name'] is not None:
@@ -259,7 +259,7 @@ class RabbitChecker(object):
         utils.loginfo(LOGGER, msg)
 
     def __logwarn(self, msg):
-        if self.__print_to_console == True:
+        if self.__print_errors_to_console == True:
             print(msg)
         utils.logwarn(LOGGER, msg)
 
