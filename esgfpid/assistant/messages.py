@@ -60,7 +60,7 @@ def publish_dataset(**args):
     )
 
     # Optional:
-    if args['consumer_solr_url'] is not None:
+    if 'consumer_solr_url' in args and args['consumer_solr_url'] is not None:
         message['consumer_solr_url'] = args['consumer_solr_url']
 
     # Routing key:
@@ -85,7 +85,7 @@ def unpublish_allversions_consumer_must_find_versions(**args):
     )
 
     # Optional:
-    if args['consumer_solr_url'] is not None:
+    if 'consumer_solr_url' in args and args['consumer_solr_url'] is not None:
         message['consumer_solr_url'] = args['consumer_solr_url']
 
     routing_key = 'unpublish_all_versions'
