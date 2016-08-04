@@ -41,7 +41,8 @@ class CheckTestCase(unittest.TestCase):
             messaging_service_urls = messaging_service_urls,
             messaging_service_password = messaging_service_password,
             print_to_console = print_to_console,
-            messaging_service_username = messaging_service_username
+            messaging_service_username = messaging_service_username,
+            print_success_to_console = True
         )
 
         # Check result:
@@ -63,7 +64,8 @@ class CheckTestCase(unittest.TestCase):
             messaging_service_url_preferred = url,
             messaging_service_password = messaging_service_password,
             print_to_console = print_to_console,
-            messaging_service_username = messaging_service_username
+            messaging_service_username = messaging_service_username,
+            print_success_to_console = True
         )
 
         # Check result:
@@ -87,7 +89,8 @@ class CheckTestCase(unittest.TestCase):
             messaging_service_url_preferred = fave,
             messaging_service_password = messaging_service_password,
             print_to_console = print_to_console,
-            messaging_service_username = messaging_service_username
+            messaging_service_username = messaging_service_username,
+            print_success_to_console = True
         )
 
         # Check result:
@@ -111,7 +114,8 @@ class CheckTestCase(unittest.TestCase):
             testobject = esgfpid.check.RabbitChecker(
                 messaging_service_urls = messaging_service_urls,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
     #
@@ -141,7 +145,8 @@ class CheckTestCase(unittest.TestCase):
                 messaging_service_urls = messaging_service_urls,
                 messaging_service_password = messaging_service_password,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
         # Expected message:
@@ -174,7 +179,8 @@ class CheckTestCase(unittest.TestCase):
                 messaging_service_urls = messaging_service_urls,
                 messaging_service_password = messaging_service_password,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
         # Expected message:
@@ -207,7 +213,8 @@ class CheckTestCase(unittest.TestCase):
                 messaging_service_urls = messaging_service_urls,
                 messaging_service_password = messaging_service_password,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
         # Expected message:
@@ -235,7 +242,8 @@ class CheckTestCase(unittest.TestCase):
                 messaging_service_url_preferred = messaging_service_url_preferred,
                 messaging_service_password = messaging_service_password,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
         # Expected message:
@@ -275,7 +283,8 @@ class CheckTestCase(unittest.TestCase):
                 messaging_service_urls = messaging_service_urls,
                 messaging_service_password = messaging_service_password,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
         # Expected message:
@@ -312,7 +321,8 @@ class CheckTestCase(unittest.TestCase):
                 messaging_service_urls = messaging_service_urls,
                 messaging_service_password = messaging_service_password,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
         # Expected message:
@@ -346,7 +356,8 @@ class CheckTestCase(unittest.TestCase):
                 messaging_service_url_preferred = messaging_service_url_preferred,
                 messaging_service_password = messaging_service_password,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
         # Expected message:
@@ -381,7 +392,8 @@ class CheckTestCase(unittest.TestCase):
                 messaging_service_urls = messaging_service_urls,
                 messaging_service_password = messaging_service_password,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
         # Expected message:
@@ -423,7 +435,8 @@ class CheckTestCase(unittest.TestCase):
                 messaging_service_urls = messaging_service_urls,
                 messaging_service_password = messaging_service_password,
                 print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username
+                messaging_service_username = messaging_service_username,
+                print_success_to_console = True
             )
 
         # Expected message:
