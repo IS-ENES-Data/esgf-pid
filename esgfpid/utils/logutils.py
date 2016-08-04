@@ -34,7 +34,7 @@ def _is_show(kwargs):
     return False
 
 def _logshow(logger, msg, *args, **kwargs):
-    del kwargs['show']
+    kwargs.pop('show', None) # Need to remove show=xyz before passing kwargs to logger!
     logger.info(msg, *args, **kwargs)
 
 def loginfo(logger, msg, *args, **kwargs):
