@@ -77,7 +77,7 @@ class DatasetPublicationAssistant(object):
         self.__version_number = args['version_number']
         self.__data_node = args['data_node'].rstrip('/')
         self.__prefix = args['prefix']
-        self.__thredds_service_path = args['thredds_service_path'].rstrip('/')
+        self.__thredds_service_path = args['thredds_service_path'].strip('/')
         self.__is_replica = args['is_replica']
         self.__coupler = args['coupler']
         self.__consumer_solr_url = args['consumer_solr_url']
