@@ -90,7 +90,9 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":[errata_id],
-            "ROUTING_KEY": "errata_ids"
+            "ROUTING_KEY": "errata_ids",
+            "drs_id":drs_id,
+            "version_number":version_number
         }
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
@@ -124,7 +126,9 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":errata_id,
-            "ROUTING_KEY": "errata_ids"
+            "ROUTING_KEY": "errata_ids",
+            "drs_id":drs_id,
+            "version_number":version_number
         }
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
@@ -158,7 +162,9 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":errata_ids,
-            "ROUTING_KEY": "errata_ids"
+            "ROUTING_KEY": "errata_ids",
+            "drs_id":drs_id,
+            "version_number":version_number
         }
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
@@ -214,7 +220,9 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "remove_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":errata_ids,
-            "ROUTING_KEY": "errata_ids"
+            "ROUTING_KEY": "errata_ids",
+            "drs_id":drs_id,
+            "version_number":version_number
         }
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)

@@ -204,7 +204,9 @@ class ApiTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":errata_ids,
-            "ROUTING_KEY": "errata_ids"
+            "ROUTING_KEY": "errata_ids",
+            "drs_id":drs_id,
+            "version_number":version_number
         }
 
         received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
@@ -232,8 +234,9 @@ class ApiTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":[errata_id],
-            "ROUTING_KEY": "errata_ids"
-
+            "ROUTING_KEY": "errata_ids",
+            "drs_id":drs_id,
+            "version_number":version_number
         }
 
         received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those

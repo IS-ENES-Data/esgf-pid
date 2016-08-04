@@ -28,7 +28,7 @@ class ErrataAssistant(object):
 
         dataset_handle = self.__get_dataset_handle(args)
         errata_ids = self.__get_errata_ids_as_list(args)
-        message = self.__make_add_message(errata_ids, dataset_handle, drs_id, version_number)
+        message = self.__make_add_message(errata_ids, dataset_handle, args['drs_id'], args['version_number'])
         self.__send_message_to_queue(message)
 
         LOGGER.info('Added errata ids "%s" to dataset "%s".', ', '.join(errata_ids), dataset_handle)
@@ -43,7 +43,7 @@ class ErrataAssistant(object):
 
         dataset_handle = self.__get_dataset_handle(args)
         errata_ids = self.__get_errata_ids_as_list(args)
-        message = self.__make_remove_message(errata_ids, dataset_handle, drs_id, version_number)
+        message = self.__make_remove_message(errata_ids, dataset_handle, args['drs_id'], args['version_number'])
         self.__send_message_to_queue(message)
 
         LOGGER.info('Removed errata ids "%s" from dataset "%s".', ', '.join(errata_ids), dataset_handle)
@@ -64,23 +64,27 @@ class ErrataAssistant(object):
         )
         return dataset_handle
 
-    def __make_add_message(self, errata_ids, dataset_handle):
+    def __make_add_message(self, errata_ids, dataset_handle, drs_id, vers_number):
         message_timestamp = esgfpid.utils.get_now_utc_as_formatted_string()
         
         message = esgfpid.assistant.messages.add_errata_ids_message(
             dataset_handle = dataset_handle,
             timestamp = message_timestamp,
-            errata_ids = errata_ids
+            errata_ids = errata_ids,
+            drs_id=drs_id,
+            version_number=vers_number
         )
         return message
 
-    def __make_remove_message(self, errata_ids, dataset_handle):
+    def __make_remove_message(self, errata_ids, dataset_handle, drs_id, vers_number):
         message_timestamp = esgfpid.utils.get_now_utc_as_formatted_string()
         
         message = esgfpid.assistant.messages.remove_errata_ids_message(
             dataset_handle = dataset_handle,
             timestamp = message_timestamp,
-            errata_ids = errata_ids
+            errata_ids = errata_ids,
+            drs_id=drs_id,
+            version_number=vers_number
         )
         return message
 
