@@ -35,7 +35,8 @@ class Connector(object):
             'solr_https_verify',
             'disable_insecure_request_warning',
             'solr_switched_off',
-            'thredds_service_path'
+            'thredds_service_path',
+            'consumer_solr_url'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
@@ -44,12 +45,13 @@ class Connector(object):
         self.prefix = args['handle_prefix']
         self.__thredds_service_path = args['thredds_service_path']
         self.__data_node = args['data_node']
+        self.__consumer_solr_url = args['consumer_solr_url'] # may be None
 
     def create_publication_assistant(self, **args):
 
         # Check args
         LOGGER.debug('Creating publication assistant..')
-        mandatory_args = ['drs_id', 'version_number', 'is_replica', 'consumer_solr_url']
+        mandatory_args = ['drs_id', 'version_number', 'is_replica']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
         # Check if solr has access:
@@ -73,7 +75,7 @@ class Connector(object):
             prefix=self.prefix,
             coupler=self.__coupler,
             is_replica=args['is_replica'],
-            consumer_solr_url=args['consumer_solr_url'] # may be None
+            consumer_solr_url=self.__consumer_solr_url # may be None
         )
         LOGGER.debug('Creating publication assistant.. done')
         return assistant
@@ -100,7 +102,7 @@ class Connector(object):
     def unpublish_all_versions(self, **args):
 
         # Check args
-        mandatory_args = ['drs_id', 'consumer_solr_url']
+        mandatory_args = ['drs_id']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
         # Check if solr has access:
@@ -114,7 +116,7 @@ class Connector(object):
             prefix=self.prefix,
             coupler=self.__coupler,
             message_timestamp=esgfpid.utils.get_now_utc_as_formatted_string(),
-            consumer_solr_url = args['consumer_solr_url'] # may be None
+            consumer_solr_url = self.__consumer_solr_url # may be None
         )
         assistant.unpublish_all_dataset_versions()
 

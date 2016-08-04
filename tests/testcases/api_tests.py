@@ -63,6 +63,38 @@ class ApiTestCase(unittest.TestCase):
     # Init
     #
 
+    def test_init_ok(self):
+
+        testconnector = esgfpid.Connector(
+            handle_prefix = TESTVALUES['prefix'],
+            messaging_service_urls = TESTVALUES['url_messaging_service'],
+            messaging_service_exchange_name = TESTVALUES['messaging_exchange'],
+            data_node = TESTVALUES['data_node'],
+            thredds_service_path = TESTVALUES['thredds_service_path'], # opt
+            solr_url = TESTVALUES['solr_url'],
+            messaging_service_username = TESTVALUES['rabbit_username'],
+            messaging_service_password = TESTVALUES['rabbit_password']
+        )
+
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+
+
+    def test_init_with_consumer_solr_url_ok(self):
+
+        testconnector = esgfpid.Connector(
+            handle_prefix = TESTVALUES['prefix'],
+            messaging_service_urls = TESTVALUES['url_messaging_service'],
+            messaging_service_exchange_name = TESTVALUES['messaging_exchange'],
+            data_node = TESTVALUES['data_node'],
+            thredds_service_path = TESTVALUES['thredds_service_path'], # opt
+            solr_url = TESTVALUES['solr_url'],
+            messaging_service_username = TESTVALUES['rabbit_username'],
+            messaging_service_password = TESTVALUES['rabbit_password'],
+            consumer_solr_url='fake_solr_whatever'
+        )
+
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+
     #
     # Publication
     #
@@ -142,8 +174,47 @@ class ApiTestCase(unittest.TestCase):
             "aggregation_level":"dataset",
             "data_node": TESTVALUES['data_node'],
             "ROUTING_KEY": "unpublish_one_version"
-
         }
+        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
+        tests.utils.replace_date_with_string(received_rabbit_task)
+        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
+        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+
+    def test_unpublish_one_version_with_consumer_url_ok(self):
+
+        # Test variables
+        drs_id = TESTVALUES['drs_id1']
+        version_number = TESTVALUES['version_number1']
+        data_node = TESTVALUES['data_node']
+
+        # Make test connector
+        testconnector = esgfpid.Connector(
+            handle_prefix = TESTVALUES['prefix'],
+            messaging_service_urls = TESTVALUES['url_messaging_service'],
+            messaging_service_exchange_name = TESTVALUES['messaging_exchange'],
+            data_node = TESTVALUES['data_node'],
+            solr_url = TESTVALUES['solr_url'],
+            messaging_service_username = TESTVALUES['rabbit_username'],
+            messaging_service_password = TESTVALUES['rabbit_password'],
+            consumer_solr_url="fake_solr_whatever"
+        )
+        self.__patch_connector_with_rabbit_mock(testconnector)
+  
+        # Run code to be tested:
+        testconnector.unpublish_one_version(
+            drs_id=drs_id,
+            version_number=version_number,
+            data_node=data_node)
+
+        # Check result:
+        expected_rabbit_task = {
+            "handle": "hdl:"+TESTVALUES['prefix']+'/afd65cd0-9296-35bc-a706-be98665c9c36',
+            "operation": "unpublish_one_version",
+            "message_timestamp":"anydate",
+            "aggregation_level":"dataset",
+            "data_node": TESTVALUES['data_node'],
+            "ROUTING_KEY": "unpublish_one_version"
+        } # We don't get the consumer_solr_url, because it is only needed for all versions.
         received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
         tests.utils.replace_date_with_string(received_rabbit_task)
         is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
@@ -173,6 +244,54 @@ class ApiTestCase(unittest.TestCase):
             "aggregation_level":"dataset",
             "drs_id":drs_id,
             "ROUTING_KEY": "unpublish_all_versions"
+        }
+        
+        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
+        tests.utils.replace_date_with_string(received_rabbit_task)
+        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
+        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+
+    @mock.patch('esgfpid.coupling.Coupler.retrieve_datasethandles_or_versionnumbers_of_allversions')
+    def test_unpublish_all_versions_nosolr__butconsumersolr_ok(self, solr_asker_patch):
+
+        # Patch coupler
+        mydict = dict(dataset_handles=None, version_numbers=None)
+        solr_asker_patch.return_value = mydict
+
+        # Make test connector
+        drs_id = TESTVALUES['drs_id1']
+        version_number = TESTVALUES['version_number1']
+        data_node = TESTVALUES['data_node']
+        testconnector = esgfpid.Connector(
+            handle_prefix = TESTVALUES['prefix'],
+            messaging_service_urls = TESTVALUES['url_messaging_service'],
+            messaging_service_exchange_name = TESTVALUES['messaging_exchange'],
+            data_node = TESTVALUES['data_node'],
+            solr_url = TESTVALUES['solr_url'],
+            messaging_service_username = TESTVALUES['rabbit_username'],
+            messaging_service_password = TESTVALUES['rabbit_password'],
+            consumer_solr_url="fake_solr_whatever"
+        )
+        self.__patch_connector_with_rabbit_mock(testconnector)
+
+        # Test variables
+        drs_id = TESTVALUES['drs_id1']
+        data_node = TESTVALUES['data_node']
+
+        # Run code to be tested:
+        testconnector.unpublish_all_versions(
+            drs_id=drs_id,
+            data_node=data_node)
+
+        # Check result:
+        expected_rabbit_task = {
+            "operation": "unpublish_all_versions",
+            "message_timestamp": "anydate",
+            "data_node": TESTVALUES['data_node'],
+            "aggregation_level":"dataset",
+            "drs_id":drs_id,
+            "ROUTING_KEY": "unpublish_all_versions",
+            "consumer_solr_url":"fake_solr_whatever"
         }
         
         received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
