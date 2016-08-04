@@ -22,7 +22,7 @@ class RabbitChecker(object):
 
     def __init__(self, **args):
         mandatory_args = ['messaging_service_username', 'messaging_service_password']
-        optional_args = ['messaging_service_url_preferred', 'messaging_service_urls', 'print_to_console', 'messaging_service_exchange_name']
+        optional_args = ['messaging_service_url_preferred', 'messaging_service_urls', 'print_to_console', 'messaging_service_exchange_name', 'print_success_to_console']
         check_presence_of_mandatory_args(args, mandatory_args)
         add_missing_optional_args_with_value_none(args, optional_args)
         self.__check_if_any_url_specified(args)
@@ -33,6 +33,7 @@ class RabbitChecker(object):
 
     def __define_all_attributes(self):
         self.__print_to_console = False
+        self.__print_success_to_console = False
         self.__default_log_level = logging.DEBUG
         self.__error_messages = []
         self.__rabbit_username = None
@@ -66,6 +67,8 @@ class RabbitChecker(object):
         self.__current_rabbit_host = args['url_preferred']
         if args['print_to_console'] is not None and args['print_to_console'] == True:
             self.__print_to_console = True
+        if args['print_success_to_console'] is not None and args['print_success_to_console'] == True:
+            self.__print_success_to_console = True
         if args['messaging_service_exchange_name'] is not None:
             self.__exchange_name = args['messaging_service_exchange_name']
 
@@ -251,6 +254,8 @@ class RabbitChecker(object):
         self.__logwarn(error_message_string)
 
     def __loginfo(self, msg):
+        if self.__print_success_to_console == True:
+            print(msg)
         utils.loginfo(LOGGER, msg)
 
     def __logwarn(self, msg):
