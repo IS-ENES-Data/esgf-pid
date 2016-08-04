@@ -66,8 +66,6 @@ class MessageCreationTestcase(unittest.TestCase):
         # Rename some:
         expected['handle'] = expected['file_handle']
         del expected['file_handle']
-        expected['version_number'] = expected['file_version']
-        del expected['file_version']
         expected['message_timestamp'] = expected['timestamp']
         del expected['timestamp']
 
@@ -91,8 +89,6 @@ class MessageCreationTestcase(unittest.TestCase):
         # Rename some:
         expected['handle'] = expected['file_handle']
         del expected['file_handle']
-        expected['version_number'] = expected['file_version']
-        del expected['file_version']
         expected['message_timestamp'] = expected['timestamp']
         del expected['timestamp']
 
@@ -222,7 +218,9 @@ class MessageCreationTestcase(unittest.TestCase):
         args_dict = dict(
             dataset_handle = 'abc/def',
             errata_ids = 'dkrz.de',
-            timestamp = 'todayish'
+            timestamp = 'todayish',
+            drs_id = 'drs_foo',
+            version_number = 'vers_foo'
         )
 
         # Run code to be tested:
@@ -232,6 +230,8 @@ class MessageCreationTestcase(unittest.TestCase):
         expected = copy.deepcopy(args_dict)
         expected['ROUTING_KEY'] = 'errata_ids'
         expected['operation'] = 'add_errata_ids'
+        expected['drs_id'] = 'drs_foo'
+        expected['version_number'] = 'vers_foo'
         # Rename some:
         expected['handle'] = expected['dataset_handle']
         del expected['dataset_handle']
@@ -247,7 +247,9 @@ class MessageCreationTestcase(unittest.TestCase):
         args_dict = dict(
             dataset_handle = 'abc/def',
             errata_ids = 'dkrz.de',
-            timestamp = 'todayish'
+            timestamp = 'todayish',
+            drs_id = 'drs_foo',
+            version_number = 'vers_foo'
         )
 
         # Run code to be tested:
@@ -257,6 +259,8 @@ class MessageCreationTestcase(unittest.TestCase):
         expected = copy.deepcopy(args_dict)
         expected['ROUTING_KEY'] = 'errata_ids'
         expected['operation'] = 'remove_errata_ids'
+        expected['drs_id'] = 'drs_foo'
+        expected['version_number'] = 'vers_foo'
         # Rename some:
         expected['handle'] = expected['dataset_handle']
         del expected['dataset_handle']
