@@ -94,6 +94,10 @@ class AssistantAllVersions(AssistantOneVersion):
 
     def unpublish_all_dataset_versions(self):
 
+        # If solr is switched off, consumer must find versions:
+        if self._coupler.is_solr_switched_off():
+            self.__unpublish_allversions_consumer_must_find_versions()
+
         # Get handles or version numbers from solr:
         all_handles_or_versionnumbers = self.__get_all_handles_or_versionnumbers()
         all_handles = all_handles_or_versionnumbers['dataset_handles']
