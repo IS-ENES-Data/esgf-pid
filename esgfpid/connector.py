@@ -107,7 +107,8 @@ class Connector(object):
 
         # Check if solr has access:
         if self.__coupler.is_solr_switched_off():
-            raise esgfpid.exceptions.ArgumentError('No solr access. Solr access is needed for publication. Please provide access to a solr index when initializing the library')
+            pass
+            #raise esgfpid.exceptions.ArgumentError('No solr access. Solr access is needed for publication. Please provide access to a solr index when initializing the library')
 
         # Unpublish
         assistant = esgfpid.assistant.unpublish.AssistantAllVersions(
