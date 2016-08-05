@@ -99,21 +99,22 @@ class AssistantAllVersions(AssistantOneVersion):
             self.__unpublish_allversions_consumer_must_find_versions()
 
         # Get handles or version numbers from solr:
-        all_handles_or_versionnumbers = self.__get_all_handles_or_versionnumbers()
-        all_handles = all_handles_or_versionnumbers['dataset_handles']
-        all_version_numbers = all_handles_or_versionnumbers['version_numbers']
-
-        # If we can have all versions' handles, it's easy.
-        if all_handles is not None:
-            self.__unpublish_all_dataset_versions_by_handle(all_handles)
-
-        # If not, we have the version numbers (and can make the handles from them):
-        elif all_version_numbers is not None:
-            self.__unpublish_all_dataset_versions_by_version(all_version_numbers)
-
-        # If neither, let the consumer find them
         else:
-            self.__unpublish_allversions_consumer_must_find_versions()
+            all_handles_or_versionnumbers = self.__get_all_handles_or_versionnumbers()
+            all_handles = all_handles_or_versionnumbers['dataset_handles']
+            all_version_numbers = all_handles_or_versionnumbers['version_numbers']
+
+            # If we can have all versions' handles, it's easy.
+            if all_handles is not None:
+                self.__unpublish_all_dataset_versions_by_handle(all_handles)
+
+            # If not, we have the version numbers (and can make the handles from them):
+            elif all_version_numbers is not None:
+                self.__unpublish_all_dataset_versions_by_version(all_version_numbers)
+
+            # If neither, let the consumer find them
+            else:
+                self.__unpublish_allversions_consumer_must_find_versions()
  
     def __unpublish_all_dataset_versions_by_version(self, all_version_numbers):
         for version_number in all_version_numbers:
