@@ -70,11 +70,11 @@ class UnpublicationTestCase(unittest.TestCase):
         )
         return assistant
 
-    def make_assistant_all_versions(self):
+    def make_assistant_all_versions(self, coupler=None):
         assistant = esgfpid.assistant.unpublish.AssistantAllVersions(
             drs_id=self.drs_id,
             prefix=self.prefix,
-            coupler=self.coupler,
+            coupler=coupler or self.coupler,
             data_node=self.data_node,
             message_timestamp='some_moment',
             consumer_solr_url='fake_solr_foo'
@@ -191,6 +191,35 @@ class UnpublicationTestCase(unittest.TestCase):
         messagesOk = tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task)
         self.assertIsNone(messagesOk, messagesOk)
 
+    def test_unpublish_all_versions_solr_off_consumer_must_find_versions_ok(self):        
+
+        # Preparations:
+        # Make coupler
+        args = self.get_args_for_coupler()
+        args['solr_url']=None
+        args['solr_switched_off']=True
+        testcoupler = esgfpid.coupling.Coupler(**args)
+        # Replace objects that interact with servers with mocks
+        self.__patch_coupler_with_rabbit_mock(testcoupler)
+        # Make assistant
+        assistant = self.make_assistant_all_versions(testcoupler)
+
+        # Run code to be tested:
+        assistant.unpublish_all_dataset_versions()
+
+        # Check result:
+        expected_rabbit_task = {
+            "operation": "unpublish_all_versions",
+            "aggregation_level": "dataset",
+            "message_timestamp": "anydate",
+            "drs_id": self.drs_id,
+            "data_node": self.data_node,
+            "ROUTING_KEY": "unpublish_all_versions",
+            "consumer_solr_url":"fake_solr_foo"
+        }
+        received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
+        messagesOk = tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task)
+        self.assertIsNone(messagesOk, messagesOk)
 
     def test_unpublish_all_versions_nosolr_consumer_must_find_versions_solr_none(self):        
 

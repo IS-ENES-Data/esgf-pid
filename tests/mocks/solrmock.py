@@ -29,3 +29,6 @@ class MockSolrInteractor(object):
             raise self.raise_error
         else:
             return self.datasethandles_or_versionnumbers_of_allversions
+
+    def is_switched_off(self):
+        return False
