@@ -253,14 +253,13 @@ class UnpublicationTestCase(unittest.TestCase):
 
         # Check exception:
 
-        with self.assertRaises(esgfpid.exceptions.ArgumentError):
-            assistant = esgfpid.assistant.unpublish.AssistantAllVersions(
-                drs_id=self.drs_id,
-                prefix=self.prefix,
-                coupler=self.coupler,
-                data_node=self.data_node,
-                message_timestamp='some_moment',
-            )
+        assistant = esgfpid.assistant.unpublish.AssistantAllVersions(
+            drs_id=self.drs_id,
+            prefix=self.prefix,
+            coupler=self.coupler,
+            data_node=self.data_node,
+            message_timestamp='some_moment',
+        )
 
     def test_unpublish_all_versions_by_handles_ok(self):
 

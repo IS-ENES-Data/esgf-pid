@@ -89,7 +89,8 @@ class AssistantAllVersions(AssistantOneVersion):
     def __init__(self, **args):
         super(AssistantAllVersions, self).__init__(**args)
         if 'consumer_solr_url' not in args.keys():
-            raise esgfpid.exceptions.ArgumentError('Missing "consumer_solr_url" in args!')
+            args['consumer_solr_url'] = None
+            # raise esgfpid.exceptions.ArgumentError('Missing "consumer_solr_url" in args!') # not mandatory anymore:
         self.__consumer_solr_url = args['consumer_solr_url']
 
     def unpublish_all_dataset_versions(self):
