@@ -185,9 +185,12 @@ class ShutDowner(object):
         # Close pika objects
         #if self._channel is not None:
         #    self._channel.close(reply_code=reply_code, reply_text=reply_text)
-        if self.thread._connection is not None:
-            self.thread._connection.close(reply_code=reply_code, reply_text=reply_text)
-            # "If there are any open channels, it will attempt to close them prior to fully disconnecting." (pika docs)
+        try:
+            if self.thread._connection is not None:
+                self.thread._connection.close(reply_code=reply_code, reply_text=reply_text)
+                # "If there are any open channels, it will attempt to close them prior to fully disconnecting." (pika docs)
+        except AttributeError as e:
+            logdebug(LOGGER, 'AttributeError from pika during connection closedown (%s)' % e.message)
 
     def __inform_about_state_at_shutdown(self):
         unsent = self.feeder.get_num_unpublished()
