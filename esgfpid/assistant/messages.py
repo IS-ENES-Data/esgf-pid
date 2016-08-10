@@ -8,6 +8,16 @@ otherwise it is redundant.
 
 JSON_KEY_ROUTING_KEY = 'ROUTING_KEY'
 
+ROUTING_KEYS = dict(
+    publi_file = 'publication_file',
+    publi_file_rep = 'publication_file_replica',
+    publi_ds = 'publication_dataset',
+    publi_ds_rep = 'publication_dataset_replica',
+    unpubli_all = 'unpublish_all_versions',
+    unpubli_one = 'unpublish_one_version',
+    err = 'errata_ids'
+)
+
 def publish_file(**args):
 
     # Check args:
@@ -32,9 +42,9 @@ def publish_file(**args):
     )
 
     # Routing key:
-    routing_key = 'publication_file'
+    routing_key = ROUTING_KEYS['publi_file']
     if args['is_replica'] == True: # Publish Assistant parses this to boolean!
-        routing_key = 'publication_file_replica'
+        routing_key = ROUTING_KEYS['publi_file_rep']
     message[JSON_KEY_ROUTING_KEY] = routing_key
 
     return message
@@ -64,9 +74,9 @@ def publish_dataset(**args):
         message['consumer_solr_url'] = args['consumer_solr_url']
 
     # Routing key:
-    routing_key = 'publication_dataset'
+    routing_key = ROUTING_KEYS['publi_ds']
     if args['is_replica'] == True: # Publish Assistant parses this to boolean!
-        routing_key = 'publication_dataset_replica'
+        routing_key = ROUTING_KEYS['publi_ds_rep']
     message[JSON_KEY_ROUTING_KEY] = routing_key
 
     return message
@@ -88,8 +98,7 @@ def unpublish_allversions_consumer_must_find_versions(**args):
     if 'consumer_solr_url' in args and args['consumer_solr_url'] is not None:
         message['consumer_solr_url'] = args['consumer_solr_url']
 
-    routing_key = 'unpublish_all_versions'
-    message[JSON_KEY_ROUTING_KEY] = routing_key
+    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['unpubli_all']
     return message
 
 
@@ -106,8 +115,7 @@ def unpublish_one_version(**args):
         data_node=args['data_node']
     )
 
-    routing_key = 'unpublish_one_version'
-    message[JSON_KEY_ROUTING_KEY] = routing_key
+    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['unpubli_one']
 
     return message
 
@@ -123,11 +131,9 @@ def add_errata_ids_message(**args):
         operation = 'add_errata_ids',
         drs_id = args['drs_id'],
         version_number = args['version_number']
-
     )
 
-    routing_key = 'errata_ids'
-    message[JSON_KEY_ROUTING_KEY] = routing_key
+    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['err']
 
     return message
 
@@ -145,7 +151,6 @@ def remove_errata_ids_message(**args):
         version_number = args['version_number']
     )
     
-    routing_key = 'errata_ids'
-    message[JSON_KEY_ROUTING_KEY] = routing_key
+    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['err']
 
     return message
