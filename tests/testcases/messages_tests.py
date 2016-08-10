@@ -7,6 +7,7 @@ import esgfpid.exceptions
 import esgfpid.assistant.messages as messages
 import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
+from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Logging
 LOGGER = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = 'publication_file'
+        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.file.orig'
         expected['aggregation_level'] = 'file'
         expected['operation'] = 'publish'
         # Rename some:
@@ -83,7 +84,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = 'publication_file_replica'
+        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.file.replica'
         expected['aggregation_level'] = 'file'
         expected['operation'] = 'publish'
         # Rename some:
@@ -105,7 +106,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = 'publication_dataset'
+        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.dataset.orig'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'publish'
         # Rename some:
@@ -131,7 +132,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = 'publication_dataset_replica'
+        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.dataset.replica'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'publish'
         # Rename some:
@@ -174,7 +175,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = 'unpublish_all_versions'
+        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'unpublication.all'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'unpublish_all_versions'
         # Rename some:
@@ -199,7 +200,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = 'unpublish_one_version'
+        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'unpublication.one'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'unpublish_one_version'
         # Rename some:
@@ -228,7 +229,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = 'errata_ids'
+        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'errata.add'
         expected['operation'] = 'add_errata_ids'
         expected['drs_id'] = 'drs_foo'
         expected['version_number'] = 'vers_foo'
@@ -257,7 +258,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = 'errata_ids'
+        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'errata.remove'
         expected['operation'] = 'remove_errata_ids'
         expected['drs_id'] = 'drs_foo'
         expected['version_number'] = 'vers_foo'

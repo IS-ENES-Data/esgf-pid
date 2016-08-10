@@ -9,6 +9,7 @@ import tests.mocks.solrmock
 import tests.mocks.rabbitmock
 import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
+from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 
 # Logging
@@ -51,7 +52,7 @@ class PublishTestCase(unittest.TestCase):
             "files":[filehandle],
             "is_replica":False,
             "data_node":TESTVALUES['data_node'],
-            "ROUTING_KEY": "publication_dataset",
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'publication.dataset.orig',
             "consumer_solr_url": "does_not_matter"
         }
 
@@ -84,7 +85,7 @@ class PublishTestCase(unittest.TestCase):
             "checksum_type":TESTVALUES['checksum_type1'],
             "file_version":TESTVALUES['file_version1'],
             "parent_dataset":"hdl:"+TESTVALUES['prefix']+'/'+TESTVALUES['suffix1'],
-            "ROUTING_KEY": "publication_file"
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'publication.file.orig',
         }
         return expected_rabbit_task
 
@@ -640,7 +641,7 @@ class PublishTestCase(unittest.TestCase):
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         expected_rabbit_task = self.__get_normal_rabbit_task_dataset()
         expected_rabbit_task['is_replica'] = True
-        expected_rabbit_task['ROUTING_KEY'] = 'publication_dataset_replica'
+        expected_rabbit_task['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.dataset.replica'
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 
@@ -648,7 +649,7 @@ class PublishTestCase(unittest.TestCase):
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 1)
         expected_rabbit_task = self.__get_normal_rabbit_task_file()
         expected_rabbit_task['is_replica'] = True
-        expected_rabbit_task['ROUTING_KEY'] = 'publication_file_replica'
+        expected_rabbit_task['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.file.replica'
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 
@@ -670,7 +671,7 @@ class PublishTestCase(unittest.TestCase):
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         expected_rabbit_task = self.__get_normal_rabbit_task_dataset()
         expected_rabbit_task['is_replica'] = True
-        expected_rabbit_task['ROUTING_KEY'] = 'publication_dataset_replica'
+        expected_rabbit_task['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.dataset.replica'
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 
@@ -678,7 +679,7 @@ class PublishTestCase(unittest.TestCase):
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 1)
         expected_rabbit_task = self.__get_normal_rabbit_task_file()
         expected_rabbit_task['is_replica'] = True
-        expected_rabbit_task['ROUTING_KEY'] = 'publication_file_replica'
+        expected_rabbit_task['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.file.replica'
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 

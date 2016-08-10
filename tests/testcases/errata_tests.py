@@ -7,6 +7,8 @@ import tests.mocks.rabbitmock
 import tests.mocks.solrmock
 import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
+from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+
 
 # Logging
 LOGGER = logging.getLogger(__name__)
@@ -90,7 +92,7 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":[errata_id],
-            "ROUTING_KEY": "errata_ids",
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
             "drs_id":drs_id,
             "version_number":version_number
         }
@@ -126,7 +128,7 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":errata_id,
-            "ROUTING_KEY": "errata_ids",
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
             "drs_id":drs_id,
             "version_number":version_number
         }
@@ -162,7 +164,7 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":errata_ids,
-            "ROUTING_KEY": "errata_ids",
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
             "drs_id":drs_id,
             "version_number":version_number
         }
@@ -220,7 +222,7 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "remove_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":errata_ids,
-            "ROUTING_KEY": "errata_ids",
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.remove',
             "drs_id":drs_id,
             "version_number":version_number
         }

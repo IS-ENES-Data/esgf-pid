@@ -7,6 +7,7 @@ import esgfpid.assistant.publish
 import tests.utils
 import tests.mocks.rabbitmock
 import tests.mocks.solrmock
+from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Logging
 LOGGER = logging.getLogger(__name__)
@@ -173,7 +174,7 @@ class ApiTestCase(unittest.TestCase):
             "message_timestamp":"anydate",
             "aggregation_level":"dataset",
             "data_node": TESTVALUES['data_node'],
-            "ROUTING_KEY": "unpublish_one_version"
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
         }
         received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
         tests.utils.replace_date_with_string(received_rabbit_task)
@@ -213,7 +214,7 @@ class ApiTestCase(unittest.TestCase):
             "message_timestamp":"anydate",
             "aggregation_level":"dataset",
             "data_node": TESTVALUES['data_node'],
-            "ROUTING_KEY": "unpublish_one_version"
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
         } # We don't get the consumer_solr_url, because it is only needed for all versions.
         received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
         tests.utils.replace_date_with_string(received_rabbit_task)
@@ -243,7 +244,7 @@ class ApiTestCase(unittest.TestCase):
             "data_node": TESTVALUES['data_node'],
             "aggregation_level":"dataset",
             "drs_id":drs_id,
-            "ROUTING_KEY": "unpublish_all_versions"
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all'
         }
         
         received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
@@ -290,7 +291,7 @@ class ApiTestCase(unittest.TestCase):
             "data_node": TESTVALUES['data_node'],
             "aggregation_level":"dataset",
             "drs_id":drs_id,
-            "ROUTING_KEY": "unpublish_all_versions",
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all',
             "consumer_solr_url":"fake_solr_whatever"
         }
         
@@ -323,7 +324,7 @@ class ApiTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":errata_ids,
-            "ROUTING_KEY": "errata_ids",
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
             "drs_id":drs_id,
             "version_number":version_number
         }
@@ -353,7 +354,7 @@ class ApiTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":[errata_id],
-            "ROUTING_KEY": "errata_ids",
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
             "drs_id":drs_id,
             "version_number":version_number
         }
