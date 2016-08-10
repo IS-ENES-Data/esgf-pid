@@ -1,4 +1,5 @@
 import esgfpid.utils
+from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 '''
 The messages module creates the JSON messages to be sent to the rabbit.
@@ -9,13 +10,14 @@ otherwise it is redundant.
 JSON_KEY_ROUTING_KEY = 'ROUTING_KEY'
 
 ROUTING_KEYS = dict(
-    publi_file = 'publication_file',
-    publi_file_rep = 'publication_file_replica',
-    publi_ds = 'publication_dataset',
-    publi_ds_rep = 'publication_dataset_replica',
-    unpubli_all = 'unpublish_all_versions',
-    unpubli_one = 'unpublish_one_version',
-    err = 'errata_ids'
+    publi_file = ROUTING_KEY_BASIS+'publication.file.orig',
+    publi_file_rep = ROUTING_KEY_BASIS+'publication.file.replica',
+    publi_ds = ROUTING_KEY_BASIS+'publication.dataset.orig',
+    publi_ds_rep = ROUTING_KEY_BASIS+'publication.dataset.replica',
+    unpubli_all = ROUTING_KEY_BASIS+'unpublication.all',
+    unpubli_one = ROUTING_KEY_BASIS+'unpublication.one',
+    err_add = ROUTING_KEY_BASIS+'errata.add',
+    err_rem = ROUTING_KEY_BASIS+'errata.remove'
 )
 
 def publish_file(**args):
@@ -133,7 +135,7 @@ def add_errata_ids_message(**args):
         version_number = args['version_number']
     )
 
-    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['err']
+    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['err_add']
 
     return message
 
@@ -151,6 +153,6 @@ def remove_errata_ids_message(**args):
         version_number = args['version_number']
     )
     
-    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['err']
+    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['err_rem']
 
     return message
