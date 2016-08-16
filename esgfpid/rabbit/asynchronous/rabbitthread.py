@@ -6,6 +6,7 @@ import copy
 import datetime
 import logging
 import esgfpid.utils
+from esgfpid.utils import get_now_utc_as_formatted_string as get_now_utc_as_formatted_string
 from .thread_acceptor import PublicationReceiver
 from .thread_statemachine import StateMachine
 from .thread_builder import ConnectionBuilder
@@ -58,11 +59,11 @@ class RabbitThread(threading.Thread):
 
     def run(self):
         logdebug(LOGGER, 'Starting thread...')
-        logdebug(LOGGER, 'Trigger connection to rabbit...', show=True)
+        logdebug(LOGGER, '%s Trigger connection to rabbit...' % get_now_utc_as_formatted_string(), show=True)
         self.builder.trigger_connection_to_rabbit_etc()
-        logdebug(LOGGER, 'Trigger connection to rabbit... done.', show=True)
+        logdebug(LOGGER, '%s Trigger connection to rabbit... done.' % get_now_utc_as_formatted_string(), show=True)
         logdebug(LOGGER, 'Starting thread done...')
-        logdebug(LOGGER, 'Starting ioloop...', show=True)
+        logdebug(LOGGER, '%s Starting ioloop...' % get_now_utc_as_formatted_string(), show=True)
         self.builder.start_ioloop_when_connection_ready()
         logtrace(LOGGER, 'Had started ioloop, but its already closed again.')
 
