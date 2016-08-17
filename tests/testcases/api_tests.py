@@ -79,6 +79,20 @@ class ApiTestCase(unittest.TestCase):
 
         self.assertIsInstance(testconnector, esgfpid.Connector)
 
+    def test_init_ok_no_rabbit_pw(self):
+
+        testconnector = esgfpid.Connector(
+            handle_prefix = TESTVALUES['prefix'],
+            messaging_service_urls = TESTVALUES['url_messaging_service'],
+            messaging_service_exchange_name = TESTVALUES['messaging_exchange'],
+            data_node = TESTVALUES['data_node'],
+            thredds_service_path = TESTVALUES['thredds_service_path'], # opt
+            solr_url = TESTVALUES['solr_url'],
+            messaging_service_username = TESTVALUES['rabbit_username']
+        )
+
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+
 
     def test_init_with_consumer_solr_url_ok(self):
 

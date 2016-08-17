@@ -25,13 +25,13 @@ class Connector(object):
             'messaging_service_urls',
             'messaging_service_exchange_name',
             'messaging_service_username',
-            'messaging_service_password',
             'handle_prefix',
             'data_node'
         ]
         optional_args = [
             'solr_url',
             'messaging_service_url_preferred',
+            'messaging_service_password',
             'solr_https_verify',
             'disable_insecure_request_warning',
             'solr_switched_off',
