@@ -21,12 +21,16 @@ class ConnectionBuilder(object):
 
         self.__store_settings_for_rabbit(args)
         self.__inform_about_settings()
+        self.__reconnect_counter = 0
+        self.__reconnect_max_tries = 5
+        #self.__reconnect_wait_seconds = 3
 
     def __store_settings_for_rabbit(self, args):
-        self.RABBIT_HOSTS = args['urls_fallback']
-        self.CURRENT_HOST = args['url_preferred']
-        self.CREDENTIALS = args['credentials']
-        self.EXCHANGE = args['exchange_name'] # only for logging it.
+        self.args = args
+        self.RABBIT_HOSTS = copy.copy(args['urls_fallback'])
+        self.CURRENT_HOST = copy.copy(args['url_preferred'])
+        self.CREDENTIALS = copy.copy(args['credentials'])
+        self.EXCHANGE = copy.copy(args['exchange_name']) # only for logging it.
 
     def __inform_about_settings(self):
         logdebug(LOGGER, 'init:Messaging server exchange: "%s".', self.EXCHANGE)
@@ -171,6 +175,7 @@ class ConnectionBuilder(object):
     def on_channel_open(self, channel):
         logdebug(LOGGER, 'Opening channel... done.', show=True)
         self.thread._channel = channel
+        self.__reconnect_counter = 0
         self.__add_on_channel_close_callback()
         self.__add_on_return_callback()
         self.__make_channel_confirm_delivery()
@@ -236,8 +241,16 @@ class ConnectionBuilder(object):
                 self.CURRENT_HOST, msg, len(self.RABBIT_HOSTS), show=True)
             self.__try_connecting_to_next(msg)
         else:
-            self.__change_state_to_permanently_could_not_connect()
-            self.__inform_permanently_could_not_connect(msg)
+            self.__reconnect_counter += 1;
+            if self.__reconnect_counter <= self.__reconnect_max_tries:
+                # wait and reconnect:
+                self.__reset_hosts()
+                #time.sleep(self.__reconnect_wait_seconds)
+                #self.__connect_to_rabbit()
+                self.__make_reconnect_soon()
+            else:
+                self.__change_state_to_permanently_could_not_connect()
+                self.__inform_permanently_could_not_connect(msg)
         return None
 
     def __is_fallback_url_left(self):
@@ -246,6 +259,9 @@ class ConnectionBuilder(object):
             return True
         else:
             return False
+
+    def __reset_hosts(self):
+        self.__store_settings_for_rabbit(self.args)
  
     def __change_state_to_permanently_could_not_connect(self):
         # This changes the state of the state machine.
