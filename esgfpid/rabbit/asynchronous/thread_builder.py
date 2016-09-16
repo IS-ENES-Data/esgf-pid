@@ -95,6 +95,7 @@ class ConnectionBuilder(object):
         if ready:
             try:
                 logdebug(LOGGER_IOLOOP, 'Connection is ready. Ioloop about to be started.', show=True)
+                logdebug(LOGGER, 'Starting ioloop of connection %s...', self.thread._connection)
                 self.thread._connection.ioloop.start()
                 return True
             except pika.exceptions.ProbableAuthenticationError as e: # TODO
@@ -244,6 +245,8 @@ class ConnectionBuilder(object):
         else:
             self.__reconnect_counter += 1;
             if self.__reconnect_counter <= self.__reconnect_max_tries:
+                logdebug(LOGGER, 'Failed connecting. Retrying. %i/%i.',
+                    self.__reconnect_counter, self.__reconnect_max_tries)
                 # wait and reconnect:
                 self.__reset_hosts()
                 #time.sleep(self.__reconnect_wait_seconds)
@@ -304,7 +307,7 @@ class ConnectionBuilder(object):
             self.thread._connection.close()
 
     def on_connection_closed(self, connection, reply_code, reply_text):
-        loginfo(LOGGER, 'Connection was closed: %s (code %i)', reply_text, reply_code, show=True)
+        loginfo(LOGGER, 'Connection was closed, reason: %s (code %i)', reply_text, reply_code, show=True)
         self.thread._channel = None
         if self.__was_user_shutdown(reply_code, reply_text):
             self.__make_permanently_closed_by_user()
@@ -334,6 +337,7 @@ class ConnectionBuilder(object):
         # This changes the state of the state machine!
         self.statemachine.set_to_permanently_unavailable()
         logtrace(LOGGER, 'Stopping ioloop due to user interrupt!')
+        logdebug(LOGGER, 'Permanent close: Stopping ioloop of connection %s...', self.thread._connection)
         self.thread._connection.ioloop.stop()
         logdebug(LOGGER, 'Connection to messaging service closed by user. Will not reopen.')
 
@@ -341,7 +345,7 @@ class ConnectionBuilder(object):
         # This changes the state of the state machine!
         self.statemachine.set_to_waiting_to_be_available()
         reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
-        logwarn(LOGGER, 'Connection to messaging service closed, reopening in %i seconds. %s (code %i)',
+        logwarn(LOGGER, 'Connection to messaging service closed, reopening in %i seconds. Reason: %s (code %i)',
             reopen_seconds, reply_text, reply_code)
         connection.add_timeout(reopen_seconds, self.reconnect)
         logtrace(LOGGER, 'Reconnect request added to connection %s!', connection)
@@ -353,6 +357,7 @@ class ConnectionBuilder(object):
     ###########################
 
     def reconnect(self):
+        logdebug(LOGGER, 'Reconnecting...')
 
         # Reset the message number, as it works by connections:
         self.feeder.reset_message_number()
@@ -362,15 +367,18 @@ class ConnectionBuilder(object):
         # module, as this deletes the collection of unconfirmed messages.
         rescued_messages = self.confirmer.get_unconfirmed_messages_as_list_copy()
         if len(rescued_messages)>0:
+            logdebug(LOGGER, 'Reconnect: %i unconfirmed messages were saved and are sent now.', len(rescued_messages))
             self.acceptor.send_many_messages(rescued_messages)
             # Note: The actual publish of these messages to rabbit
             # happens when the connection is there again, so no wrong delivery
             # tags etc. are created by this line!
 
         # Reset the unconfirmed delivery tags, as they also work by connections:
+        logdebug(LOGGER, 'Reconnect: Resetting delivery tags.')
         self.confirmer.reset_delivery_tags()
 
         # This is the old connection IOLoop instance, stop its ioloop
+        logdebug(LOGGER, 'Reconnect: Stopping ioloop of connection %s...', self.thread._connection)
         self.thread._connection.ioloop.stop()
 
         # Create a new connection

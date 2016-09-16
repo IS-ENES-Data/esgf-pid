@@ -92,7 +92,8 @@ class ConfirmReactor(object):
     def __remove_delivery_tag_and_message_single(self, deliv_tag):
         try:
             self.__unconfirmed_delivery_tags.remove(deliv_tag)
-            self.__unconfirmed_messages_dict.pop(str(deliv_tag))
+            ms = self.__unconfirmed_messages_dict.pop(str(deliv_tag))
+            logtrace(LOGGER, 'Received ack for message %s.', ms)
         except ValueError as e:
             logdebug(LOGGER, 'Could not remove %i from unconfirmed.', deliv_tag)
 
@@ -115,7 +116,7 @@ class ConfirmReactor(object):
         self.__unconfirmed_delivery_tags.append(delivery_tag)
 
     def put_to_unconfirmed_messages_dict(self, delivery_tag, msg):
-        logtrace(LOGGER, 'Adding message with delivery tag %i to unconfirmed.', delivery_tag)
+        logtrace(LOGGER, 'Adding message with delivery tag %i to unconfirmed: %s', delivery_tag, msg)
         self.__unconfirmed_messages_dict[str(delivery_tag)] = msg
 
     def reset_delivery_tags(self):
