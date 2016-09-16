@@ -355,12 +355,17 @@ class ConnectionBuilder(object):
     def reconnect(self):
 
         # Reset the message number, as it works by connections:
-        self.feeder.reset_delivery_tags()
+        self.feeder.reset_message_number()
 
         # Get all unconfirmed messages - we won't be able to receive their confirms anymore:
+        # IMPORTANT: This has to happen before we reset the delivery_tags of the confirmer
+        # module, as this deletes the collection of unconfirmed messages.
         rescued_messages = self.confirmer.get_unconfirmed_messages_as_list_copy()
         if len(rescued_messages)>0:
             self.acceptor.send_many_messages(rescued_messages)
+            # Note: The actual publish of these messages to rabbit
+            # happens when the connection is there again, so no wrong delivery
+            # tags etc. are created by this line!
 
         # Reset the unconfirmed delivery tags, as they also work by connections:
         self.confirmer.reset_delivery_tags()

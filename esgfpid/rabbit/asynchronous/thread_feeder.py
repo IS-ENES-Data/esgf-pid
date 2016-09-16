@@ -171,7 +171,7 @@ class RabbitFeeder(object):
         msg_incl_routing_key = queue.get(block=True, timeout=wait_seconds)
         alist.append(msg_incl_routing_key)
 
-    def reset_delivery_tags(self):
+    def reset_message_number(self):
         # CAREFUL
         # This can be called only on a reconnection!
         self.__message_number = 0
