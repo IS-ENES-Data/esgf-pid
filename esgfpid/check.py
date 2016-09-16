@@ -30,6 +30,9 @@ class RabbitChecker(object):
         self.__adapt_url_args(args)
         self.__define_all_attributes()
         self.__fill_all_attributes(args)
+        self.connection = None
+        self.channel = None
+        self.channel_ok = False
 
     def __define_all_attributes(self):
         self.__print_errors_to_console = False
@@ -86,12 +89,20 @@ class RabbitChecker(object):
         else:
             self.__loginfo('Config for PID module (rabbit messaging queue) .. FAILED!')
             self.__assemble_and_print_error_message()
+
+            if self.channel_ok:
+                self.__define_fallback_exchange()
+
+        if self.connection is not None:
+            self.connection.close()
         return success
 
     def __iterate_over_all_hosts(self):
         success = False
         print_conn = True
         print_chan = True
+        self.channel_ok = False
+
         while True:
             try:
                 if print_conn:
@@ -99,7 +110,7 @@ class RabbitChecker(object):
                     print_conn = False
                     print_chan = True
                 
-                connection = self.__check_making_rabbit_connection()
+                self.connection = self.__check_making_rabbit_connection()
 
                 if print_chan:
                     self.__loginfo(' .. checking authentication and connection ... ok.')
@@ -107,12 +118,13 @@ class RabbitChecker(object):
                     print_chan = False
                     print_conn = True
 
-                channel = self.__check_opening_channel(connection)
-                self.__check_exchange_existence(channel)
+                self.channel_ok = False
+                self.channel = self.__check_opening_channel(self.connection)
+                self.channel_ok = True
+                self.__check_exchange_existence(self.channel)
 
                 success = True
 
-                connection.close()
                 break # success, leave loop
 
             except ValueError as e:
@@ -262,4 +274,42 @@ class RabbitChecker(object):
         if self.__print_errors_to_console == True:
             print(msg)
         utils.logwarn(LOGGER, msg)
+
+    def __define_fallback_exchange(self):
+        exchange_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
+        queue_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
+        routing_key = esgfpid.defaults.ROUTING_KEY_BASIS
+        routing_key = routing_key.replace('HASH', '*')
+        routing_key = routing_key+'.#'
+        routing_key = routing_key.replace('..', '.')
+
+        # Declare exchange
+        try:
+            utils.loginfo(LOGGER, 'Declaration of fallback exchange "%s"...' % exchange_name)
+            self.channel.exchange_declare(exchange_name, passive=False, durable=True)
+            utils.loginfo(LOGGER, 'Declaration of fallback exchange "%s"... done.' % exchange_name)
+        except (pika.exceptions.ChannelClosed) as e:
+            utils.loginfo(LOGGER, 'Declaration of fallback exchange "%s"... failed. Reasons: %s' % (exchange_name,e))
+            self.channel = self.__open_channel(self.connection)
+
+        # Declare queue
+        try:
+            utils.loginfo(LOGGER, 'Declaration of fallback queue "%s"...' % queue_name)
+            self.channel.queue_declare(queue_name, passive=False, durable=True)
+            utils.loginfo(LOGGER, 'Declaration of fallback queue "%s"... done.' % queue_name)
+        except (pika.exceptions.ChannelClosed) as e:
+            utils.loginfo(LOGGER, 'Declaration of fallback queue "%s"... failed. Reasons: %s' % (queue_name,e))
+            self.channel = self.__open_channel(self.connection)
+
+        # Bind routing key
+        try:
+            utils.loginfo(LOGGER, 'Binding of fallback queue with routing key "%s"...' % routing_key)
+            self.channel.queue_bind(
+                queue = queue_name,
+                exchange = exchange_name,
+                routing_key = routing_key
+            )
+            utils.loginfo(LOGGER, 'Binding of fallback queue with routing key "%s"... done.' % routing_key)
+        except (pika.exceptions.ChannelClosed) as e:
+            utils.loginfo(LOGGER, 'Binding of fallback queue with routing key "%s"... failed. Reasons: %s' % (queue_name,e))
 

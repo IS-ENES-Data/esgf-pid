@@ -19,6 +19,7 @@ _persistent = 2
 _nonpersistent = 1
 RABBIT_DELIVERY_MODE = _persistent # 'delivery_mode': See https://pika.readthedocs.org/en/0.9.6/examples/comparing_publishing_sync_async.html#comparing-message-publishing-with-blockingconnection-and-selectconnection
 RABBIT_MANDATORY_DELIVERY = True  # 'mandatory':  "This flag tells the server how to react if the message cannot be routed to a queue. If this flag is set, the server will return an unroutable message with a Return method. If this flag is zero, the server silently drops the message." # See: http://www.rabbitmq.com/amqp-0-9-1-reference.html#basic.publish
+RABBIT_FALLBACK_EXCHANGE_NAME = "FALLBACK"
 
 # Synchronous rabbit module:
 RABBIT_SYN_SOCKET_TIMEOUT=2 # defaults to 0.25 sec
