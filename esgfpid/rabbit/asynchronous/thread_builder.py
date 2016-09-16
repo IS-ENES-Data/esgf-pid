@@ -1,6 +1,7 @@
 import logging
 import pika
 import time
+import copy
 import esgfpid.defaults as defaults
 import esgfpid.rabbit.connparams
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
@@ -235,7 +236,7 @@ class ConnectionBuilder(object):
     ### Connection error ###
     ########################
 
-    def on_connection_error(self, unused_connection, msg):
+    def on_connection_error(self, connection, msg):
         if self.__is_fallback_url_left():
             logdebug(LOGGER, 'Failed connection to "%s": %s. %i fallback URLs left to try.',
                 self.CURRENT_HOST, msg, len(self.RABBIT_HOSTS), show=True)
@@ -247,7 +248,7 @@ class ConnectionBuilder(object):
                 self.__reset_hosts()
                 #time.sleep(self.__reconnect_wait_seconds)
                 #self.__connect_to_rabbit()
-                self.__make_reconnect_soon()
+                self.__make_reconnect_soon(connection, 0, msg)
             else:
                 self.__change_state_to_permanently_could_not_connect()
                 self.__inform_permanently_could_not_connect(msg)
@@ -308,7 +309,7 @@ class ConnectionBuilder(object):
         if self.__was_user_shutdown(reply_code, reply_text):
             self.__make_permanently_closed_by_user()
         else:
-            self.__make_reconnect_soon(reply_code, reply_text)
+            self.__make_reconnect_soon(connection, reply_code, reply_text)
 
     def __was_user_shutdown(self, reply_code, reply_text):
         if self.__was_forced_user_shutdown(reply_code, reply_text):
@@ -336,13 +337,15 @@ class ConnectionBuilder(object):
         self.thread._connection.ioloop.stop()
         logdebug(LOGGER, 'Connection to messaging service closed by user. Will not reopen.')
 
-    def __make_reconnect_soon(self, reply_code, reply_text):
+    def __make_reconnect_soon(self, connection, reply_code, reply_text):
         # This changes the state of the state machine!
         self.statemachine.set_to_waiting_to_be_available()
         reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
         logwarn(LOGGER, 'Connection to messaging service closed, reopening in %i seconds. %s (code %i)',
             reopen_seconds, reply_text, reply_code)
-        self.thread._connection.add_timeout(reopen_seconds, self.reconnect)
+        connection.add_timeout(reopen_seconds, self.reconnect)
+        logtrace(LOGGER, 'Reconnect request added to connection %s!', connection)
+        logtrace(LOGGER, 'Not to connection %s!', self.thread._connection)
 
     ###########################
     ### Reconnect after     ###
