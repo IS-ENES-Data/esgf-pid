@@ -362,25 +362,8 @@ class ConnectionBuilder(object):
 
     def reconnect(self):
         logdebug(LOGGER, 'Reconnecting...')
-
-        # Reset the message number, as it works by connections:
-        self.feeder.reset_message_number()
-
-        # Get all unconfirmed messages - we won't be able to receive their confirms anymore:
-        # IMPORTANT: This has to happen before we reset the delivery_tags of the confirmer
-        # module, as this deletes the collection of unconfirmed messages.
-        rescued_messages = self.confirmer.get_unconfirmed_messages_as_list_copy()
-        if len(rescued_messages)>0:
-            logdebug(LOGGER, 'Reconnect: %i unconfirmed messages were saved and are sent now.', len(rescued_messages))
-            self.acceptor.send_many_messages(rescued_messages)
-            # Note: The actual publish of these messages to rabbit
-            # happens when the connection is there again, so no wrong delivery
-            # tags etc. are created by this line!
-
-        # Reset the unconfirmed delivery tags, as they also work by connections:
-        logdebug(LOGGER, 'Reconnect: Resetting delivery tags.')
-        self.confirmer.reset_delivery_tags()
-
+        self.__prepare_republication_of_unconfirmed()
+        
         # This is the old connection IOLoop instance, stop its ioloop
         logdebug(LOGGER, 'Reconnect: Stopping ioloop of connection %s...', self.thread._connection)
         self.thread._connection.ioloop.stop()
@@ -391,3 +374,21 @@ class ConnectionBuilder(object):
         # There is now a new connection, needs a new ioloop to run
         self.__start_ioloop_if_connection_ready()
 
+    def __prepare_republication_of_unconfirmed(self):
+        # Reset the message number, as it works by connections:
+        self.feeder.reset_message_number()
+
+        # Get all unconfirmed messages - we won't be able to receive their confirms anymore:
+        # IMPORTANT: This has to happen before we reset the delivery_tags of the confirmer
+        # module, as this deletes the collection of unconfirmed messages.
+        rescued_messages = self.confirmer.get_unconfirmed_messages_as_list_copy()
+        if len(rescued_messages)>0:
+            logdebug(LOGGER, '%i unconfirmed messages were saved and are sent now.', len(rescued_messages))
+            self.acceptor.send_many_messages(rescued_messages)
+            # Note: The actual publish of these messages to rabbit
+            # happens when the connection is there again, so no wrong delivery
+            # tags etc. are created by this line!
+
+        # Reset the unconfirmed delivery tags, as they also work by connections:
+        logdebug(LOGGER, 'Resetting delivery tags.')
+        self.confirmer.reset_delivery_tags()
