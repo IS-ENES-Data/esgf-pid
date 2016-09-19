@@ -139,12 +139,29 @@ class PublicationReceiver(object):
             logging.info('Return was: %s', method)
             logging.info('Body: %s', body)
             body_json = json.loads(body)
-            try:
-                body_json['original_routing_key'] = body_json[messages.JSON_KEY_ROUTING_KEY]
-            except KeyError:
-                body_json['original_routing_key'] = 'None'
-            body_json[messages.JSON_KEY_ROUTING_KEY] = defaults.RABBIT_EMERGENCY_ROUTING_KEY # cmip6.publisher.HASH.emergency
+            body_json = self.__add_emergency_routing_key(body_json)
             self.__resend_an_unroutable_message(json.dumps(body_json))
 
         except pika.exceptions.ChannelClosed as e:
             logging.trace('Could not execute callback: %e', e.message)
+
+    def __add_emergency_routing_key(self, body_json):
+
+        # If it already HAS the emergency routing key, do not adapt the routing key
+        # (This means the message already came back a second time...)
+        if body_json[messages.JSON_KEY_ROUTING_KEY] == defaults.RABBIT_EMERGENCY_ROUTING_KEY:
+            pass
+
+        # Otherwise, store the original one in another field...
+        # and overwrite it by the emergency routing key:
+        else:
+            try:
+                body_json['original_routing_key'] = body_json[messages.JSON_KEY_ROUTING_KEY]
+
+            # If there was no routing key, set the original one to 'None'
+            except KeyError:
+                body_json['original_routing_key'] = 'None'
+
+
+            body_json[messages.JSON_KEY_ROUTING_KEY] = defaults.RABBIT_EMERGENCY_ROUTING_KEY # cmip6.publisher.HASH.emergency
+        return body_json
