@@ -244,9 +244,9 @@ class ConnectionBuilder(object):
             self.__try_connecting_to_next(msg)
         else:
             self.__reconnect_counter += 1;
-            if self.__reconnect_counter <= self.__reconnect_max_tries:
+            if self.__reconnect_counter <= defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES:
                 logdebug(LOGGER, 'Failed connecting. Retrying. %i/%i.',
-                    self.__reconnect_counter, self.__reconnect_max_tries)
+                    self.__reconnect_counter, defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
                 # wait and reconnect:
                 self.__reset_hosts()
                 #time.sleep(self.__reconnect_wait_seconds)

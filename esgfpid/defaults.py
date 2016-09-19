@@ -3,7 +3,7 @@
 
 # Custom logging
 LOG_INFO_TO_DEBUG=True # info messages are printed as "debug" to not appear on publisher console.
-LOG_TRACE_TO_DEBUG=False # Print extremely detailed log messages of rabbit module as "DEBUG" messages.
+LOG_TRACE_TO_DEBUG=True # Print extremely detailed log messages of rabbit module as "DEBUG" messages.
 LOG_SHOW_TO_INFO=True # So I can selectively show some log messages to Katharina without having to modify the whole code.
 
 # Solr:
@@ -29,6 +29,7 @@ RABBIT_SYN_TIMEOUT_MILLISEC=10
 
 # Asynchronous rabbit module:
 RABBIT_ASYN_RECONNECTION_SECONDS=5 # after how much time try to reconnect if connection was closed?
+RABBIT_ASYN_RECONNECTION_MAX_TRIES=60 # how many times should the module try reconnecting? server reboot can take quite a while!
 RABBIT_ASYN_SOCKET_TIMEOUT=2 # defaults to 0.25 sec
 RABBIT_ASYN_CONNECTION_ATTEMPTS=1 # defaults to 1
 RABBIT_ASYN_CONNECTION_RETRY_DELAY_SECONDS=1 # no default
