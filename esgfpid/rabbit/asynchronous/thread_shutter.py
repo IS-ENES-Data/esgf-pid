@@ -187,8 +187,19 @@ class ShutDowner(object):
         #    self._channel.close(reply_code=reply_code, reply_text=reply_text)
         try:
             if self.thread._connection is not None:
-                self.thread._connection.close(reply_code=reply_code, reply_text=reply_text)
-                # "If there are any open channels, it will attempt to close them prior to fully disconnecting." (pika docs)
+
+                if self.thread._connection.is_closed or self.thread._connection.is_closing:
+                    logdebug(LOGGER, 'Connection is closed or closing.')
+                    # If connection is already closed, the on_connection_close is not
+                    # called, so the ioloop continues, possibly waiting for reconnect.
+                    # So we need to prevent reconnects or other events. As long
+                    # as ioloop runs, thread cannot be finished/joined.
+                    self.thread._make_permanently_closed_by_user()
+                elif self.thread._connection.is_open:
+                    logdebug(LOGGER, 'Connection is open.')
+                    self.thread._connection.close(reply_code=reply_code, reply_text=reply_text)
+                    # "If there are any open channels, it will attempt to close them prior to fully disconnecting." (pika docs)
+
         except AttributeError as e:
             logdebug(LOGGER, 'AttributeError from pika during connection closedown (%s)' % e.message)
 

@@ -87,6 +87,10 @@ class RabbitThread(threading.Thread):
     def force_finish(self, msg='Forced finish from unknown source'):
         self.shutter.force_finish(msg)
 
+    def _make_permanently_closed_by_user(self):
+        self.builder._make_permanently_closed_by_user()
+
+
     #####################
     ### Gentle finish ###
     #####################

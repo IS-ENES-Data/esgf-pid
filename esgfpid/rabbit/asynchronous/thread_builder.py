@@ -310,7 +310,7 @@ class ConnectionBuilder(object):
         loginfo(LOGGER, 'Connection was closed, reason: %s (code %i)', reply_text, reply_code, show=True)
         self.thread._channel = None
         if self.__was_user_shutdown(reply_code, reply_text):
-            self.__make_permanently_closed_by_user()
+            self._make_permanently_closed_by_user()
         else:
             self.__make_reconnect_soon(connection, reply_code, reply_text)
 
@@ -333,8 +333,12 @@ class ConnectionBuilder(object):
             return True
         return False
 
-    def __make_permanently_closed_by_user(self):
+    def _make_permanently_closed_by_user(self):
         # This changes the state of the state machine!
+        # This needs to be called from the shutter module
+        # in case there is a force_finish while the connection
+        # is already closed (as the callback on_connection_closed
+        # is not called then).
         self.statemachine.set_to_permanently_unavailable()
         logtrace(LOGGER, 'Stopping ioloop due to user interrupt!')
         logdebug(LOGGER, 'Permanent close: Stopping ioloop of connection %s...', self.thread._connection)
