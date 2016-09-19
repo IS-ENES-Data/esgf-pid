@@ -23,8 +23,6 @@ class ConnectionBuilder(object):
         self.__store_settings_for_rabbit(args)
         self.__inform_about_settings()
         self.__reconnect_counter = 0
-        self.__reconnect_max_tries = 5
-        #self.__reconnect_wait_seconds = 3
 
     def __store_settings_for_rabbit(self, args):
         self.args = args
