@@ -175,7 +175,7 @@ class ConnectionBuilder(object):
         self.thread._connection.channel(on_open_callback=self.on_channel_open)
 
     def on_channel_open(self, channel):
-        logdebug(LOGGER, 'Opening channel... done.', show=True)
+        logdebug(LOGGER, 'Opening channel... done (number: %i).', channel.channel_number, show=True)
         self.thread._channel = channel
         self.__reconnect_counter = 0
         self.__add_on_channel_close_callback()
@@ -189,7 +189,7 @@ class ConnectionBuilder(object):
  
     def __make_ready_for_publishing(self):
         # This changes the state of the state machine!
-        logdebug(LOGGER, 'Start connecting to message queueing server... done', show=True)
+        logdebug(LOGGER, 'Start (re)connecting to message queueing server... done', show=True)
 
         # Check for unexpected errors:
         if self.thread._channel is None:
@@ -201,7 +201,7 @@ class ConnectionBuilder(object):
 
         # Normally, it should already be waiting to be available:
         if self.statemachine.is_waiting_to_be_available():
-            logdebug(LOGGER, 'Setup is finished. Publishing may start!', show=True)
+            logdebug(LOGGER, 'Setup is finished. Publishing may start (channel no. %s)!', self.thread._channel.channel_number, show=True)
             self.statemachine.set_to_available()
             self.__check_for_already_arrived_messages()
 
@@ -219,7 +219,9 @@ class ConnectionBuilder(object):
             elif self.statemachine.could_not_connect:
                 logerror(LOGGER, 'This is not supposed to happen. If the connection failed, this part of the code should not be reached.')
             else:
-                logerror(LOGGER, 'This is not supposed to happen. An unknown event set this module to be unavailable. When was this set to unavailable?')    
+                logerror(LOGGER, 'This is not supposed to happen. An unknown event set this module to be unavailable. When was this set to unavailable?')
+        else:
+            logdebug(LOGGER, 'Unexpected state.')
 
     def __check_for_already_arrived_messages(self):
         logdebug(LOGGER, 'Checking if messages have arrived in the meantime...', show=True)

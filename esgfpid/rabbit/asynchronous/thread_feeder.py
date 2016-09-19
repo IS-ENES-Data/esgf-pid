@@ -104,7 +104,7 @@ class RabbitFeeder(object):
             success = True
         except Exception as e:
             success = False
-            logwarn(LOGGER, 'Carrot was not fed. Putting back to queue. Error:'+str(e.message))
+            logwarn(LOGGER, 'Carrot was not fed. Putting back to queue. Error: "%s"',e)
             self.put_message_into_queue_of_unsent_messages(msg)
             logtrace(LOGGER, 'Now (after putting back) left in queue to be fed: %i carrots.', self.__unpublished_messages_queue.qsize())
             raise e
@@ -117,7 +117,7 @@ class RabbitFeeder(object):
         return msg
 
     def __actual_publish_to_channel(self, msg_string, properties, routing_key):
-        log_every_x_times(LOGGER, self.lc, self.li, 'Actual publish to channel')
+        log_every_x_times(LOGGER, self.lc, self.li, 'Actual publish to channel no. %i.', self.thread._channel.channel_number)
         self.thread._channel.basic_publish(
             exchange=self.EXCHANGE,
             routing_key=routing_key,

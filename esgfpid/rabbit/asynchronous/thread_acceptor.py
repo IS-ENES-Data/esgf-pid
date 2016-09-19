@@ -135,9 +135,9 @@ class PublicationReceiver(object):
 
     def on_message_not_accepted(self, channel, method, props, body):
         try:
-            logging.info('The message was returned.')
-            logging.info('Return was: %s', method)
-            logging.info('Body: %s', body)
+            loginfo(LOGGER,'The message was returned.')
+            loginfo(LOGGER,'Return was: %s', method)
+            loginfo(LOGGER,'Body: %s', body)
             body_json = json.loads(body)
             body_json = self.__add_emergency_routing_key(body_json)
             self.__resend_an_unroutable_message(json.dumps(body_json))
