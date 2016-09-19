@@ -2,6 +2,7 @@ import logging
 import pika.exceptions
 import json
 import esgfpid.assistant.messages as messages
+import esgfpid.defaults as defaults
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .exceptions import OperationNotAllowed
 
@@ -142,7 +143,7 @@ class PublicationReceiver(object):
                 body_json['original_routing_key'] = body_json[messages.JSON_KEY_ROUTING_KEY]
             except KeyError:
                 body_json['original_routing_key'] = 'None'
-            body_json[messages.JSON_KEY_ROUTING_KEY] = 'EMERGENCY'
+            body_json[messages.JSON_KEY_ROUTING_KEY] = defaults.RABBIT_EMERGENCY_ROUTING_KEY # cmip6.publisher.HASH.emergency
             self.__resend_an_unroutable_message(json.dumps(body_json))
 
         except pika.exceptions.ChannelClosed as e:
