@@ -24,6 +24,12 @@ class RabbitFeeder(object):
         It makes sure that rabbit server and this client talk about the
         same message.
         NEVER EVER INCREMENT OR OTHERWISE MODIFY THIS!
+
+        From the docs:
+        "The delivery tag is valid only within the channel from which
+        the message was received. I.e. a client MUST NOT receive a
+        message on one channel and then acknowledge it on another."
+        Source: https://www.rabbitmq.com/amqp-0-9-1-reference.html
         '''
         self.__message_number = 0
 
