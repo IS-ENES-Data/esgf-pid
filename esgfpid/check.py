@@ -286,7 +286,7 @@ class RabbitChecker(object):
         # Declare exchange
         try:
             utils.loginfo(LOGGER, 'Declaration of fallback exchange "%s"...' % exchange_name)
-            self.channel.exchange_declare(exchange_name, passive=False, durable=True)
+            self.channel.exchange_declare(exchange_name, passive=False, durable=True, exchange_type='topic')
             utils.loginfo(LOGGER, 'Declaration of fallback exchange "%s"... done.' % exchange_name)
         except (pika.exceptions.ChannelClosed) as e:
             utils.loginfo(LOGGER, 'Declaration of fallback exchange "%s"... failed. Reasons: %s' % (exchange_name,e))
