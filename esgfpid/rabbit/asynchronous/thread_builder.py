@@ -302,6 +302,19 @@ class ConnectionBuilder(object):
             if self.statemachine.closed_by_publisher:
             #if self.__was_user_shutdown(reply_code, reply_text):
                 logtrace(LOGGER,'Channel close event due to close command by user. This is expected.')
+        elif reply_code == 404:
+            loginfo(LOGGER, 'Channel closed because the exchange "%s" did not exist.', self.feeder.EXCHANGE)
+            # Redefine channel name
+            logdebug(LOGGER, 'Resetting exchange name to "%s"', defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
+            self.feeder.EXCHANGE = defaults.RABBIT_FALLBACK_EXCHANGE_NAME
+            # Reopen channel
+            logdebug(LOGGER, 'Reopening channel...')
+            self.statemachine.set_to_waiting_to_be_available()
+            self.__please_open_rabbit_channel()
+            # If this happened while sending message to the wrong exchange, we
+            # have to trigger their resending...
+            logdebug(LOGGER, 'Sending all messages that have not been confirmed yet...')
+            self.__prepare_republication_of_unconfirmed()
         else:
             logtrace(LOGGER,'Unexpected channel shutdown. Need to close connection to trigger all the necessary close down steps.')
             self.thread._connection.close()
