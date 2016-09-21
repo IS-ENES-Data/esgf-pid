@@ -6,6 +6,7 @@ import esgfpid.assistant.unpublish
 import esgfpid.assistant.errata
 import esgfpid.exceptions
 import esgfpid.coupling
+import esgfpid.utils
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -147,3 +148,7 @@ class Connector(object):
 
     def force_finish_messaging_thread(self):
         self.__coupler.force_finish_rabbit_connection()
+
+    def make_handle_from_drsid_and_versionnumber(self, **args):
+        args['prefix'] = self.prefix
+        return esgfpid.utils.make_handle_from_drsid_and_versionnumber(**args)
