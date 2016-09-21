@@ -97,6 +97,10 @@ class RabbitFeeder(object):
                 logwarn(LOGGER, 'Cannot feed carrot %i (unexpected error %s)', self.__message_number+1, e.message)
         except Queue.Empty, e:
             logtrace(LOGGER, 'Queue empty. No more carrots to be fed.')
+        except AssertionError as e:
+            logwarn(LOGGER, 'Cannot feed carrot %i because of AssertionError: "%s"', self.__message_number+1,e)
+            if e.message == 'A non-string value was supplied for self.exchange':
+                logwarn(LOGGER, 'Exchange was "%s" (type %s)',self.EXCHANGE, type(self.EXCHANGE))
             # TODO How to make sure the publish is called exactly as many times as messages were added?
 
     def __try_feeding_next_carrot(self):
