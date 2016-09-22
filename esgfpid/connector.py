@@ -37,7 +37,8 @@ class Connector(object):
             'disable_insecure_request_warning',
             'solr_switched_off',
             'thredds_service_path',
-            'consumer_solr_url'
+            'consumer_solr_url',
+            'test_publication'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)

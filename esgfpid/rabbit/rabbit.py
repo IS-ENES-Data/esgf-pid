@@ -26,13 +26,16 @@ class RabbitMessageSender(object):
             'url_preferred',
             'urls_fallback',
             'username',
-            'password'
+            'password',
+            'test_publication'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
         esgfpid.rabbit.rabbitutils.ensure_urls_are_a_list(args, LOGGER)
         esgfpid.rabbit.rabbitutils.set_preferred_url(args, LOGGER)
         esgfpid.rabbit.rabbitutils.ensure_no_duplicate_urls(args, LOGGER)
+
+        self.__test_publication = args['test_publication']
         self.__set_credentials(args)
         self.__server_connector = self.__init_server_connector(args)
 
@@ -77,6 +80,8 @@ class RabbitMessageSender(object):
             return self.__server_connector.get_leftovers()
 
     def send_message_to_queue(self, message):
+        if self.__test_publication == True:
+            message['test_publication'] = True
         return self.__server_connector.send_message_to_queue(message)
 
     def __set_credentials(self, args):

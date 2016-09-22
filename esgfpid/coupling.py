@@ -23,12 +23,18 @@ class Coupler(object):
         else:
             password = 'jzlnL78ZpExV#_QHz'
 
+        if 'test_publication' in args:
+            test_publication = args['test_publication']
+        else:
+            test_publication = False
+
         self.__rabbit_message_sender = esgfpid.rabbit.rabbit.RabbitMessageSender(
             exchange_name=args['messaging_service_exchange_name'],
             urls_fallback=args['messaging_service_urls'],
             url_preferred=args['messaging_service_url_preferred'],
             username=args['messaging_service_username'],
-            password=password
+            password=password,
+            test_publication=test_publication
         )
 
     def __create_solr_sender(self, args):
