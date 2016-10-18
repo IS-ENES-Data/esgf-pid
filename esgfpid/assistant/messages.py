@@ -17,7 +17,8 @@ ROUTING_KEYS = dict(
     unpubli_all = ROUTING_KEY_BASIS+'unpublication.all',
     unpubli_one = ROUTING_KEY_BASIS+'unpublication.one',
     err_add = ROUTING_KEY_BASIS+'errata.add',
-    err_rem = ROUTING_KEY_BASIS+'errata.remove'
+    err_rem = ROUTING_KEY_BASIS+'errata.remove',
+    shop_cart = ROUTING_KEY_BASIS+'cart.datasets'
 )
 
 def publish_file(**args):
@@ -155,4 +156,16 @@ def remove_errata_ids_message(**args):
     
     message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['err_rem']
 
+    return message
+
+def make_shopping_cart_message(**args):
+    mandatory_args = ['cart_handle', 'timestamp', 'content_handles']
+    esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
+    message = dict(
+        handle = args['cart_handle'],
+        message_timestamp = args['timestamp'],
+        content_handles = args['content_handles'],
+        operation = 'shopping_cart'
+    )
+    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['shop_cart']
     return message

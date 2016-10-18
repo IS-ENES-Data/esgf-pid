@@ -21,3 +21,20 @@ def _make_uuid_from_basis(hash_basis):
     # Which NAMESPACE (1st arg) we use does not matter, as uuids only have to be unique inside ESGF, not globally.
     # It just has to stay the same all the time! Otherwise we will create
     # different handles for the same dataset.
+
+def make_handle_from_list_of_strings(sorted_list_of_strings, prefix):
+    concatenated = ''.join(sorted_list_of_strings)
+    suffix = _make_uuid_from_basis(concatenated)
+    return _suffix_to_handle(prefix, suffix)
+
+def make_sorted_lowercase_list_without_hdl(strings):
+    # Make lowercase
+    # Remove "hdl:"
+    # Sort list
+    newlist = []
+    for string in strings:
+        string = string.lower()
+        string = string.replace('hdl:', '', 1)
+        newlist.append(string)
+    newlist.sort()
+    return newlist

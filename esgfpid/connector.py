@@ -141,6 +141,13 @@ class Connector(object):
             errata_ids=args['errata_ids']
         )
 
+    def create_shopping_cart_pid(self, list_of_handles_or_drs_strings):
+        assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
+            prefix=self.prefix,
+            coupler=self.__couple
+        )
+        return assistant.make_shopping_cart_pid(list_of_handles_or_drs_strings)
+
     def start_messaging_thread(self):
         self.__coupler.start_rabbit_connection()
 

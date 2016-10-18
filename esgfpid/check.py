@@ -86,6 +86,7 @@ class RabbitChecker(object):
         if success:
             self.__loginfo('Config for PID module (rabbit messaging queue).. ok.')
             self.__loginfo('Successful connection to PID messaging queue at "%s".' % self.__current_rabbit_host)
+            self.__define_fallback_exchange() # remove!
         else:
             self.__loginfo('Config for PID module (rabbit messaging queue) .. FAILED!')
             self.__assemble_and_print_error_message()
@@ -276,6 +277,7 @@ class RabbitChecker(object):
         utils.logwarn(LOGGER, msg)
 
     def __define_fallback_exchange(self):
+        print('Called fallback method') # remove
         exchange_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
         queue_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
         routing_key = esgfpid.defaults.ROUTING_KEY_BASIS
