@@ -159,12 +159,12 @@ def remove_errata_ids_message(**args):
     return message
 
 def make_shopping_cart_message(**args):
-    mandatory_args = ['cart_handle', 'timestamp', 'content_handles']
+    mandatory_args = ['cart_handle', 'timestamp', 'data_cart_content']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
     message = dict(
         handle = args['cart_handle'],
         message_timestamp = args['timestamp'],
-        content_handles = args['content_handles'],
+        data_cart_content = args['data_cart_content'],
         operation = 'shopping_cart'
     )
     message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['shop_cart']

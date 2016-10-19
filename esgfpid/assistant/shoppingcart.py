@@ -14,42 +14,38 @@ class ShoppingCartAssistant(object):
         self.__prefix = args['prefix']
         self.__coupler = args['coupler']
 
-    def make_shopping_cart_pid(self, handles_or_strings):
+    def make_shopping_cart_pid(self, list_of_drs_ids):
         LOGGER.debug('Making a PID for a shopping cart full of datasets...')
-        #mandatory_args = ['handles_or_strings']
-        #esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-        #esgfpid.utils.check_noneness_of_mandatory_args(args, mandatory_args)
-        # TODO Title?
 
         # Make a pid (hash on the content):
-        handles_or_strings = self.__get_handles_as_list(handles_or_strings)
-        cart_handle = self.__get_handle_for_cart(handles_or_strings, self.__prefix)
+        list_of_drs_ids = self.__get_strings_as_list(list_of_drs_ids)
+        cart_handle = self.__get_handle_for_cart(list_of_drs_ids, self.__prefix)
 
         # Make and send message
-        message = self.__make_message(cart_handle, handles_or_strings)
+        message = self.__make_message(cart_handle, list_of_drs_ids)
         self.__send_message_to_queue(message)
 
         # Return pid
         LOGGER.debug('Making a PID for a shopping cart full of datasets... done.')
         return cart_handle
 
-    def __get_handles_as_list(self, handles):
-        if type(handles) == type([]):
-            return handles
+    def __get_strings_as_list(self, strings):
+        if type(strings) == type([]):
+            return strings
         else:
-            return [handles]
+            return [strings]
 
-    def __get_handle_for_cart(self, handles_or_strings, prefix):
-        hash_basis = esgfpid.utils.make_sorted_lowercase_list_without_hdl(handles_or_strings)
+    def __get_handle_for_cart(self, list_of_drs_ids, prefix):
+        hash_basis = esgfpid.utils.make_sorted_lowercase_list_without_hdl(list_of_drs_ids)
         return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix)
         # This sorts the list, removes all "hdl:", and makes a hash
 
-    def __make_message(self, cart_handle, content_handles):
+    def __make_message(self, cart_handle, data_cart_content):
         message_timestamp = esgfpid.utils.get_now_utc_as_formatted_string()
         message = esgfpid.assistant.messages.make_shopping_cart_message(
             cart_handle = cart_handle,
             timestamp = message_timestamp,
-            content_handles = content_handles
+            data_cart_content = data_cart_content
         )
         return message
 
