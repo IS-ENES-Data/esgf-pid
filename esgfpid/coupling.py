@@ -18,7 +18,7 @@ class Coupler(object):
         self.__solr_sender = None
 
     def __create_message_sender(self, args):
-        if 'messaging_service_password' in args:
+        if 'messaging_service_password' in args and args['messaging_service_password'] is not None:
             password = args['messaging_service_password']
         else:
             password = 'jzlnL78ZpExV#_QHz'
