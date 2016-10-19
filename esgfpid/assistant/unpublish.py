@@ -13,7 +13,7 @@ class AssistantOneVersion(object):
 
         self._coupler = args['coupler']
         self._drs_id = args['drs_id']
-        self._data_node = args['data_node']
+        self._data_node = args['data_node'].rstrip('/')
         self._prefix = args['prefix']
 
     def unpublish_one_dataset_version(self, **args):
@@ -90,7 +90,6 @@ class AssistantAllVersions(AssistantOneVersion):
         super(AssistantAllVersions, self).__init__(**args)
         if 'consumer_solr_url' not in args.keys():
             args['consumer_solr_url'] = None
-            # raise esgfpid.exceptions.ArgumentError('Missing "consumer_solr_url" in args!') # not mandatory anymore:
         self.__consumer_solr_url = args['consumer_solr_url']
 
     def unpublish_all_dataset_versions(self):
