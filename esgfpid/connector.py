@@ -27,11 +27,11 @@ class Connector(object):
             'messaging_service_urls',
             'messaging_service_exchange_name',
             'messaging_service_username',
-            'handle_prefix',
-            'data_node'
+            'handle_prefix'
         ]
         optional_args = [
             'solr_url',
+            'data_node',
             'messaging_service_url_preferred',
             'messaging_service_password',
             'solr_https_verify',
@@ -47,7 +47,7 @@ class Connector(object):
     def __store_some_args(self, args):
         self.prefix = args['handle_prefix']
         self.__thredds_service_path = args['thredds_service_path']
-        self.__data_node = args['data_node']
+        self.__data_node = args['data_node'] # may be None, only needed for some assistants.
         self.__consumer_solr_url = args['consumer_solr_url'] # may be None
 
     def create_publication_assistant(self, **args):
@@ -56,18 +56,20 @@ class Connector(object):
         LOGGER.debug('Creating publication assistant..')
         mandatory_args = ['drs_id', 'version_number', 'is_replica']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-
-        # Check if solr has access:
-        if self.__coupler.is_solr_switched_off():
-            pass
-
         # Check if service path is given
-        # (Not mandatory in connector, as it is not needed
-        # for unpublication)
         if self.__thredds_service_path is None:
             msg = 'No thredds_service_path given (but it is mandatory for publication)'
             LOGGER.warn(msg)
             raise esgfpid.exceptions.ArgumentError(msg)
+        # Check if data node is given
+        if self.__data_node is None:
+            msg = 'No data_node given (but it is mandatory for publication)'
+            LOGGER.warn(msg)
+            raise esgfpid.exceptions.ArgumentError(msg)
+
+        # Check if solr has access:
+        if self.__coupler.is_solr_switched_off():
+            pass # solr access not mandatory anymore
 
         # Create publication assistant
         assistant = esgfpid.assistant.publish.DatasetPublicationAssistant(
@@ -89,6 +91,12 @@ class Connector(object):
         optional_args = ['handle', 'drs_id', 'version_number']
         esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
 
+        # Check if data node is given
+        if self.__data_node is None:
+            msg = 'No data_node given (but it is mandatory for publication)'
+            LOGGER.warn(msg)
+            raise esgfpid.exceptions.ArgumentError(msg)
+
         # Unpublish
         assistant = esgfpid.assistant.unpublish.AssistantOneVersion(
             drs_id = args['drs_id'],
@@ -107,6 +115,12 @@ class Connector(object):
         # Check args
         mandatory_args = ['drs_id']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
+
+        # Check if data node is given
+        if self.__data_node is None:
+            msg = 'No data_node given (but it is mandatory for publication)'
+            LOGGER.warn(msg)
+            raise esgfpid.exceptions.ArgumentError(msg)
 
         # Check if solr has access:
         if self.__coupler.is_solr_switched_off():
