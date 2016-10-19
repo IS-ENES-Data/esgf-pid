@@ -403,14 +403,14 @@ class ApiTestCase(unittest.TestCase):
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "content_handles":['foo', 'hdl:bar', 'hdl:BAZ'],
+            "data_cart_content":['foo', 'hdl:bar', 'hdl:BAZ'],
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         expected_rabbit_task2 = {
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "content_handles":['baz', 'bar', 'foo'],
+            "data_cart_content":['baz', 'bar', 'foo'],
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         

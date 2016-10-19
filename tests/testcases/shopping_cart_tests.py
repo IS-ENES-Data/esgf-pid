@@ -81,7 +81,7 @@ class ShoppingCartTestCase(unittest.TestCase):
             "handle": "hdl:"+prefix+'/a5bf60bd-fe2d-3fac-bbd7-404751e6ca66',
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "content_handles":['foo'],
+            "data_cart_content":['foo'],
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
@@ -114,14 +114,14 @@ class ShoppingCartTestCase(unittest.TestCase):
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "content_handles":['foo', 'hdl:bar', 'hdl:BAZ'],
+            "data_cart_content":['foo', 'hdl:bar', 'hdl:BAZ'],
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         expected_rabbit_task2 = {
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "content_handles":['baz', 'bar', 'foo'],
+            "data_cart_content":['baz', 'bar', 'foo'],
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         same1 = utils.is_json_same(expected_rabbit_task1, received_rabbit_task1)
