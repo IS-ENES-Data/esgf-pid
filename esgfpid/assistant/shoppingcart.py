@@ -35,14 +35,13 @@ class ShoppingCartAssistant(object):
 
     def __get_handles_as_list(self, handles):
         if type(handles) == type([]):
-            pass
+            return handles
         else:
-            handles = [handles]
-        to_be_returned = esgfpid.utils.make_sorted_lowercase_list_without_hdl(handles)
-        return to_be_returned
+            return [handles]
 
     def __get_handle_for_cart(self, handles_or_strings, prefix):
-        return esgfpid.utils.make_handle_from_list_of_strings(handles_or_strings, prefix)
+        hash_basis = esgfpid.utils.make_sorted_lowercase_list_without_hdl(handles_or_strings)
+        return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix)
         # This sorts the list, removes all "hdl:", and makes a hash
 
     def __make_message(self, cart_handle, content_handles):

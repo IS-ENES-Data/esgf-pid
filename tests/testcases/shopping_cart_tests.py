@@ -104,20 +104,28 @@ class ShoppingCartTestCase(unittest.TestCase):
 
         # Run code to be tested:
         pid1 = assistant.make_shopping_cart_pid(content1)
+        received_rabbit_task1 = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         pid2 = assistant.make_shopping_cart_pid(content2)
+        received_rabbit_task2 = self.__get_received_message_from_rabbit_mock(testcoupler, 1)
 
         # Check result:
-        expected_rabbit_task = {
-            "handle": "hdl:"+prefix+'/27785cdf-bae8-3fd1-857a-58399ab16385',
+        expected_handle_both_cases = "hdl:"+prefix+"/27785cdf-bae8-3fd1-857a-58399ab16385"
+        expected_rabbit_task1 = {
+            "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "content_handles":['bar', 'baz', 'foo'],
+            "content_handles":['foo', 'hdl:bar', 'hdl:BAZ'],
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
-        received_rabbit_task1 = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
-        received_rabbit_task2 = self.__get_received_message_from_rabbit_mock(testcoupler, 1)
-        same1 = utils.is_json_same(expected_rabbit_task, received_rabbit_task1)
-        same2 = utils.is_json_same(expected_rabbit_task, received_rabbit_task2)
-        self.assertTrue(same1, error_message(expected_rabbit_task, received_rabbit_task1))
-        self.assertTrue(same2, error_message(expected_rabbit_task, received_rabbit_task2))
+        expected_rabbit_task2 = {
+            "handle": expected_handle_both_cases,
+            "operation": "shopping_cart",
+            "message_timestamp":"anydate",
+            "content_handles":['baz', 'bar', 'foo'],
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
+        }
+        same1 = utils.is_json_same(expected_rabbit_task1, received_rabbit_task1)
+        same2 = utils.is_json_same(expected_rabbit_task2, received_rabbit_task2)
+        self.assertTrue(same1, error_message(expected_rabbit_task1, received_rabbit_task1))
+        self.assertTrue(same2, error_message(expected_rabbit_task2, received_rabbit_task2))
         self.assertTrue(pid1==pid2, 'Both pids are not the same.')

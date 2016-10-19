@@ -398,20 +398,28 @@ class ApiTestCase(unittest.TestCase):
         received_rabbit_task2 = self.default_rabbitmock.send_message_to_queue.call_args[0][0]
 
         # Check result:
-        expected_rabbit_task = {
-            "handle": "hdl:"+prefix+'/27785cdf-bae8-3fd1-857a-58399ab16385',
+        expected_handle_both_cases = "hdl:"+prefix+"/27785cdf-bae8-3fd1-857a-58399ab16385"
+        expected_rabbit_task1 = {
+            "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "content_handles":['bar', 'baz', 'foo'],
+            "content_handles":['foo', 'hdl:bar', 'hdl:BAZ'],
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
+        }
+        expected_rabbit_task2 = {
+            "handle": expected_handle_both_cases,
+            "operation": "shopping_cart",
+            "message_timestamp":"anydate",
+            "content_handles":['baz', 'bar', 'foo'],
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         
         tests.utils.replace_date_with_string(received_rabbit_task1)
         tests.utils.replace_date_with_string(received_rabbit_task2)
-        same1 = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task1)
-        same2 = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task2)
-        self.assertTrue(same1, error_message(expected_rabbit_task, received_rabbit_task1))
-        self.assertTrue(same2, error_message(expected_rabbit_task, received_rabbit_task2))
+        same1 = tests.utils.is_json_same(expected_rabbit_task1, received_rabbit_task1)
+        same2 = tests.utils.is_json_same(expected_rabbit_task2, received_rabbit_task2)
+        self.assertTrue(same1, error_message(expected_rabbit_task1, received_rabbit_task1))
+        self.assertTrue(same2, error_message(expected_rabbit_task2, received_rabbit_task2))
         self.assertTrue(pid1==pid2, 'Both pids are not the same.')
 
     #
