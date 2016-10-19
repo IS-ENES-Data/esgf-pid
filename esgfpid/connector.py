@@ -4,6 +4,7 @@ import logging
 import esgfpid.assistant.publish
 import esgfpid.assistant.unpublish
 import esgfpid.assistant.errata
+import esgfpid.assistant.shoppingcart
 import esgfpid.exceptions
 import esgfpid.coupling
 import esgfpid.utils
@@ -144,7 +145,7 @@ class Connector(object):
     def create_shopping_cart_pid(self, list_of_handles_or_drs_strings):
         assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
             prefix=self.prefix,
-            coupler=self.__couple
+            coupler=self.__coupler
         )
         return assistant.make_shopping_cart_pid(list_of_handles_or_drs_strings)
 
