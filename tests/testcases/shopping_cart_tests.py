@@ -50,10 +50,7 @@ class ShoppingCartTestCase(unittest.TestCase):
 
         # Test variables
         testcoupler = self.make_test_coupler_for_sending_messages()
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
         prefix = TESTVALUES['prefix']
-        errata_id = TESTVALUES['errata_id']
   
         # Run code to be tested:
         assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
@@ -68,8 +65,6 @@ class ShoppingCartTestCase(unittest.TestCase):
 
         # Test variables
         testcoupler = self.make_test_coupler_for_sending_messages()
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
         prefix = TESTVALUES['prefix']
   
         # Preparations
@@ -97,8 +92,6 @@ class ShoppingCartTestCase(unittest.TestCase):
 
         # Test variables
         testcoupler = self.make_test_coupler_for_sending_messages()
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
         prefix = TESTVALUES['prefix']
         content1 = ['foo', 'hdl:bar', 'hdl:BAZ']
         content2 = ['baz', 'bar', 'foo']

@@ -5,9 +5,11 @@ import json
 import sys
 import esgfpid.assistant.publish
 import tests.utils
+from tests.utils import compare_json_return_errormessage as error_message
 import tests.mocks.rabbitmock
 import tests.mocks.solrmock
 from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+import esgfpid.utils
 
 # Logging
 LOGGER = logging.getLogger(__name__)
@@ -377,6 +379,40 @@ class ApiTestCase(unittest.TestCase):
         tests.utils.replace_date_with_string(received_rabbit_task)
         is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+
+    #
+    # Shopping Cart
+    #
+
+    def test_make_shopping_cart_pid(self):
+
+        # Test variables
+        prefix = TESTVALUES['prefix']
+        content1 = ['foo', 'hdl:bar', 'hdl:BAZ']
+        content2 = ['baz', 'bar', 'foo']
+
+        # Run code to be tested:
+        pid1 = self.default_testconnector.create_shopping_cart_pid(content1)
+        received_rabbit_task1 = self.default_rabbitmock.send_message_to_queue.call_args[0][0]
+        pid2 = self.default_testconnector.create_shopping_cart_pid(content2)
+        received_rabbit_task2 = self.default_rabbitmock.send_message_to_queue.call_args[0][0]
+
+        # Check result:
+        expected_rabbit_task = {
+            "handle": "hdl:"+prefix+'/27785cdf-bae8-3fd1-857a-58399ab16385',
+            "operation": "shopping_cart",
+            "message_timestamp":"anydate",
+            "content_handles":['bar', 'baz', 'foo'],
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
+        }
+        
+        tests.utils.replace_date_with_string(received_rabbit_task1)
+        tests.utils.replace_date_with_string(received_rabbit_task2)
+        same1 = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task1)
+        same2 = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task2)
+        self.assertTrue(same1, error_message(expected_rabbit_task, received_rabbit_task1))
+        self.assertTrue(same2, error_message(expected_rabbit_task, received_rabbit_task2))
+        self.assertTrue(pid1==pid2, 'Both pids are not the same.')
 
     #
     # Threads
