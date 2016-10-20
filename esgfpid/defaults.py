@@ -1,5 +1,8 @@
 
 
+# List of prefixes
+ACCEPTED_PREFIXES = ['21.14100','21.14foo']
+
 
 # Custom logging
 LOG_INFO_TO_DEBUG=True # info messages are printed as "debug" to not appear on publisher console.

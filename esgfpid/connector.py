@@ -1,10 +1,16 @@
-''' This module represents the API of the ESGF PID module.'''
+'''
+This module represents the API of the ESGF PID module.
+
+Author: Merret Buurman (DKRZ), 2015-2016
+
+'''
 
 import logging
 import esgfpid.assistant.publish
 import esgfpid.assistant.unpublish
 import esgfpid.assistant.errata
 import esgfpid.assistant.shoppingcart
+import esgfpid.defaults
 import esgfpid.exceptions
 import esgfpid.coupling
 import esgfpid.utils
@@ -19,6 +25,7 @@ class Connector(object):
         LOGGER.debug('Creating PID connector object ..')
         self.__check_presence_of_args(args)
         self.__store_some_args(args)
+        self.__throw_error_if_prefix_not_in_list()
         self.__coupler = esgfpid.coupling.Coupler(**args)
         LOGGER.debug('Creating PID connector object .. done')
 
@@ -49,6 +56,13 @@ class Connector(object):
         self.__thredds_service_path = args['thredds_service_path']
         self.__data_node = args['data_node'] # may be None, only needed for some assistants.
         self.__consumer_solr_url = args['consumer_solr_url'] # may be None
+
+    def __throw_error_if_prefix_not_in_list(self):
+        if self.prefix is None:
+            raise esgfpid.exceptions.ArgumentError('Prefix not set yet, cannot check its existence.')
+        if self.prefix not in esgfpid.defaults.ACCEPTED_PREFIXES:
+            raise esgfpid.exceptions.ArgumentError('The prefix "%s" is not a valid prefix! Please check your config. Accepted prefixes: %s'
+                % (self.prefix, ', '.join(esgfpid.defaults.ACCEPTED_PREFIXES)))
 
     def create_publication_assistant(self, **args):
 
