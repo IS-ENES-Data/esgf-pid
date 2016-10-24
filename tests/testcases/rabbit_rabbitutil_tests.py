@@ -3,6 +3,7 @@ import unittest
 import mock
 import logging
 import copy
+import os
 import esgfpid.defaults
 import esgfpid.rabbit.rabbitutils as rut
 
@@ -17,7 +18,7 @@ LOGGER_TO_PASS.addHandler(logging.NullHandler())
 class RabbitUtilsTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test ########## (%s)' % os.path.basename(__file__))
 
     def tearDown(self):
         LOGGER.info('#############################')

@@ -3,6 +3,7 @@ import mock
 import logging
 import json
 import requests
+import os
 import esgfpid.rabbit.asynchronous
 import tests.mocks.responsemock
 import mock
@@ -15,7 +16,7 @@ LOGGER.addHandler(logging.NullHandler())
 class RabbitAsynConnectorTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test ########## (%s)' % os.path.basename(__file__))
 
     def tearDown(self):
         LOGGER.info('#############################')

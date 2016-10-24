@@ -2,6 +2,7 @@ import unittest
 import mock
 import logging
 import copy
+import os
 import esgfpid.rabbit.asynchronous.thread_shutter
 from esgfpid.rabbit.asynchronous.exceptions import OperationNotAllowed
 
@@ -35,11 +36,13 @@ class MockThread(object):
         self.ERROR_CODE_CONNECTION_CLOSED_BY_USER = 999
         self.ERROR_TEXT_CONNECTION_FORCE_CLOSED= 'foo'
         self.ERROR_TEXT_CONNECTION_NORMAL_SHUTDOWN = 'bar'
+    def _make_permanently_closed_by_user(self):
+        pass
 
 class ThreadShutterTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test ########## (%s)' % os.path.basename(__file__))
 
     def tearDown(self):
         LOGGER.info('#############################')
@@ -139,6 +142,7 @@ class ThreadShutterTestCase(unittest.TestCase):
         self.assertEquals(self.feeder.get_num_unpublished(), 0)
 
     def test_gently_finish_with_unconfirmed_messages_ok(self):
+        print("\nThis test takes time, as it calls the finish_gently method while not all messages are done.")
 
         # Preparation:
         shutter = self.make_shutter()
@@ -210,6 +214,7 @@ class ThreadShutterTestCase(unittest.TestCase):
         self.assertEquals(self.feeder.get_num_unpublished(), 4)
 
     def test_gently_finish_with_leftovers_timeout(self):
+        print("\nThis test takes time, as it calls the finish_gently method while not all messages are done.")
 
         # Preparation:
         shutter = self.make_shutter(MockFeeder(4))

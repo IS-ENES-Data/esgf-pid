@@ -2,6 +2,7 @@ import unittest
 import mock
 import logging
 import copy
+import os
 import esgfpid.rabbit.asynchronous.thread_acceptor
 from esgfpid.rabbit.asynchronous.exceptions import OperationNotAllowed
 
@@ -12,7 +13,7 @@ LOGGER.addHandler(logging.NullHandler())
 class ThreadAcceptorTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test ########## (%s)' % os.path.basename(__file__))
 
     def tearDown(self):
         LOGGER.info('#############################')

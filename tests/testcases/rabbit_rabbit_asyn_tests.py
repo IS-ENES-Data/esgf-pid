@@ -3,6 +3,7 @@ import mock
 import logging
 import json
 import sys
+import os
 sys.path.append("..")
 import esgfpid.rabbit
 
@@ -12,7 +13,7 @@ LOGGER.addHandler(logging.NullHandler())
 class RabbitTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test ########## (%s)' % os.path.basename(__file__))
 
     def tearDown(self):
         LOGGER.info('#############################')

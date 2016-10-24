@@ -2,6 +2,7 @@ import unittest
 import mock
 import logging
 import copy
+import os
 import esgfpid.rabbit.asynchronous.thread_feeder
 from esgfpid.rabbit.asynchronous.exceptions import OperationNotAllowed
 
@@ -15,7 +16,7 @@ UNCONFIRMED_MESSAGES = {'1':'foo1', '2':'foo2', '3':'foo3', '4':'foo4'}
 class ThreadFeederTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test ########## (%s)' % os.path.basename(__file__))
 
     def tearDown(self):
         LOGGER.info('#############################')

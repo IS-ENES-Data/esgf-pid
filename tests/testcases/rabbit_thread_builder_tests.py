@@ -1,6 +1,7 @@
 import unittest
 import mock
 import logging
+import os
 import esgfpid.rabbit.connparams
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -8,7 +9,7 @@ LOGGER.addHandler(logging.NullHandler())
 class ThreadBuilderTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test ########## (%s)' % os.path.basename(__file__))
 
     def tearDown(self):
         LOGGER.info('#############################')
