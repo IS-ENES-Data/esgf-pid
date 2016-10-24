@@ -44,7 +44,7 @@ except(IOError, ImportError):
 
 setup(
     name='esgfpid',
-    version='0.3.1',
+    version='0.4.0',
     author='DKRZ',
     author_email='buurman@dkrz.de',
     url='dkrz.de',
