@@ -5,6 +5,7 @@ import json
 import requests
 import esgfpid.rabbit.asynchronous
 import tests.mocks.responsemock
+import tests.mocks.pikamock
 import mock
 import time
 import os
@@ -34,22 +35,8 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
         return testrabbit
 
     def make_connection_and_channel_mock(self):
-
-        # Make mock connection
-        connection = mock.Mock()
-        connection.is_open = True
-        def closemock(reply_code=None, reply_text=None):
-            connection.is_open = False
-        connection.close = closemock
-        # Problem: Cannot mock ioloop...
-
-        # Make mock channel
-        channel = mock.Mock()
-        channel.is_open = True
-
-        # Connect the two:
-        connection.channel.return_value = channel
-        return connection, channel
+        conn = tests.mocks.pikamock.MockPikaSelectConnection()
+        return conn, conn.channel()
 
 
     # Actual tests:
@@ -95,7 +82,7 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
         Does sending messages via the feeder work?
         "on_delivery_confirmation" is not mocked here, so confirmation is not checked!
         '''
-
+        LOGGER.info('test_send_message_ok')
         # Preparations
         testrabbit = self.make_testrabbit()
 
@@ -115,7 +102,7 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
         testrabbit.send_many_messages_to_queue(['a','b','c'])
 
         # Check result
-        channel.basic_publish.call_count = 4
+        self.assertEquals(channel.publish_counter, 4)
 
     @mock.patch('esgfpid.rabbit.asynchronous.thread_builder.ConnectionBuilder._ConnectionBuilder__please_open_connection')
     def test_finish_ok(self, pleasepatch):
@@ -123,6 +110,8 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
         Does sending messages via the feeder work?
         "on_delivery_confirmation" is not mocked here, so confirmation is not checked!
         '''
+
+        LOGGER.info("test_finish_ok")
 
         # Preparations
         testrabbit = self.make_testrabbit()
@@ -142,7 +131,8 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
         # Check result
         self.assertTrue(testrabbit.rabbit_thread.statemachine.is_permanently_unavailable())
         self.assertTrue(testrabbit.rabbit_thread.statemachine.closed_by_publisher)
-        self.assertFalse(connection.is_open)
+        self.assertTrue(testrabbit.rabbit_thread._connection.is_closed)
+        self.assertFalse(testrabbit.rabbit_thread._connection.is_open)
 
     @mock.patch('esgfpid.rabbit.asynchronous.thread_builder.ConnectionBuilder._ConnectionBuilder__please_open_connection')
     def test_force_finish_ok(self, pleasepatch):
@@ -150,6 +140,7 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
         Does sending messages via the feeder work?
         "on_delivery_confirmation" is not mocked here, so confirmation is not checked!
         '''
+        LOGGER.info("test_force_finish_ok")
 
         # Preparations
         testrabbit = self.make_testrabbit()

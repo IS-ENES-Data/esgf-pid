@@ -12,8 +12,9 @@ class MockChannel(object):
         self.num_failures = 0 # Can be set before mock is called
         self.num_unroutables = 0 # Can be set before mock is called
         self.success_counter = 0
+        self.channel_number = 1 # This mocks the original API
 
-    def confirm_delivery(self): # This mocks the original API
+    def confirm_delivery(self, *args, **kwargs): # This mocks the original API
         pass
 
     def basic_publish(self, *args, **kwargs): # This mocks the original API
@@ -27,6 +28,21 @@ class MockChannel(object):
         else:
             self.success_counter += 1
             return True
+
+    def exchange_declare(self, *args, **kwargs): # This mocks the original API
+        pass
+
+    def queue_declare(self, *args, **kwargs): # This mocks the original API
+        pass
+
+    def queue_bind(self, *args, **kwargs): # This mocks the original API
+        pass
+
+    def add_on_close_callback(self, *args, **kwargs): # This mocks the original API
+        pass
+
+    def add_on_return_callback(self, *args, **kwargs): # This mocks the original API
+        pass
 
 class MockPikaBlockingConnection(object):
 
@@ -53,3 +69,21 @@ class MockPikaBlockingConnection(object):
 
     def process_data_events(self): # This mocks the original API
         pass
+
+class MockPikaSelectConnection(object):
+
+    def __init__(self):
+        self.is_open = True
+        self.is_closed = False
+        self.is_closing = False # for simplicity, leave always false
+        self.__channel = MockChannel()
+
+    def channel(self): # This mocks the original API
+        return self.__channel
+
+    def close(self, *args, **kwargs): # This mocks the original API
+        self.is_open = False
+        self.is_closed = True
+
+    def add_timeout(self, seconds, to_be_called):
+        to_be_called()

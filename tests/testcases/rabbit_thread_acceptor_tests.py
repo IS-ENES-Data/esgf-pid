@@ -74,7 +74,7 @@ class ThreadAcceptorTestCase(unittest.TestCase):
         acceptor.on_message_not_accepted(channel, 'serverreturnfoo', 'propsfoo', message)
 
         # Check result:
-        exp = '{"original_routing_key": "myfoo", "foo": "bar", "ROUTING_KEY": "EMERGENCY"}'
+        exp = '{"original_routing_key": "myfoo", "foo": "bar", "ROUTING_KEY": "cmip6.publisher.HASH.emergency"}'
         self.feeder.put_message_into_queue_of_unsent_messages.assert_called_with(exp)
         self.thread._connection.add_timeout.assert_called_with(0, self.feeder.publish_message)
 

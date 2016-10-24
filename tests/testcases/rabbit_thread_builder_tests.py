@@ -234,10 +234,13 @@ class ThreadBuilderTestCase(unittest.TestCase):
             "exchange_name":'fooexchange'
         }
         builder = self.make_builder(args)
+        # To avoid that it tries to reconnect some more times:
+        builder._ConnectionBuilder__reconnect_counter = esgfpid.defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
         self.statemachine.set_to_waiting_to_be_available()
 
         # Run code to be tested:
-        builder.on_connection_error(None, 'foo message')
+        connection = mock.MagicMock()
+        builder.on_connection_error(connection, 'foo message')
         # Tests:
         # on_connection_error
         # __is_fallback_url_left
@@ -291,7 +294,8 @@ class ThreadBuilderTestCase(unittest.TestCase):
         self.statemachine.closed_by_publisher = True
 
         # Run code to be tested:
-        builder.on_channel_closed(None, 111, 'foo')
+        connection = mock.MagicMock()
+        builder.on_channel_closed(connection, 111, 'foo')
 
         # Check result
         self.thread._connection.close.assert_not_called()
@@ -362,7 +366,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         self.thread.ERROR_TEXT_CONNECTION_NORMAL_SHUTDOWN='(not reopen)'
 
         # Run code to be tested:
-        builder.on_connection_closed(None, 111, '(foo)')
+        builder.on_connection_closed(self.thread._connection, 111, '(foo)')
 
         # Check result
         self.thread._connection.ioloop.stop.assert_not_called()
@@ -385,7 +389,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
 
         # Check result:
-        self.feeder.reset_delivery_tags.assert_called_with()
+        self.feeder.reset_message_number.assert_called_with()
         self.acceptor.send_many_messages.assert_not_called()
         self.assertEquals(connpatch.call_count, 1)
         builder.thread._connection.ioloop.start.assert_any_call()
@@ -408,7 +412,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder.reconnect()
 
         # Check result:
-        self.feeder.reset_delivery_tags.assert_called_with()
+        self.feeder.reset_message_number.assert_called_with()
         self.acceptor.send_many_messages.assert_called_with(['foo1','foo3','foo2'])
         self.assertEquals(connpatch.call_count, 1)
         builder.thread._connection.ioloop.start.assert_any_call()

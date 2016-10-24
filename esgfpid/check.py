@@ -277,7 +277,7 @@ class RabbitChecker(object):
         utils.logwarn(LOGGER, msg)
 
     def __define_fallback_exchange(self):
-        print('Called fallback method') # remove
+        #print('Called fallback method') # remove
         exchange_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
         queue_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
         routing_key = esgfpid.defaults.ROUTING_KEY_BASIS

@@ -23,7 +23,8 @@ class RabbitTestCase(unittest.TestCase):
             url_preferred=None,
             exchange_name='exch',
             username='rogerRabbit',
-            password='mySecretCarrotDream'
+            password='mySecretCarrotDream',
+            test_publication=False
         )
 
     def __get_testrabbit_asyn(self):
