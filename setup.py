@@ -45,22 +45,8 @@ except(IOError, ImportError):
 setup(
     name='esgfpid',
     version='0.4.0',
-    author='DKRZ',
+    author='Merret Buurman, German Climate Computing Centre (DKRZ)',
     author_email='buurman@dkrz.de',
-    url='dkrz.de',
-    description='Library for sending PID requests to a rabbit messaging queue during ESGF publication.',
-    long_description=long_description,
-    packages=packages + test_packages,
-    install_requires=dependencies,
-    tests_require=test_dependencies,
-    include_package_data=True,
-    license='Apache License 2.0',
-    classifiers=[
-       'Development Status :: 4 - Beta',
-       'Programming Language :: Python :: 2',
-       'Programming Language :: Python :: 2.7',
-       'License :: OSI Approved :: Apache Software License',
-       'Intended Audience :: Developers',
-       'Topic :: Software Development :: Libraries :: Python Modules',
-  ]
+    url='https://github.com/IS-ENES-Data/esgf-pid',
+    download_url='https://github.com/IS-ENES-Data/esgf-pid/archive/0.4.0.tar.gz'
 )
