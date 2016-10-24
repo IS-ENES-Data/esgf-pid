@@ -54,6 +54,7 @@ setup(
     install_requires=dependencies,
     tests_require=test_dependencies,
     include_package_data=True,
+    license='Apache License 2.0',
     classifiers=[
        'Development Status :: 4 - Beta',
        'Programming Language :: Python :: 2',
