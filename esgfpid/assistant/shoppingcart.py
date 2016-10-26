@@ -1,6 +1,7 @@
 import logging
 import esgfpid.utils
 import esgfpid.assistant.messages
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -15,7 +16,7 @@ class ShoppingCartAssistant(object):
         self.__coupler = args['coupler']
 
     def make_shopping_cart_pid(self, list_of_drs_ids):
-        LOGGER.debug('Making a PID for a shopping cart full of datasets...')
+        logdebug(LOGGER, 'Making a PID for a shopping cart full of datasets...')
 
         # Make a pid (hash on the content):
         list_of_drs_ids = self.__get_strings_as_list(list_of_drs_ids)
@@ -26,7 +27,8 @@ class ShoppingCartAssistant(object):
         self.__send_message_to_queue(message)
 
         # Return pid
-        LOGGER.debug('Making a PID for a shopping cart full of datasets... done.')
+        logdebug(LOGGER, 'Making a PID for a shopping cart full of datasets... done.')
+        loginfo(LOGGER, 'Sent request to create PID for data cart (%s).', cart_handle)
         return cart_handle
 
     def __get_strings_as_list(self, strings):

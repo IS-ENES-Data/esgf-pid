@@ -147,7 +147,7 @@ class ConnectionBuilder(object):
         
     def __please_open_connection(self, params):
         # Asynchronous: Process is continued on "on_connection_open"
-        logdebug(LOGGER, 'Opening connection to "%s"...', params.host, show=True)
+        loginfo(LOGGER, 'Opening connection to RabbitMQ at %s...', params.host)
         #return pika.SelectConnection(
         #    parameters=params,
         #    on_open_callback=self.on_connection_open,
@@ -163,6 +163,7 @@ class ConnectionBuilder(object):
         )
 
     def on_connection_open(self, unused_connection):
+        loginfo(LOGGER, 'Connection to RabbitMQ at %s opened.', self.CURRENT_HOST)
         logdebug(LOGGER, 'Opening connection... done.', show=True)
         self.__add_on_connection_close_callback()
         self.__please_open_rabbit_channel()
@@ -200,6 +201,7 @@ class ConnectionBuilder(object):
         # Normally, it should already be waiting to be available:
         if self.statemachine.is_waiting_to_be_available():
             logdebug(LOGGER, 'Setup is finished. Publishing may start (channel no. %s)!', self.thread._channel.channel_number, show=True)
+            loginfo(LOGGER, 'Ready to publish messages to RabbitMQ.')
             self.statemachine.set_to_available()
             self.__check_for_already_arrived_messages()
 
@@ -239,18 +241,16 @@ class ConnectionBuilder(object):
 
     def on_connection_error(self, connection, msg):
         if self.__is_fallback_url_left():
-            logdebug(LOGGER, 'Failed connection to "%s": %s. %i fallback URLs left to try.',
+            logdebug(LOGGER, 'Failed connecting to "%s": %s. %i fallback URLs left to try.',
                 self.CURRENT_HOST, msg, len(self.RABBIT_HOSTS), show=True)
             self.__try_connecting_to_next(msg)
         else:
             self.__reconnect_counter += 1;
             if self.__reconnect_counter <= defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES:
-                logdebug(LOGGER, 'Failed connecting. Retrying. %i/%i.',
-                    self.__reconnect_counter, defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
+                loginfo(LOGGER, 'Failed connecting to RabbitMQ at %s. Will retry (%i/%i).',
+                    self.CURRENT_HOST, self.__reconnect_counter, defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
                 # wait and reconnect:
                 self.__reset_hosts()
-                #time.sleep(self.__reconnect_wait_seconds)
-                #self.__connect_to_rabbit()
                 self.__make_reconnect_soon(connection, 0, msg)
             else:
                 self.__change_state_to_permanently_could_not_connect()
@@ -275,10 +275,11 @@ class ConnectionBuilder(object):
     def __inform_permanently_could_not_connect(self, msg):
         logdebug(LOGGER, 'Failed connection to "%s": %s. No fallback URL left to try.',
             self.CURRENT_HOST, msg, show=True)
-        logwarn(LOGGER, 'Failed to connect to messaging service.')
+        logwarn(LOGGER, 'Permanently failed to connect to RabbitMQ. No PID requests will be sent.')
 
     def __try_connecting_to_next(self, msg):
         nexthost = self.RABBIT_HOSTS.pop()
+        loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s. Now trying to connect to %s.', self.CURRENT_HOST, msg, nexthost)
         self.CURRENT_HOST = nexthost
         self.__connect_to_rabbit()
 
@@ -303,7 +304,7 @@ class ConnectionBuilder(object):
             #if self.__was_user_shutdown(reply_code, reply_text):
                 logtrace(LOGGER,'Channel close event due to close command by user. This is expected.')
         elif reply_code == 404:
-            loginfo(LOGGER, 'Channel closed because the exchange "%s" did not exist.', self.feeder.EXCHANGE)
+            logdebug(LOGGER, 'Channel closed because the exchange "%s" did not exist.', self.feeder.EXCHANGE)
             # Redefine channel name
             logdebug(LOGGER, 'Resetting exchange name to "%s"', defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
             self.feeder.EXCHANGE = defaults.RABBIT_FALLBACK_EXCHANGE_NAME
@@ -320,7 +321,7 @@ class ConnectionBuilder(object):
             self.thread._connection.close()
 
     def on_connection_closed(self, connection, reply_code, reply_text):
-        loginfo(LOGGER, 'Connection was closed, reason: %s (code %i)', reply_text, reply_code, show=True)
+        loginfo(LOGGER, 'Connection to RabbitMQ was closed. Reason: %s.', reply_text)
         self.thread._channel = None
         if self.__was_user_shutdown(reply_code, reply_text):
             loginfo(LOGGER, 'Connection to %s closed.', self.CURRENT_HOST)
@@ -363,8 +364,7 @@ class ConnectionBuilder(object):
         # This changes the state of the state machine!
         self.statemachine.set_to_waiting_to_be_available()
         reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
-        logwarn(LOGGER, 'Connection to messaging service closed, reopening in %i seconds. Reason: %s (code %i)',
-            reopen_seconds, reply_text, reply_code)
+        loginfo(LOGGER, 'Trying to connect to RabbitMQ in %i seconds.', reopen_seconds)
         connection.add_timeout(reopen_seconds, self.reconnect)
         logtrace(LOGGER, 'Reconnect request added to connection %s!', connection)
         logtrace(LOGGER, 'Not to connection %s!', self.thread._connection)

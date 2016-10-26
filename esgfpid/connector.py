@@ -14,6 +14,7 @@ import esgfpid.defaults
 import esgfpid.exceptions
 import esgfpid.coupling
 import esgfpid.utils
+from esgfpid.utils import loginfo as loginfo
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -28,6 +29,7 @@ class Connector(object):
         self.__throw_error_if_prefix_not_in_list()
         self.__coupler = esgfpid.coupling.Coupler(**args)
         LOGGER.debug('Creating PID connector object .. done')
+        loginfo('Created PID connector.')
 
     def __check_presence_of_args(self, args):
         mandatory_args = [

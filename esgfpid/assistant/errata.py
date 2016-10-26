@@ -3,6 +3,8 @@ import uuid
 import json
 import esgfpid.utils
 import esgfpid.assistant.messages
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
+
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -21,7 +23,7 @@ class ErrataAssistant(object):
         self.__coupler = args['coupler']
 
     def add_errata_ids(self, **args):
-        LOGGER.debug('Adding errata ids...')
+        logdebug(LOGGER, 'Adding errata ids...')
         mandatory_args = ['drs_id', 'version_number', 'errata_ids']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.check_noneness_of_mandatory_args(args, mandatory_args)
@@ -31,12 +33,12 @@ class ErrataAssistant(object):
         message = self.__make_add_message(errata_ids, dataset_handle, args['drs_id'], args['version_number'])
         self.__send_message_to_queue(message)
 
-        LOGGER.info('Added errata ids "%s" to dataset "%s".', ', '.join(errata_ids), dataset_handle)
-        LOGGER.debug('Adding errata ids... done')
+        loginfo(LOGGER, 'Sent request to add errata ids "%s" to dataset "%s".', ', '.join(errata_ids), dataset_handle)
+        logdebug(LOGGER, 'Adding errata ids... done')
 
 
     def remove_errata_ids(self, **args):
-        LOGGER.debug('Removing errata ids...')
+        logdebug(LOGGER, 'Removing errata ids...')
         mandatory_args = ['drs_id', 'version_number', 'errata_ids']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.check_noneness_of_mandatory_args(args, mandatory_args)
@@ -46,8 +48,8 @@ class ErrataAssistant(object):
         message = self.__make_remove_message(errata_ids, dataset_handle, args['drs_id'], args['version_number'])
         self.__send_message_to_queue(message)
 
-        LOGGER.info('Removed errata ids "%s" from dataset "%s".', ', '.join(errata_ids), dataset_handle)
-        LOGGER.debug('Removing errata ids... done')
+        loginfo(LOGGER, 'Sent request to aremove errata ids "%s" from dataset "%s".', ', '.join(errata_ids), dataset_handle)
+        logdebug(LOGGER, 'Removing errata ids... done')
 
     def __get_errata_ids_as_list(self, args):
         errata_ids = args['errata_ids']

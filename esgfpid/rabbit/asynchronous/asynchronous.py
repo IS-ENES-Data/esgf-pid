@@ -9,6 +9,7 @@ import logging
 import esgfpid.utils
 from .rabbitthread import RabbitThread
 from .exceptions import ConnectionNotReady
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -92,32 +93,32 @@ class AsynchronousRabbitConnector(object):
                 LOGGER.error('Joining failed again. No idea why.')
 
     def __finish_gently(self):
-        LOGGER.debug('Finishing...')
+        logdebug(LOGGER, 'Finishing...')
         self.rabbit_thread.finish_gently()
-        LOGGER.debug('Finishing... done')
+        logdebug(LOGGER, 'Finishing... done')
 
     def __force_finish(self, msg):
-        LOGGER.debug('Force finishing...')
+        logdebug(LOGGER, 'Force finishing...')
         if msg is None:
             msg = 'force finish called by library'
         self.rabbit_thread.force_finish(msg)
-        LOGGER.debug('Force finishing... done')
+        logdebug(LOGGER, 'Force finishing... done')
 
     def __join(self):        
-        LOGGER.debug('Joining...')
+        logdebug(LOGGER, 'Joining...')
         timeout_seconds=2
         self.rabbit_thread.join(timeout_seconds)
         if self.rabbit_thread.is_alive():
-            LOGGER.debug('Joining failed.')
+            logdebug(LOGGER, 'Joining failed.')
             return False
         else:
-            LOGGER.debug('Joining... done')
+            logdebug(LOGGER, 'Joining... done')
             return True
 
     def __rescue(self):
-        LOGGER.debug('Storing unpublished/unconfirmed messages...')
+        logdebug(LOGGER, 'Storing unpublished/unconfirmed messages...')
         self.__rescue_leftovers()
-        LOGGER.debug('Storing unpublished/unconfirmed messages... done.')      
+        logdebug(LOGGER, 'Storing unpublished/unconfirmed messages... done.')      
 
     ##############################################
     ### Unpublished/unconfimed/nacked messages ###
@@ -130,36 +131,36 @@ class AsynchronousRabbitConnector(object):
 
     def __rescue_unpublished_messages(self):
         if self.rabbit_thread.is_alive():
-            LOGGER.warn('Cannot retrieve unpublished messages while thread still alive.')
+            logwarn(LOGGER, ''Cannot retrieve unpublished messages while thread still alive.')
         else:
             self.__leftovers_unpublished = self.rabbit_thread.get_unpublished_messages_as_list()
             num = len(self.__leftovers_unpublished)
             if num > 0:
-                LOGGER.debug('Rescued %i unpublished messages.', num)
+                logdebug(LOGGER, 'Rescued %i unpublished messages.', num)
             else:
-                LOGGER.debug('No unpublished messages to rescue.')
+                logdebug(LOGGER, 'No unpublished messages to rescue.')
 
     def __rescue_unconfirmed_messages(self):
         if self.rabbit_thread.is_alive():
-            LOGGER.warn('Cannot retrieve unconfirmed messages while thread still alive.')
+            logwarn(LOGGER, ''Cannot retrieve unconfirmed messages while thread still alive.')
         else:
             self.__leftovers_unconfirmed = self.rabbit_thread.get_unconfirmed_messages_as_list()
             num = len(self.__leftovers_unconfirmed)
             if num > 0:
-                LOGGER.debug('Rescued %i unconfirmed messages.', num)
+                logdebug(LOGGER, 'Rescued %i unconfirmed messages.', num)
             else:
-                LOGGER.debug('No unconfirmed messages to rescue.')
+                logdebug(LOGGER, 'No unconfirmed messages to rescue.')
 
     def __rescue_nacked_messages(self):
         if self.rabbit_thread.is_alive():
-            LOGGER.warn('Cannot retrieve rejected (NACKed) messages while thread still alive.')
+            logwarn(LOGGER, ''Cannot retrieve rejected (NACKed) messages while thread still alive.')
         else:
             self.__leftovers_nacked = self.rabbit_thread.get_nacked_messages_as_list()
             num = len(self.__leftovers_nacked)
             if num > 0:
-                LOGGER.debug('Rescued %i rejected (NACKed) messages.', num)
+                logdebug(LOGGER, 'Rescued %i rejected (NACKed) messages.', num)
             else:
-                LOGGER.debug('No rejected (NACKed) messages to rescue.')
+                logdebug(LOGGER, 'No rejected (NACKed) messages to rescue.')
 
     def __publish_leftovers(self): # after reconnect
         self.__publish_leftovers_unpublished()

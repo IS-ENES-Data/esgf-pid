@@ -6,7 +6,7 @@ import esgfpid.exceptions
 import esgfpid.assistant.consistency
 import esgfpid.assistant.messages
 import esgfpid.utils as utils
-
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -14,7 +14,7 @@ LOGGER.addHandler(logging.NullHandler())
 class DatasetPublicationAssistant(object):
 
     def __init__(self, **args):
-        utils.logdebug(LOGGER, 'Constructor for Publication assistant for dataset "%s", version "%s" at host "%s".',
+        logdebug(LOGGER, 'Constructor for Publication assistant for dataset "%s", version "%s" at host "%s".',
             args['drs_id'],
             args['version_number'],
             args['data_node']
@@ -36,7 +36,7 @@ class DatasetPublicationAssistant(object):
         self.__create_and_store_dataset_handle()
         self.__init_state_machine()
 
-        utils.logdebug(LOGGER, 'Done: Constructor for Publication assistant for dataset "%s", version "%i" at host "%s".',
+        logdebug(LOGGER, 'Done: Constructor for Publication assistant for dataset "%s", version "%i" at host "%s".',
             args['drs_id'],
             args['version_number'],
             args['data_node']
@@ -121,12 +121,12 @@ class DatasetPublicationAssistant(object):
         self.__check_if_prefix_is_there(args['file_handle'])
 
     def __add_file(self, **args):
-        utils.logdebug(LOGGER, 'Adding file "%s" with handle "%s".', args['file_name'], args['file_handle'])
+        logdebug(LOGGER, 'Adding file "%s" with handle "%s".', args['file_name'], args['file_handle'])
         self.__add_file_to_datasets_children(args['file_handle'])
         self.__adapt_file_args(args)
         self.__create_and_store_file_publication_message(args)        
         self.__set_machine_state_to_files_added()
-        utils.logdebug(LOGGER, 'Adding file done.')
+        logdebug(LOGGER, 'Adding file done.')
 
     def __add_file_to_datasets_children(self, file_handle):
         self.__list_of_file_handles.append(file_handle)
@@ -175,7 +175,7 @@ class DatasetPublicationAssistant(object):
             pass
         else:
             msg = 'Too late to add files!'
-            utils.logwarn(LOGGER, msg)
+            logwarn(LOGGER, msg)
             raise esgfpid.exceptions.OperationUnsupportedException(msg)
 
     def dataset_publication_finished(self, ignore_exception=False):
@@ -193,6 +193,7 @@ class DatasetPublicationAssistant(object):
         self.__send_existing_file_messages_to_queue()
         self.__coupler.done_with_rabbit_business() # Synchronous: Closes connection. Asynchronous: Ignored.
         self.__set_machine_state_to_finished()
+        loginfo('Sent request to publish dataset %s (version %s) and its files at %s (handle %s).', self.__drs_id, self.__version_number, self.__data_node, self.__dataset_handle)
 
     def __check_if_dataset_publication_allowed_right_now(self):
         if not self.__machine_state == self.__machine_states['files_added']:
@@ -203,7 +204,7 @@ class DatasetPublicationAssistant(object):
             else:
                 msg = 'Publication was already done.'
 
-            utils.logwarn(LOGGER, msg)
+            logwarn(LOGGER, msg)
             raise esgfpid.exceptions.OperationUnsupportedException(msg)
 
 
@@ -218,31 +219,31 @@ class DatasetPublicationAssistant(object):
         if check_possible:
             check_passed = checker.data_consistency_check(self.__list_of_file_handles)
             if check_passed:
-                utils.loginfo(LOGGER, 'Data consistency check passed for dataset %s.', self.__dataset_handle)
+                loginfo(LOGGER, 'Data consistency check passed for dataset %s.', self.__dataset_handle)
             else:
                 msg = 'Dataset consistency check failed'
-                utils.logwarn(LOGGER, msg)
+                logwarn(LOGGER, msg)
                 if not ignore_exception:
                     raise esgfpid.exceptions.InconsistentFilesetException(msg)
         else:
-            utils.logdebug(LOGGER, 'No consistency check was carried out.')
+            logdebug(LOGGER, 'No consistency check was carried out.')
 
     def __create_and_send_dataset_publication_message_to_queue(self):
         message = self.__create_dataset_publication_message()
         self.__send_message_to_queue(message)
-        utils.logdebug(LOGGER, 'Dataset publication message sent to queue.')
-        utils.logtrace(LOGGER, 'Dataset publication message: %s (%s, version %s).', self.__dataset_handle, self.__drs_id, self.__version_number)
+        logdebug(LOGGER, 'Dataset publication message sent to queue.')
+        logtrace(LOGGER, 'Dataset publication message: %s (%s, version %s).', self.__dataset_handle, self.__drs_id, self.__version_number)
 
     def __send_existing_file_messages_to_queue(self):
         for i in xrange(0, len(self.__list_of_file_messages)):
             self.__try_to_send_one_file_message(i)
         msg = 'All file publication jobs sent to queue.'
-        utils.logdebug(LOGGER, msg)
+        logdebug(LOGGER, msg)
         
     def __try_to_send_one_file_message(self, list_index):
         msg = self.__list_of_file_messages[list_index]
         success = self.__send_message_to_queue(msg)
-        utils.logdebug(LOGGER, 'File publication message sent to queue: %s (%s)', msg['handle'], msg['file_name'])
+        logdebug(LOGGER, 'File publication message sent to queue: %s (%s)', msg['handle'], msg['file_name'])
         return success
 
     def __set_machine_state_to_finished(self):

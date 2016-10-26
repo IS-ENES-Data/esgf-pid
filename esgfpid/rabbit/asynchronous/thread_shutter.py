@@ -45,7 +45,9 @@ class ShutDowner(object):
         if self.__are_any_messages_pending():
             wait_seconds = defaults.RABBIT_ASYN_FINISH_WAIT_SECONDS
             max_waits = defaults.RABBIT_ASYN_FINISH_MAX_TRIES
-            loginfo(LOGGER, ' Max waiting time for pending messages: %i.', wait_seconds*max_waits)
+            loginfo(LOGGER, 'Clsoing PID module. Some messages are pending. Maximum waiting time: %i seconds.', wait_seconds*max_waits)
+        else:
+            loginfo(LOGGER, 'Closing PID module. No pending messages.')
 
         # Go through decision tree (close or wait for pending messages)
         self.__recursive_decision_about_closing(iteration=1)
