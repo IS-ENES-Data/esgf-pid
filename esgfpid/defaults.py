@@ -5,9 +5,9 @@ ACCEPTED_PREFIXES = ['21.14100','21.14foo']
 
 
 # Custom logging
-LOG_INFO_TO_DEBUG=True # info messages are printed as "debug" to not appear on publisher console.
-LOG_TRACE_TO_DEBUG=True # Print extremely detailed log messages of rabbit module as "DEBUG" messages.
-LOG_SHOW_TO_INFO=True # So I can selectively show some log messages to Katharina without having to modify the whole code.
+LOG_INFO_TO_DEBUG=False # info messages are printed as "debug" to not appear on publisher console.
+LOG_TRACE_TO_DEBUG=False # Print extremely detailed log messages of rabbit module as "DEBUG" messages.
+LOG_SHOW_TO_INFO=False # So I can selectively show some log messages to Katharina without having to modify the whole code.
 
 # Solr:
 SOLR_HTTPS_VERIFY_DEFAULT=False
