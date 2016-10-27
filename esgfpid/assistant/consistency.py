@@ -24,8 +24,12 @@ class Checker(object):
         self.__will_run_check = True
         self.__message_why_not = 'No reason specified.'
 
-        # query solr for previous file handles:
-        self.__data_consistency_check_preparation()
+        # Is solr switched off?
+        if self.__coupler.is_solr_switched_off():
+            self.__will_run_check = False
+        else:
+            # query solr for previous file handles:
+            self.__data_consistency_check_preparation()
 
 
     def can_run_check(self):
