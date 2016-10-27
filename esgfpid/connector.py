@@ -172,6 +172,24 @@ class Connector(object):
             errata_ids=args['errata_ids']
         )
 
+    def remove_errata_ids(self, **args):
+
+        # Check args:
+        mandatory_args = ['drs_id', 'version_number', 'errata_ids']
+        esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
+        esgfpid.utils.check_noneness_of_mandatory_args(args, mandatory_args)
+
+        # Perform metadata update
+        assistant = esgfpid.assistant.errata.ErrataAssistant(
+            coupler=self.__coupler,
+            prefix=self.prefix
+        )
+        assistant.remove_errata_ids(
+            drs_id=args['drs_id'],
+            version_number=args['version_number'],
+            errata_ids=args['errata_ids']
+        )
+
     def create_shopping_cart_pid(self, list_of_handles_or_drs_strings):
         assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
             prefix=self.prefix,
