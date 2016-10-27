@@ -22,7 +22,7 @@ class ShutDowner(object):
         # Called directly from outside the thread! Or if gentle-finish did not work.
         self.statemachine.asked_to_closed_by_publisher = True
         logwarn(LOGGER,
-            'Forced close down of message sending module. Will not wait for any pending messages, if any.')
+            'Forced close down of message sending module. Will not wait for pending messages, if any.')
         self.statemachine.set_to_wanting_to_stop()
         self.__force_finish(msg)
 
@@ -40,12 +40,11 @@ class ShutDowner(object):
             self.statemachine.set_to_wanting_to_stop()
 
         # Inform user
-        msg = 'Module received finish command.'
-        logdebug(LOGGER, msg)
+        logdebug(LOGGER, 'Module received finish command.')
         if self.__are_any_messages_pending():
             wait_seconds = defaults.RABBIT_ASYN_FINISH_WAIT_SECONDS
             max_waits = defaults.RABBIT_ASYN_FINISH_MAX_TRIES
-            loginfo(LOGGER, 'Clsoing PID module. Some messages are pending. Maximum waiting time: %i seconds.', wait_seconds*max_waits)
+            loginfo(LOGGER, 'Preparing to close PID module. Some messages are pending. Maximum waiting time: %i seconds.', wait_seconds*max_waits)
         else:
             loginfo(LOGGER, 'Closing PID module. No pending messages.')
 
@@ -80,11 +79,21 @@ class ShutDowner(object):
 
         tried = iteration
         waited = iteration-1
+
+        # Logging:
         logtrace(
             LOGGER,
             'At this point we have tried %i times and waited %i/%i times (%i seconds)',
             tried, waited, max_waits, waited*wait_seconds
         )
+        log_every_x_seconds = 1
+        #if ((waited*wait_seconds)%log_every_x_seconds==0 or waited>=max_waits):
+        #    msg = self.__get_string_about_pending_messages()
+        #    loginfo(LOGGER, 'Still waiting for %s pending messages... (waited %i/%i seconds)', msg, waited*wait_seconds, max_waits*wait_seconds)
+        msg = self.__get_string_about_pending_messages()
+        loginfo(LOGGER, 'Still waiting for %s pending messages... Waited %i times (%.1f/%.1f seconds).', msg, waited, waited*wait_seconds, max_waits*wait_seconds)
+        
+        # Return:
         if waited >= max_waits:
             return True
         return False
@@ -143,17 +152,22 @@ class ShutDowner(object):
             self.force_finish('Force finish as we are not sending the messages anyway.') # TODO does this actually make sense here?
 
     def __close_because_waited_long_enough(self):
-        logwarn(LOGGER, 'We have waited long enough. Now closing by force.')
+        logdebug(LOGGER, 'We have waited long enough. Now closing by force.')
         self.force_finish('Force finish as normal waiting period in normal finish is over.')
 
     def __inform_about_pending_messages(self):
+        msg = self.__get_string_about_pending_messages()
+        if msg is not None:
+            logdebug(LOGGER, 'Pending messages: %s.', msg)
+
+    def __get_string_about_pending_messages(self):
         unsent = self.feeder.get_num_unpublished()
         unconfirmed = self.confirmer.get_num_unconfirmed()
         if unsent + unconfirmed > 0:
-            logdebug(LOGGER, 'Pending messages: %i (%i unsent, %i unconfirmed).',
-                (unsent+unconfirmed),
-                unsent,
-                unconfirmed)
+            msg = '%i (%i unsent, %i unconfirmed)' % ((unsent+unconfirmed), unsent, unconfirmed)
+            return msg
+        else:
+            return None
 
     #################
     ### Finishing ###
@@ -213,4 +227,4 @@ class ShutDowner(object):
                 'At close down: %i pending messages (%i unpublished messages, %i unconfirmed messages).',
                 (unsent+unconfirmed), unsent, unconfirmed)
         else:
-            logdebug(LOGGER, 'At close down: All messages were published and confirmed already.')
+            loginfo(LOGGER, 'After close down: All messages were published and confirmed.')

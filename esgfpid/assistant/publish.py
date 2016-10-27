@@ -193,7 +193,7 @@ class DatasetPublicationAssistant(object):
         self.__send_existing_file_messages_to_queue()
         self.__coupler.done_with_rabbit_business() # Synchronous: Closes connection. Asynchronous: Ignored.
         self.__set_machine_state_to_finished()
-        loginfo('Sent request to publish dataset %s (version %s) and its files at %s (handle %s).', self.__drs_id, self.__version_number, self.__data_node, self.__dataset_handle)
+        loginfo(LOGGER, 'Requesting to publish dataset "%s" (version %s) and its files at "%s" (handle %s).', self.__drs_id, self.__version_number, self.__data_node, self.__dataset_handle)
 
     def __check_if_dataset_publication_allowed_right_now(self):
         if not self.__machine_state == self.__machine_states['files_added']:

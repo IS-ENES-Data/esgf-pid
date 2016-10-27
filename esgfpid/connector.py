@@ -14,7 +14,7 @@ import esgfpid.defaults
 import esgfpid.exceptions
 import esgfpid.coupling
 import esgfpid.utils
-from esgfpid.utils import loginfo as loginfo
+from esgfpid.utils import loginfo, logdebug, logwarn
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -69,18 +69,18 @@ class Connector(object):
     def create_publication_assistant(self, **args):
 
         # Check args
-        LOGGER.debug('Creating publication assistant..')
+        logdebug(LOGGER, 'Creating publication assistant..')
         mandatory_args = ['drs_id', 'version_number', 'is_replica']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         # Check if service path is given
         if self.__thredds_service_path is None:
             msg = 'No thredds_service_path given (but it is mandatory for publication)'
-            LOGGER.warn(msg)
+            logwarn(LOGGER, msg)
             raise esgfpid.exceptions.ArgumentError(msg)
         # Check if data node is given
         if self.__data_node is None:
             msg = 'No data_node given (but it is mandatory for publication)'
-            LOGGER.warn(msg)
+            logwarn(LOGGER, msg)
             raise esgfpid.exceptions.ArgumentError(msg)
 
         # Check if solr has access:
@@ -98,7 +98,7 @@ class Connector(object):
             is_replica=args['is_replica'],
             consumer_solr_url=self.__consumer_solr_url # may be None
         )
-        LOGGER.debug('Creating publication assistant.. done')
+        logdebug(LOGGER, 'Creating publication assistant.. done')
         return assistant
 
     def unpublish_one_version(self, **args):
@@ -110,7 +110,7 @@ class Connector(object):
         # Check if data node is given
         if self.__data_node is None:
             msg = 'No data_node given (but it is mandatory for publication)'
-            LOGGER.warn(msg)
+            logwarn(LOGGER, msg)
             raise esgfpid.exceptions.ArgumentError(msg)
 
         # Unpublish
@@ -135,7 +135,7 @@ class Connector(object):
         # Check if data node is given
         if self.__data_node is None:
             msg = 'No data_node given (but it is mandatory for publication)'
-            LOGGER.warn(msg)
+            logwarn(LOGGER, msg)
             raise esgfpid.exceptions.ArgumentError(msg)
 
         # Check if solr has access:

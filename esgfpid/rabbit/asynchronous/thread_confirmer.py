@@ -11,8 +11,9 @@ class ConfirmReactor(object):
 
     def __init__(self):
 
-        self.lc = 1
-        self.li = 10
+        self.logcounter = 1
+        self.LOGFREQUENCY = 10
+        self.__is_first_ack = True # only for logging!
 
         self.__unconfirmed_delivery_tags = [] # only accessed internally
         self.__unconfirmed_messages_dict = {} # dict, because I need to retrieve them by delivery tag (on ack/nack)
@@ -26,7 +27,8 @@ class ConfirmReactor(object):
 
     def on_delivery_confirmation(self, method_frame):
         deliv_tag, confirmation_type, multiple = self.__get_confirm_info(method_frame)
-        log_every_x_times(LOGGER, self.lc, self.li, 'Confirm %s', confirmation_type)
+        log_every_x_times(LOGGER, self.logcounter, self.LOGFREQUENCY, 'Confirm %s', confirmation_type)
+        self.logcounter += 1
 
         if confirmation_type == 'ack':
             logtrace(LOGGER, 'Received "ACK" from messaging service.')
@@ -47,6 +49,9 @@ class ConfirmReactor(object):
         else:
             logtrace(LOGGER, 'Received "ACK" for single message from messaging service.')
             self.__react_on_single_delivery_ack(deliv_tag)
+        if self.__is_first_ack:
+            self.__is_first_ack = False
+            loginfo(LOGGER, 'Received first receipt confirmation from RabbitMQ.')
 
     def __react_on_nack(self, deliv_tag, multiple):
         if multiple:
@@ -79,13 +84,13 @@ class ConfirmReactor(object):
 
     def __react_on_single_delivery_ack(self, deliv_tag):
         self.__remove_delivery_tag_and_message_single(deliv_tag)
-        logtrace(LOGGER, 'Received ack for delivery tag %i. Waiting for %i confirms.', deliv_tag, len(self.__unconfirmed_delivery_tags))
+        logdebug(LOGGER, 'Received ack for delivery tag %i. Waiting for %i confirms.', deliv_tag, len(self.__unconfirmed_delivery_tags))
         logtrace(LOGGER, 'Received ack for delivery tag %i.', deliv_tag)
         logtrace(LOGGER, 'Now left in queue to be confirmed: %i messages.', len(self.__unconfirmed_delivery_tags))
 
     def __react_on_multiple_delivery_ack(self, deliv_tag):
         self.__remove_delivery_tag_and_message_several(deliv_tag)
-        logtrace(LOGGER, 'Received "ACK" for delivery tag %i and all below. Waiting for %i confirms.', deliv_tag, len(self.__unconfirmed_delivery_tags))
+        logdebug(LOGGER, 'Received "ACK" for delivery tag %i and all below. Waiting for %i confirms.', deliv_tag, len(self.__unconfirmed_delivery_tags))
         logtrace(LOGGER, 'Received "ACK" for delivery tag %i and all below.', deliv_tag)
         logtrace(LOGGER, 'Now left in queue to be confirmed: %i messages.', len(self.__unconfirmed_delivery_tags))
 

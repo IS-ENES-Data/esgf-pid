@@ -1,6 +1,8 @@
 import logging
 import json
 import esgfpid.utils
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
+
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -25,20 +27,20 @@ class AssistantOneVersion(object):
 
         if handle and version_number:
             self.__both_given(handle, version_number)
-            loginfo(LOGGER, 'Sent request to unpublish version %s of dataset %s from %s (handle: %s).', version_number self._drs_id, self._data_node, handle)
+            loginfo(LOGGER, 'Requesting to unpublish version %i of dataset %s from %s (handle: %s).', version_number, self._drs_id, self._data_node, handle)
         elif handle:
             self.__only_handle_given(handle)
-            loginfo(LOGGER, 'Sent request to unpublish a version of dataset %s from %s (handle: %s).', self._drs_id, self._data_node, handle)
+            loginfo(LOGGER, 'Requesting to unpublish a version of dataset %s from %s (handle: %s).', self._drs_id, self._data_node, handle)
         elif version_number:
             self.__only_version_given(version_number)
-            loginfo(LOGGER, 'Sent request to unpublish version %s of dataset %s from %s.', version_number self._drs_id, self._data_node)
+            loginfo(LOGGER, 'Requesting to unpublish version %s of dataset %s from %s.', version_number, self._drs_id, self._data_node)
         else:
             msg = 'Neither a handle nor a version number were specified for unpublication!'
             raise esgfpid.exceptions.ArgumentError(msg)
 
     def __both_given(self, handle, version_number):
         self.__check_whether_handle_and_version_number_match(handle, version_number)
-        logdebug(LOGGER, 'Unpublishing dataset with handle %s (one version, %s).', handle, str(version_number))
+        logdebug(LOGGER, 'Unpublishing dataset with handle %s (one version, %s).', handle, version_number)
         message = self.__make_message(handle)
         self._send_message_to_queue(message)
 
@@ -49,8 +51,7 @@ class AssistantOneVersion(object):
 
     def __only_version_given(self, version_number):
         handle = self.__derive_handle_from_version(version_number)
-        logdebug(LOGGER, 'Unpublishing dataset with handle %s (one version, %s).'+
-            ' Handle was derived from version number'), handle, str(version_number)
+        logdebug(LOGGER, 'Unpublishing dataset with handle %s (one version, %s). Handle was derived from version number', handle, version_number)
         message = self.__make_message(handle)
         self._send_message_to_queue(message)
 
@@ -118,7 +119,7 @@ class AssistantAllVersions(AssistantOneVersion):
             # If neither, let the consumer find them
             else:
                 self.__unpublish_allversions_consumer_must_find_versions()
-                loginfo(LOGGER, 'Sent request to unpublish all versions of dataset %s from %s', self._drs_id, self._data_node)
+                loginfo(LOGGER, 'Requesting to unpublish all versions of dataset %s from %s', self._drs_id, self._data_node)
 
     def __unpublish_all_dataset_versions_by_version(self, all_version_numbers):
         for version_number in all_version_numbers:

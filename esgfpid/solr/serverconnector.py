@@ -5,6 +5,7 @@ import json
 import esgfpid.utils
 import esgfpid.exceptions
 import esgfpid.defaults
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -43,7 +44,7 @@ class SolrServerConnector(object):
             self.__disable_insecure_request_warning()
 
     def __disable_insecure_request_warning(self):
-        LOGGER.debug('Disabling insecure request warnings...')
+        logdebug(LOGGER, 'Disabling insecure request warnings...')
         # Source: http://stackoverflow.com/questions/27981545/suppress-insecurerequestwarning-unverified-https-request-is-being-made-in-pytho#28002687
         from requests.packages.urllib3.exceptions import InsecureRequestWarning
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -55,7 +56,7 @@ class SolrServerConnector(object):
         return response_json
 
     def __get_request_to_solr(self, query_dict):
-        LOGGER.debug('Sending GET request to solr at "'+self.__solr_url+'".')
+        logdebug(LOGGER, 'Sending GET request to solr at "'+self.__solr_url+'".')
         try:
             resp = requests.get(
                 self.__solr_url,
@@ -72,35 +73,35 @@ class SolrServerConnector(object):
     def __get_json_from_response(self, response):
         try:
             response_json = json.loads(response.content)
-            LOGGER.debug('Solr response ok, returned JSON content.')
+            logdebug(LOGGER, 'Solr response ok, returned JSON content.')
             return response_json
 
         except (ValueError, TypeError) as e:
             msg = 'Error while parsing Solr response. It seems to be no valid JSON. Message: '+e.message
-            LOGGER.error(msg)
+            logerror(LOGGER, msg)
             raise esgfpid.exceptions.SolrError(msg)
 
     def __check_response_for_error_codes(self, response):
 
         if response is None:
             msg = 'Solr returned no response (None)'
-            LOGGER.error(msg)
+            logerror(LOGGER, msg)
             raise esgfpid.exceptions.SolrError(msg)
 
         elif response.status_code == 200:
             if response.content is None:
                 msg = 'Solr returned an empty response (with content None)'
-                LOGGER.error(msg)
+                logerror(LOGGER, msg)
                 raise esgfpid.exceptions.SolrError(msg)
 
         elif response.status_code == 404:
             msg = 'Solr returned no response (HTTP 404)'
-            LOGGER.error(msg)
+            logerror(LOGGER, msg)
             raise esgfpid.exceptions.SolrError(msg)
 
         else:
             msg = 'Solr replied with code '+str(response.status_code)
-            LOGGER.error(msg)
+            logerror(LOGGER, msg)
             raise esgfpid.exceptions.SolrError(msg)
 
 

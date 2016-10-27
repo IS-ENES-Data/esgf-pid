@@ -46,9 +46,9 @@ def loginfo(logger, msg, *args, **kwargs):
     if _is_show(kwargs):
         _logshow(logger, msg, *args, **kwargs)
     elif esgfpid.defaults.LOG_INFO_TO_DEBUG:
-        logger.debug('esgfpid: '+msg, *args, **kwargs)
+        logger.debug(msg, *args, **kwargs)
     else:
-        logger.info('esgfpid: '+msg, *args, **kwargs)
+        logger.info(msg, *args, **kwargs)
 
 
 def logwarn(logger, msg, *args, **kwargs):

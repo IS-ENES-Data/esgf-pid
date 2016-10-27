@@ -28,7 +28,7 @@ class ShoppingCartAssistant(object):
 
         # Return pid
         logdebug(LOGGER, 'Making a PID for a shopping cart full of datasets... done.')
-        loginfo(LOGGER, 'Sent request to create PID for data cart (%s).', cart_handle)
+        loginfo(LOGGER, 'Requesting to create PID for data cart (%s).', cart_handle)
         return cart_handle
 
     def __get_strings_as_list(self, strings):

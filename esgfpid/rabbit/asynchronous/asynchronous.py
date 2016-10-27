@@ -131,7 +131,7 @@ class AsynchronousRabbitConnector(object):
 
     def __rescue_unpublished_messages(self):
         if self.rabbit_thread.is_alive():
-            logwarn(LOGGER, ''Cannot retrieve unpublished messages while thread still alive.')
+            logwarn(LOGGER, 'Cannot retrieve unpublished messages while thread still alive.')
         else:
             self.__leftovers_unpublished = self.rabbit_thread.get_unpublished_messages_as_list()
             num = len(self.__leftovers_unpublished)
@@ -142,7 +142,7 @@ class AsynchronousRabbitConnector(object):
 
     def __rescue_unconfirmed_messages(self):
         if self.rabbit_thread.is_alive():
-            logwarn(LOGGER, ''Cannot retrieve unconfirmed messages while thread still alive.')
+            logwarn(LOGGER, 'Cannot retrieve unconfirmed messages while thread still alive.')
         else:
             self.__leftovers_unconfirmed = self.rabbit_thread.get_unconfirmed_messages_as_list()
             num = len(self.__leftovers_unconfirmed)
@@ -153,7 +153,7 @@ class AsynchronousRabbitConnector(object):
 
     def __rescue_nacked_messages(self):
         if self.rabbit_thread.is_alive():
-            logwarn(LOGGER, ''Cannot retrieve rejected (NACKed) messages while thread still alive.')
+            logwarn(LOGGER, 'Cannot retrieve rejected (NACKed) messages while thread still alive.')
         else:
             self.__leftovers_nacked = self.rabbit_thread.get_nacked_messages_as_list()
             num = len(self.__leftovers_nacked)

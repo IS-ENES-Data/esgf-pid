@@ -40,8 +40,8 @@ class RabbitFeeder(object):
         self.__first_carrot_trigger = True
         self.__have_not_warned_about_connection_fail_yet = True # TODO HERE?
         self.__have_not_warned_about_force_close_yet = True # TODO HERE?
-        self.lc = 1
-        self.li = 10
+        self.logcounter = 1
+        self.LOGFREQUENCY = 10
 
     def publish_message(self):
         if self.__first_carrot_trigger:
@@ -49,7 +49,7 @@ class RabbitFeeder(object):
             self.__first_carrot_trigger = False
         logtrace(LOGGER, 'Received trigger for feeding the rabbit.')
         if self.statemachine.is_available_for_server_communication(): # TODO This may be redundant, as it was already checked during trigger!
-            log_every_x_times(LOGGER, self.lc, self.li, 'Received trigger for feeding the rabbit')
+            log_every_x_times(LOGGER, self.logcounter, self.LOGFREQUENCY, 'Received trigger for feeding the rabbit')
             logtrace(LOGGER, 'Publishing module is ready for feeding the rabbit.')
             self.__try_and_catch()
         else:
@@ -59,7 +59,7 @@ class RabbitFeeder(object):
         self.__unpublished_messages_queue.put(message, block=False)
 
     def __inform_why_cannot_feed_the_rabbit(self):
-        log_every_x_times(LOGGER, self.lc, self.li, 'Cannot feed the rabbit')
+        log_every_x_times(LOGGER, self.logcounter, self.LOGFREQUENCY, 'Cannot feed the rabbit')
         msg = 'Cannot feed carrot to rabbit'
         if self.statemachine.is_waiting_to_be_available():
             logdebug(LOGGER, msg+' yet, as the connection is not ready.')
@@ -72,18 +72,18 @@ class RabbitFeeder(object):
             if self.statemachine.could_not_connect:
                 logtrace(LOGGER, msg+', as the connection failed.')
                 if self.__have_not_warned_about_connection_fail_yet:
-                    logwarn(LOGGER, msg+'. The connection failed definitively.')
+                    logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. The connection failed definitively.')
                     self.__have_not_warned_about_connection_fail_yet = False
 
             elif self.statemachine.closed_by_publisher:
                 logtrace(LOGGER, msg+', as the connection was closed by the user.')
                 if self.__have_not_warned_about_force_close_yet:
-                    logwarn(LOGGER, msg+'. The sender was force closed.')
+                    logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. The sender was force closed.')
                     self.__have_not_warned_about_force_close_yet = False
 
         else: # TODO when do these happen?
             if self.thread._channel is None:
-                logwarn(LOGGER, msg+' There is no channel.')
+                logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. There is no channel.')
 
     def __try_and_catch(self):
         try:
@@ -127,7 +127,7 @@ class RabbitFeeder(object):
         return msg
 
     def __actual_publish_to_channel(self, msg_string, properties, routing_key):
-        log_every_x_times(LOGGER, self.lc, self.li, 'Actual publish to channel no. %i.', self.thread._channel.channel_number)
+        log_every_x_times(LOGGER, self.logcounter, self.LOGFREQUENCY, 'Actual publish to channel no. %i.', self.thread._channel.channel_number)
         self.thread._channel.basic_publish(
             exchange=self.EXCHANGE,
             routing_key=routing_key,
@@ -137,7 +137,8 @@ class RabbitFeeder(object):
         )
 
     def __postparations_after_successful_feeding(self, msg, msg_string):
-        log_every_x_times(LOGGER, self.lc, self.li, 'Actual publish to channel done')
+        log_every_x_times(LOGGER, self.logcounter, self.LOGFREQUENCY, 'Actual publish to channel done')
+        self.logcounter += 1
         self.__message_number += 1 # IMPORTANT: This has to be incremented BEFORE we use it as delivery tag etc.!
         self.confirmer.put_to_unconfirmed_delivery_tags(self.__message_number)
         self.confirmer.put_to_unconfirmed_messages_dict(self.__message_number, msg)
@@ -145,6 +146,8 @@ class RabbitFeeder(object):
         logtrace(LOGGER, 'Feeding carrot %i (%s)... done.',
             self.__message_number,
             msg_string)
+        if (self.__message_number == 1):
+            loginfo(LOGGER, 'First message published to RabbitMQ.')
 
     def get_num_unpublished(self):
         return self.__unpublished_messages_queue.qsize()

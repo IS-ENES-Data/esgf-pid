@@ -33,7 +33,7 @@ class ErrataAssistant(object):
         message = self.__make_add_message(errata_ids, dataset_handle, args['drs_id'], args['version_number'])
         self.__send_message_to_queue(message)
 
-        loginfo(LOGGER, 'Sent request to add errata ids "%s" to dataset "%s".', ', '.join(errata_ids), dataset_handle)
+        loginfo(LOGGER, 'Requesting to add errata ids "%s" to dataset "%s".', ', '.join(errata_ids), dataset_handle)
         logdebug(LOGGER, 'Adding errata ids... done')
 
 
@@ -48,7 +48,7 @@ class ErrataAssistant(object):
         message = self.__make_remove_message(errata_ids, dataset_handle, args['drs_id'], args['version_number'])
         self.__send_message_to_queue(message)
 
-        loginfo(LOGGER, 'Sent request to aremove errata ids "%s" from dataset "%s".', ', '.join(errata_ids), dataset_handle)
+        loginfo(LOGGER, 'Requesting to remove errata ids "%s" from dataset "%s".', ', '.join(errata_ids), dataset_handle)
         logdebug(LOGGER, 'Removing errata ids... done')
 
     def __get_errata_ids_as_list(self, args):

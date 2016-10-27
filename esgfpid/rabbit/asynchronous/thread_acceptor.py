@@ -108,7 +108,7 @@ class PublicationReceiver(object):
         if self.statemachine.is_waiting_to_be_available():
             logtrace(LOGGER, msg+' yet, as the connection is not ready.')
             if self.__have_not_warned_about_unready_connection_yet:
-                logwarn(LOGGER, msg+'. The connection is not ready.')
+                logdebug(LOGGER, msg+' yet, as the connection is not ready.')
                 self.__have_not_warned_about_unready_connection_yet = False
 
         elif self.statemachine.is_not_started_yet():

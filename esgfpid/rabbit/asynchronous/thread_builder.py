@@ -201,7 +201,6 @@ class ConnectionBuilder(object):
         # Normally, it should already be waiting to be available:
         if self.statemachine.is_waiting_to_be_available():
             logdebug(LOGGER, 'Setup is finished. Publishing may start (channel no. %s)!', self.thread._channel.channel_number, show=True)
-            loginfo(LOGGER, 'Ready to publish messages to RabbitMQ.')
             self.statemachine.set_to_available()
             self.__check_for_already_arrived_messages()
 
@@ -227,10 +226,12 @@ class ConnectionBuilder(object):
         logdebug(LOGGER, 'Checking if messages have arrived in the meantime...', show=True)
         num = self.feeder.get_num_unpublished()
         if num > 0:
-            logdebug(LOGGER, 'Yes, there is %i messages!', num, show=True)
+            logdebug(LOGGER, 'Yes, there is %i messages!', num, show=False)
+            loginfo(LOGGER, 'Ready to publish messages to RabbitMQ. %i messages are already waiting to be published.', num)
             self.acceptor.trigger_publishing_n_messages_if_ok(num)
         else:
-            logdebug(LOGGER, 'No, no messages are waiting to be published.', show=True)
+            logdebug(LOGGER, 'No, no messages are waiting to be published.', show=False)
+            loginfo(LOGGER, 'Ready to publish messages to RabbitMQ.')
 
     def __reclose_freshly_made_connection(self):
         self.shutter.safety_finish('closed before connection was ready. reclosing.')
