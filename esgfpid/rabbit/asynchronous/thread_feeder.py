@@ -9,183 +9,266 @@ from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_ev
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+'''
+The RabbitFeeder is responsible for publishing messages to RabbitMQ.
 
+It is very simple. Basically the only method it exposes
+(except for some simple getter/setter which is rarely ever used)
+is publish_message(), which is called from the main thread.
+
+'''
 class RabbitFeeder(object):
 
-    def __init__(self, thread, statemachine, confirmer, exchange):
+    def __init__(self, thread, statemachine, exchange_name):
         self.thread = thread
-        self.confirmer = confirmer
-        self.statemachine = statemachine
-        self.EXCHANGE = exchange
 
-        ''' This is important. This defines the number of the message
-        that is used to identify it, so the correct messages are deleted on
-        confirm.
+        '''
+        Read-only.
+        Before publishing a message, we check the state, and we log 
+        the state. '''
+        self.statemachine = statemachine
+
+        '''
+        The name of the exchange to publish the messages to.
+        Is given during startup, but may be changed if the exchange does not
+        exist (in that case, RabbitMQ closes the channel, so this is handled
+        by the "builder.on_channel_close()"). '''
+        self.__exchange_name = exchange_name
+
+        '''
+        The deliver_number is important. It defines the number of the message
+        that is used to identify it between this client and the RabbitMQ
+        server (e.g. so the correct messages are deleted upon confirmation).
+
         It makes sure that rabbit server and this client talk about the
         same message.
         NEVER EVER INCREMENT OR OTHERWISE MODIFY THIS!
 
-        From the docs:
+        From the RabbitMQ docs:
         "The delivery tag is valid only within the channel from which
         the message was received. I.e. a client MUST NOT receive a
         message on one channel and then acknowledge it on another."
-        Source: https://www.rabbitmq.com/amqp-0-9-1-reference.html
-        '''
-        self.__message_number = 0
+        Source: https://www.rabbitmq.com/amqp-0-9-1-reference.html '''
+        self.__delivery_number = 1
 
-        ''' Queue that will contain the unpublished messages'''
-        self.__unpublished_messages_queue = Queue.Queue()
+        # Logging
+        self.__first_publication_trigger = True
+        self.__logcounter_success = 0 # counts successful publishes!
+        self.__logcounter_trigger = 0 # counts triggers!
+        self.__LOGFREQUENCY = 10
+        self.__have_not_warned_about_connection_fail_yet = True
+        self.__have_not_warned_about_force_close_yet = True
 
-        # Own private attributes
-        self.__first_carrot_trigger = True
-        self.__have_not_warned_about_connection_fail_yet = True # TODO HERE?
-        self.__have_not_warned_about_force_close_yet = True # TODO HERE?
-        self.logcounter = 1
-        self.LOGFREQUENCY = 10
+    '''
+    (called by builder, to reconnect to a different exchange,
+    if the former did not exist).
+    '''
+    def set_exchange_name(self, exchange_name):
+        self.__exchange_name = exchange_name
 
+    '''
+    (called by builder module, for logging only).
+    '''
+    def get_exchange_name(self):
+        return self.__exchange_name
+
+    '''
+    Triggers the publication of one message to RabbitMQ, if the
+    state machine currently allows this.
+
+    The message is fetched from the Queue of unpublished messages.
+
+    So far, whenever the library wants to publish messages, it
+    fires as many of these "publish_message" events as messages
+    were published (and some extra, to be sure).
+    If some of these triggers cannot be acted upon, as the module
+    is not in a state where it is allowed to publish, the triggers
+    should be fired as soon as the module is in available state
+    again.
+
+    TODO:
+    Are we sure there is not ever a way to have some messages
+    in the unpublished Queue that could be sent, but aren't, because
+    no event was fired for them? For example, if an exception occurs
+    during publish, and the message was put back - will there ever
+    be an event to trigger its publication?
+    I don't think so. This is to do!
+
+    '''
     def publish_message(self):
-        if self.__first_carrot_trigger:
-            logdebug(LOGGER, 'Received first trigger for feeding the rabbit.')
-            self.__first_carrot_trigger = False
-        logtrace(LOGGER, 'Received trigger for feeding the rabbit.')
-        if self.statemachine.is_available_for_server_communication(): # TODO This may be redundant, as it was already checked during trigger!
-            log_every_x_times(LOGGER, self.logcounter, self.LOGFREQUENCY, 'Received trigger for feeding the rabbit')
-            logtrace(LOGGER, 'Publishing module is ready for feeding the rabbit.')
-            self.__try_and_catch()
-        else:
-            self.__inform_why_cannot_feed_the_rabbit()
+        self.__logcounter_trigger += 1
 
-    def put_message_into_queue_of_unsent_messages(self, message):
-        self.__unpublished_messages_queue.put(message, block=False)
+        if self.statemachine.is_NOT_STARTED_YET() or self.statemachine.is_WAITING_TO_BE_AVAILABLE():
+            log_every_x_times(LOGGER, self.__logcounter_trigger, self.__LOGFREQUENCY, 'Received early trigger for feeding the rabbit (trigger %i).', self.__logcounter_trigger)
+            self.__log_why_cannot_feed_the_rabbit_now()
 
-    def __inform_why_cannot_feed_the_rabbit(self):
-        log_every_x_times(LOGGER, self.logcounter, self.LOGFREQUENCY, 'Cannot feed the rabbit')
-        msg = 'Cannot feed carrot to rabbit'
+        elif self.statemachine.is_AVAILABLE() or self.statemachine.is_AVAILABLE_BUT_WANTS_TO_STOP():
+            log_every_x_times(LOGGER, self.__logcounter_trigger, self.__LOGFREQUENCY, 'Received trigger for publishing message to RabbitMQ (trigger %i).', self.__logcounter_trigger)
+            self.__log_publication_trigger()
+            self.__publish_message_to_channel()
+
+        elif self.is_PERMANENTLY_UNAVAILABLE():
+            log_every_x_times(LOGGER, self.__logcounter_trigger, self.__LOGFREQUENCY, 'Received late trigger for feeding the rabbit (trigger %i).', self.__logcounter_trigger)
+            self.__log_why_cannot_feed_the_rabbit_now()
+
+    ''' This method only logs. '''
+    def __log_publication_trigger(self):
+        if self.__first_publication_trigger:
+            logdebug(LOGGER, 'Received first trigger for publishing message to RabbitMQ.')
+            self.__first_publication_trigger = False
+        logtrace(LOGGER, 'Received trigger for publishing message to RabbitMQ, and module is ready to accept it.')
+
+    ''' This method only logs, depending on the state machine's state.'''
+    def __log_why_cannot_feed_the_rabbit_now(self):
+        log_every_x_times(LOGGER, self.__logcounter_trigger, self.__LOGFREQUENCY, 'Cannot publish message to RabbitMQ (trigger no. %i).', self.__logcounter_trigger)
         if self.statemachine.is_waiting_to_be_available():
-            logdebug(LOGGER, msg+' yet, as the connection is not ready.')
-
+            logdebug(LOGGER, 'Cannot publish message to RabbitMQ yet, as the connection is not ready.')
         elif self.statemachine.is_not_started_yet():
-            logdebug(LOGGER, msg+' yet, as the thread is not running yet.')
-
+            logerror(LOGGER, 'Cannot publish message to RabbitMQ, as the thread is not running yet.')
         elif self.statemachine.is_permanently_unavailable():
-
-            if self.statemachine.could_not_connect:
-                logtrace(LOGGER, msg+', as the connection failed.')
+            if self.statemachine.detail_could_not_connect:
+                logtrace(LOGGER, 'Could not publish message to RabbitMQ, as the connection failed.')
                 if self.__have_not_warned_about_connection_fail_yet:
                     logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. The connection failed definitively.')
                     self.__have_not_warned_about_connection_fail_yet = False
-
-            elif self.statemachine.closed_by_publisher:
-                logtrace(LOGGER, msg+', as the connection was closed by the user.')
+            elif self.statemachine.detail_closed_by_publisher:
+                logtrace(LOGGER, 'Cannot publish message to RabbitMQ, as the connection was closed by the user.')
                 if self.__have_not_warned_about_force_close_yet:
-                    logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. The sender was force closed.')
+                    logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. The sender was closed by the user.')
                     self.__have_not_warned_about_force_close_yet = False
-
-        else: # TODO when do these happen?
+        else:
             if self.thread._channel is None:
-                logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. There is no channel.')
+                logerror(LOGGER, 'Very unexpected. Could not publish message(s) to RabbitMQ. There is no channel.')
 
-    def __try_and_catch(self):
+    '''
+    Retrieves a message from stack and tries to publish it
+    to RabbitMQ.
+    In case of failure, it is put back. In case of success,
+    it is handed on to the confirm module that is responsible
+    for waiting for RabbitMQ's confirmation.
+
+    Note: The publish may cause an error if the Channel was closed.
+    A closed Channel should be handled in the on_channel_close()
+    callback, but we catch it here in case the clean up was not quick enough.
+    '''
+    def __publish_message_to_channel(self):
+
+        # Find a message to publish.
+        # If no messages left, well, nothing to publish!
         try:
-            self.__try_feeding_next_carrot()
+            message = self.__get_message_from_stack()
+        except Queue.Empty, e:
+            logtrace(LOGGER, 'Queue empty. No more messages to be published.')
+            return
+
+        # Now try to publish it.
+        # If anything goes wrong, you need to put it back to
+        # the stack of unpublished messages!
+        try:
+            success = self.__try_publishing_otherwise_put_back_to_stack(message)
+            if success:
+                self.__postparations_after_successful_feeding(message)
+
+        # Treat various errors that may occur during publishing:
         except pika.exceptions.ChannelClosed, e:
-            logwarn(LOGGER, 'Cannot feed carrot %i because the Channel is closed (%s)', self.__message_number+1, e.message)
+            logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because the Channel is closed (%s)', self.__delivery_number+1, e.message)
+
         except AttributeError, e:
             if self.thread._channel is None:
-                logwarn(LOGGER, 'Cannot feed carrot %i, because there is no channel.', self.__message_number+1)
+                logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because there is no channel.', self.__delivery_number+1)
             else:
-                logwarn(LOGGER, 'Cannot feed carrot %i (unexpected error %s)', self.__message_number+1, e.message)
-        except Queue.Empty, e:
-            logtrace(LOGGER, 'Queue empty. No more carrots to be fed.')
-        except AssertionError as e:
-            logwarn(LOGGER, 'Cannot feed carrot %i because of AssertionError: "%s"', self.__message_number+1,e)
-            if e.message == 'A non-string value was supplied for self.exchange':
-                logwarn(LOGGER, 'Exchange was "%s" (type %s)',self.EXCHANGE, type(self.EXCHANGE))
-            # TODO How to make sure the publish is called exactly as many times as messages were added?
+                logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ (unexpected error %s)', self.__delivery_number+1, e.message)
 
-    def __try_feeding_next_carrot(self):
-        properties = connparams.get_properties_for_message_publications()
-        msg = self.__get_carrot_to_feed()
-        success = False
+        except AssertionError as e:
+            logwarn(LOGGER, 'Cannot publish message to RabbitMQ %i because of AssertionError: "%s"', self.__delivery_number+1,e)
+            if e.message == 'A non-string value was supplied for self.exchange':
+                logwarn(LOGGER, 'Exchange was "%s" (type %s)',self.__exchange_name, type(self.__exchange_name))
+
+
+    '''
+    Retrieve an unpublished message from stack.
+    Note: May block for up to 2 seconds.
+
+    :return: A message from the stack of unpublished messages.
+    :raises: Queue.Empty.
+    '''
+    def __get_message_from_stack(self, seconds=2):
+        message = self.thread.get_message_from_unpublished_stack(seconds)
+        logtrace(LOGGER, 'Found message to be published. Now left in queue to be published: %i messages.', self.thread.get_num_unpublished())
+        return message
+
+    '''
+    This tries to publish the message and puts it back into the
+    Queue if it failed.
+
+    :param message: Message to be sent.
+    :raises: pika.exceptions.ChannelClosed, if the Channel is closed.
+    '''
+    def __try_publishing_otherwise_put_back_to_stack(self, message):
         try:
-            routing_key, msg_string = rabbitutils.get_routing_key_and_string_message_from_message_if_possible(msg)
-            logtrace(LOGGER, 'Feeding carrot %i (key %s) (body %s)...', self.__message_number+1, routing_key, msg_string) # +1 because it will be incremented after the publish.
-            self.__actual_publish_to_channel(msg_string, properties, routing_key)
-            success = True
+            # Getting message info:
+            properties = connparams.get_properties_for_message_publications()
+            routing_key, msg_string = rabbitutils.get_routing_key_and_string_message_from_message_if_possible(message)
+            
+            # Logging
+            logtrace(LOGGER, 'Publishing message %i (key %s) (body %s)...', self.__delivery_number+1, routing_key, msg_string) # +1 because it will be incremented after the publish.
+            log_every_x_times(LOGGER, self.__logcounter_trigger, self.__LOGFREQUENCY, 'Trying actual publish... (trigger no. %i).', self.__logcounter_trigger)
+            logtrace(LOGGER, '(Publish to channel no. %i).', self.thread._channel.channel_number)
+
+            # Actual publish to exchange
+            self.thread._channel.basic_publish(
+                exchange=self.__exchange_name,
+                routing_key=routing_key,
+                body=msg_string,
+                properties=properties,
+                mandatory=defaults.RABBIT_MANDATORY_DELIVERY
+            )
+            return True
+
+        # If anything went wrong, put it back into the stack of
+        # unpublished messages before re-raising the exception
+        # for further handling:
         except Exception as e:
             success = False
-            logwarn(LOGGER, 'Carrot was not fed. Putting back to queue. Error: "%s"',e)
-            self.put_message_into_queue_of_unsent_messages(msg)
-            logtrace(LOGGER, 'Now (after putting back) left in queue to be fed: %i carrots.', self.__unpublished_messages_queue.qsize())
+            logwarn(LOGGER, 'Message was not published. Putting back to queue. Error: "%s"',e)
+            self.thread.put_one_message_into_queue_of_unsent_messages(message)
+            logtrace(LOGGER, 'Now (after putting back) left in queue to be published: %i messages.', self.thread.unpublished_messages_queue.qsize())
             raise e
-        if success:
-            self.__postparations_after_successful_feeding(msg, msg_string)
 
-    def __get_carrot_to_feed(self, seconds=2):
-        msg = self.__unpublished_messages_queue.get(block=True, timeout=seconds) # can raise Queue.Empty
-        logtrace(LOGGER, 'Found carrot to feed. Now left in queue to be fed: %i carrots.', self.__unpublished_messages_queue.qsize())
-        return msg
+    '''
+    If a publish was successful, pass it to the confirmer module
+    and in increment delivery_number for the next message.
+    '''
+    def __postparations_after_successful_feeding(self, msg):
 
-    def __actual_publish_to_channel(self, msg_string, properties, routing_key):
-        log_every_x_times(LOGGER, self.logcounter, self.LOGFREQUENCY, 'Actual publish to channel no. %i.', self.thread._channel.channel_number)
-        self.thread._channel.basic_publish(
-            exchange=self.EXCHANGE,
-            routing_key=routing_key,
-            body=msg_string,
-            properties=properties,
-            mandatory=defaults.RABBIT_MANDATORY_DELIVERY
-        )
+        # Pass the successfully published message and its delivery_number
+        # to the confirmer module, to wait for its confirmation.
+        # Increase the delivery number for the next message.
+        self.thread.put_to_unconfirmed_delivery_tags(self.__delivery_number)
+        self.thread.put_to_unconfirmed_messages_dict(self.__delivery_number, msg)
+        self.__delivery_number += 1
 
-    def __postparations_after_successful_feeding(self, msg, msg_string):
-        log_every_x_times(LOGGER, self.logcounter, self.LOGFREQUENCY, 'Actual publish to channel done')
-        self.logcounter += 1
-        self.__message_number += 1 # IMPORTANT: This has to be incremented BEFORE we use it as delivery tag etc.!
-        self.confirmer.put_to_unconfirmed_delivery_tags(self.__message_number)
-        self.confirmer.put_to_unconfirmed_messages_dict(self.__message_number, msg)
-        loginfo(LOGGER, 'Message sent (no. %i).', self.__message_number)
-        logtrace(LOGGER, 'Feeding carrot %i (%s)... done.',
-            self.__message_number,
-            msg_string)
-        if (self.__message_number == 1):
+        # Logging
+        self.__logcounter_success += 1
+        log_every_x_times(LOGGER, self.__logcounter_success, self.__LOGFREQUENCY, 'Actual publish to channel done (trigger no. %i, publish no. %i).', self.__logcounter_trigger, self.__logcounter_success)
+        logtrace(LOGGER, 'Publishing messages %i to RabbitMQ... done.', self.__delivery_number-1)
+        if (self.__delivery_number-1 == 1):
             loginfo(LOGGER, 'First message published to RabbitMQ.')
 
-    def get_num_unpublished(self):
-        return self.__unpublished_messages_queue.qsize()
+    '''
+    Reset the delivery_number for the messages.
+    This must be called on a reconnection / channel reopen!
+    And may not be called during any other situation!
 
-    def get_unpublished_messages_as_list_copy(self):
-        newlist = []
-        counter = 0
-        to_be_safe = 10
-        max_iterations = self.__unpublished_messages_queue.qsize() + to_be_safe
-        while True:
+    The number is not sent along to the RabbitMQ server, but
+    the server keeps track of the delivery number
+    separately on its side.
 
-            counter+=1
-            if counter == max_iterations:
-                break
+    That's why it is important to make sure it is incremented
+    and reset exactly the same way (incremented at each successfully
+    published message, and reset to one at channel reopen).
 
-            try:
-                self.__get_msg_from_queue_and_store_first_try(
-                    newlist,
-                    self.__unpublished_messages_queue)
-            except Queue.Empty:
-                try:
-                    self.__get_a_msg_from_queue_and_store_second_try(
-                        newlist,
-                        self.__unpublished_messages_queue)
-                except Queue.Empty:
-                    break
-        return newlist
-
-    def __get_msg_from_queue_and_store_first_try(self, alist, queue):
-        msg_incl_routing_key = queue.get(block=False)
-        alist.append(msg_incl_routing_key)
-
-    def __get_a_msg_from_queue_and_store_second_try(self, alist, queue):
-        wait_seconds = 0.5
-        msg_incl_routing_key = queue.get(block=True, timeout=wait_seconds)
-        alist.append(msg_incl_routing_key)
-
-    def reset_message_number(self):
-        # CAREFUL
-        # This can be called only on a reconnection!
-        self.__message_number = 0
+    (called by the builder during reconnection / channel reopen).
+    '''
+    def reset_delivery_number(self):
+        self.__delivery_number = 1
