@@ -69,5 +69,5 @@ def log_every_x_times(logger, counter, x, msg, *args, **kwargs):
     and every xth message.
     '''
     if counter==1 or counter % x == 0:
-        msgf = msg + (' (counter %i)' % counter)
-        logdebug(logger, msgf, *args, **kwargs)
+        #msg = msg + (' (counter %i)' % counter)
+        logdebug(logger, msg, *args, **kwargs)

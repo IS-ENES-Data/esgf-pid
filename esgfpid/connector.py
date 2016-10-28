@@ -28,8 +28,7 @@ class Connector(object):
         self.__store_some_args(args)
         self.__throw_error_if_prefix_not_in_list()
         self.__coupler = esgfpid.coupling.Coupler(**args)
-        LOGGER.debug('Creating PID connector object .. done')
-        loginfo('Created PID connector.')
+        loginfo(LOGGER, 'Created PID connector.')
 
     def __check_presence_of_args(self, args):
         mandatory_args = [

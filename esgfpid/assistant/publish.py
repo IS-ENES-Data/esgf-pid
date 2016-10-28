@@ -126,7 +126,7 @@ class DatasetPublicationAssistant(object):
         self.__adapt_file_args(args)
         self.__create_and_store_file_publication_message(args)        
         self.__set_machine_state_to_files_added()
-        logdebug(LOGGER, 'Adding file done.')
+        logtrace(LOGGER, 'Adding file done.')
 
     def __add_file_to_datasets_children(self, file_handle):
         self.__list_of_file_handles.append(file_handle)
@@ -193,7 +193,7 @@ class DatasetPublicationAssistant(object):
         self.__send_existing_file_messages_to_queue()
         self.__coupler.done_with_rabbit_business() # Synchronous: Closes connection. Asynchronous: Ignored.
         self.__set_machine_state_to_finished()
-        loginfo(LOGGER, 'Requesting to publish dataset "%s" (version %s) and its files at "%s" (handle %s).', self.__drs_id, self.__version_number, self.__data_node, self.__dataset_handle)
+        loginfo(LOGGER, 'Requesting to publish PID for dataset "%s" (version %s) and its files at "%s" (handle %s).', self.__drs_id, self.__version_number, self.__data_node, self.__dataset_handle)
 
     def __check_if_dataset_publication_allowed_right_now(self):
         if not self.__machine_state == self.__machine_states['files_added']:
@@ -231,19 +231,19 @@ class DatasetPublicationAssistant(object):
     def __create_and_send_dataset_publication_message_to_queue(self):
         message = self.__create_dataset_publication_message()
         self.__send_message_to_queue(message)
-        logdebug(LOGGER, 'Dataset publication message sent to queue.')
+        logdebug(LOGGER, 'Dataset publication message handed to rabbit thread.')
         logtrace(LOGGER, 'Dataset publication message: %s (%s, version %s).', self.__dataset_handle, self.__drs_id, self.__version_number)
 
     def __send_existing_file_messages_to_queue(self):
         for i in xrange(0, len(self.__list_of_file_messages)):
             self.__try_to_send_one_file_message(i)
-        msg = 'All file publication jobs sent to queue.'
+        msg = 'All file publication jobs handed to rabbit thread.'
         logdebug(LOGGER, msg)
         
     def __try_to_send_one_file_message(self, list_index):
         msg = self.__list_of_file_messages[list_index]
         success = self.__send_message_to_queue(msg)
-        logdebug(LOGGER, 'File publication message sent to queue: %s (%s)', msg['handle'], msg['file_name'])
+        logdebug(LOGGER, 'File publication message handed to rabbit thread: %s (%s)', msg['handle'], msg['file_name'])
         return success
 
     def __set_machine_state_to_finished(self):

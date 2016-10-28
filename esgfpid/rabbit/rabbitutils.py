@@ -38,7 +38,7 @@ def get_routing_key_and_string_message_from_message_if_possible(msg):
             msg_string = json.dumps(msg)
             msg_json = msg
             json_ok = True
-            logdebug(LOGGER, 'Message was already json.')
+            logtrace(LOGGER, 'Message was already json.')
 
         except TypeError as e:
             if 'not JSON serializable' in e.message:
@@ -56,7 +56,7 @@ def get_routing_key_and_string_message_from_message_if_possible(msg):
     if json_ok:
         try:
             routing_key = msg_json['ROUTING_KEY']
-            logdebug(LOGGER, 'Routing extracted from message.')
+            logtrace(LOGGER, 'Routing key extracted from message.')
         except (KeyError, TypeError) as e:
             logdebug(LOGGER, 'No routing key in message.')
             routing_key = esgfpid.defaults.RABBIT_DEFAULT_ROUTING_KEY
@@ -84,10 +84,10 @@ def set_preferred_url(args, LOGGER):
 def _select_fallback_url_as_preferred(args, LOGGER):
     if len(args['urls_fallback']) == 1: # for this, it HAS to be a list! Otherwise, string length is counted.
         _select_only_fallback_url_as_preferred(args)
-        logdebug(LOGGER, 'Only specified URL is: %s', args['url_preferred'])
+        logdebug(LOGGER, 'The only provided URL is: %s', args['url_preferred'])
     else:
         _select_random_fallback_url_as_preferred(args)            
-        logdebug(LOGGER, 'No preferred messaging service URL provided. Randomly selected %s.', args['url_preferred'])
+        loginfo(LOGGER, 'No preferred messaging service URL provided. Randomly selected %s.', args['url_preferred'])
 
 def _select_only_fallback_url_as_preferred(args):
     args['url_preferred'] = args['urls_fallback'].pop()
