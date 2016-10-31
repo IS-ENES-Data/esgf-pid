@@ -333,11 +333,11 @@ class RabbitThread(threading.Thread):
 
     ''' Called by builder, to republish messages after a reconnection. '''
     def send_many_messages(self, messages):
-        return self.__facade.send_many_messages(messages)
+        return self.__facade.send_many_messages_to_queue(messages)
 
     '''Called by returnhandle, to republish a message that was not accepted.'''
     def send_a_message(self, message):
-        return self.__facade.send_a_message(message)
+        return self.__facade.send_message_to_queue(message)
 
     '''Called by feeder, to notify confirmer about which message it needs to get confirmed. '''
     def put_to_unconfirmed_delivery_tags(self, delivery_tag):

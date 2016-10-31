@@ -326,11 +326,11 @@ class AsynchronousRabbitConnector(object):
 
     def __send_many_messages(self, messages):
         if self.__statemachine.is_WAITING_TO_BE_AVAILABLE():
-            self.__log_message_receival(message)
+            self.__log_receival_many_messages(messages)
             self.__put_all_messages_into_queue_of_unsent_messages(messages)
 
         elif self.__statemachine.is_AVAILABLE():
-            self.__log_message_receival(message)
+            self.__log_receival_many_messages(messages)
             self.__put_all_messages_into_queue_of_unsent_messages(messages)
             self.__trigger_n_publish_actions(len(messages))
 
