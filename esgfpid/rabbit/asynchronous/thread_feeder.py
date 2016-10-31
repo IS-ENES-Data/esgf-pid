@@ -107,7 +107,7 @@ class RabbitFeeder(object):
             self.__log_publication_trigger()
             self.__publish_message_to_channel()
 
-        elif self.is_PERMANENTLY_UNAVAILABLE():
+        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE():
             log_every_x_times(LOGGER, self.__logcounter_trigger, self.__LOGFREQUENCY, 'Received late trigger for feeding the rabbit (trigger %i).', self.__logcounter_trigger)
             self.__log_why_cannot_feed_the_rabbit_now()
 
@@ -121,11 +121,11 @@ class RabbitFeeder(object):
     ''' This method only logs, depending on the state machine's state.'''
     def __log_why_cannot_feed_the_rabbit_now(self):
         log_every_x_times(LOGGER, self.__logcounter_trigger, self.__LOGFREQUENCY, 'Cannot publish message to RabbitMQ (trigger no. %i).', self.__logcounter_trigger)
-        if self.statemachine.is_waiting_to_be_available():
+        if self.statemachine.is_WAITING_TO_BE_AVAILABLE():
             logdebug(LOGGER, 'Cannot publish message to RabbitMQ yet, as the connection is not ready.')
-        elif self.statemachine.is_not_started_yet():
+        elif self.statemachine.is_NOT_STARTED_YET():
             logerror(LOGGER, 'Cannot publish message to RabbitMQ, as the thread is not running yet.')
-        elif self.statemachine.is_permanently_unavailable():
+        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE():
             if self.statemachine.detail_could_not_connect:
                 logtrace(LOGGER, 'Could not publish message to RabbitMQ, as the connection failed.')
                 if self.__have_not_warned_about_connection_fail_yet:
