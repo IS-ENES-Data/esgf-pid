@@ -259,7 +259,11 @@ class ConnectionBuilder(object):
             logdebug(LOGGER, 'Failed connecting to "%s": %s. %i fallback URLs left to try.', oldhost, msg, len(self.__other_rabbitmq_hosts))
             self.__choose_next_host(msg)
             loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s. Now trying to connect to %s.', oldhost, msg, self.__current_rabbitmq_host)
-            self.__please_open_connection()
+            reopen_seconds = 0
+            self.__wait_and_trigger_reconnection(connection, reopen_seconds)
+            # Use "__wait_and_trigger_reconnection()" instead of "__please_open_connection()", because
+            # the latter does not stop and restart the ioloop, so the ioloop listens to a different
+            # connection object than the new connection!
 
         # If no alternatives are left, retry connecting to
         # the current one (but only a given number of times)
@@ -268,7 +272,8 @@ class ConnectionBuilder(object):
             if self.__reconnect_counter <= defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES:
                 loginfo(LOGGER, 'Failed connecting to RabbitMQ at %s. Will retry (%i/%i).', self.__current_rabbitmq_host, self.__reconnect_counter, defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
                 #self.__store_settings_for_rabbit(self.__args) # Resetting hosts... TODO Why are we resetting the host here?
-                self.__wait_and_trigger_reconnection(connection, 0, msg)
+                reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+                self.__wait_and_trigger_reconnection(connection, reopen_seconds)
 
             # If we have tried to connect many times, just give up:
             else:
@@ -400,7 +405,8 @@ class ConnectionBuilder(object):
             loginfo(LOGGER, 'Connection to %s closed.', self.__current_rabbitmq_host)
             self.make_permanently_closed_by_user()
         else:
-            self.__wait_and_trigger_reconnection(connection, reply_code, reply_text)
+            reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+            self.__wait_and_trigger_reconnection(connection, reopen_seconds)
 
     def __was_user_shutdown(self, reply_code, reply_text):
         if self.__was_forced_user_shutdown(reply_code, reply_text):
@@ -435,11 +441,20 @@ class ConnectionBuilder(object):
         loginfo(LOGGER, 'Stopped listening for RabbitMQ events (%s).', get_now_utc_as_formatted_string())
         logdebug(LOGGER, 'Connection to messaging service closed by user. Will not reopen.')
 
-    def __wait_and_trigger_reconnection(self, connection, reply_code, reply_text):
+    '''
+    This triggers a reconnection to whatever host is stored in
+    self.__current_rabbitmq_host at the moment of reconnection.
+
+    If it is called to reconnect to the same host, it is better
+    to wait some seconds.
+
+    If it is used to connect to the next host, there is no point
+    in waiting.
+    '''
+    def __wait_and_trigger_reconnection(self, connection, wait_seconds):
         self.statemachine.set_to_waiting_to_be_available()
-        reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
-        loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %i seconds.', reopen_seconds)
-        connection.add_timeout(reopen_seconds, self.reconnect)
+        loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %i seconds.', wait_seconds)
+        connection.add_timeout(wait_seconds, self.reconnect)
         logtrace(LOGGER, 'Reconnect event added to connection %s (not to %s)', connection, self.thread._connection)
 
     ###########################
