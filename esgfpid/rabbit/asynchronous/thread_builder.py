@@ -118,9 +118,11 @@ class ConnectionBuilder(object):
                     break
 
                 except Exception as e:
-                    # Does this catch any error during connection startup, or even during
-                    # the entire time the ioloop runs, blocks and waits for events?
-                    logerror(LOGGER, 'Unexpected error when starting to listen to events: %s: %s', e.__class__.__name__, e.message)
+                    # This catches any error during connection startup and during the entire
+                    # time the ioloop runs, blocks and waits for events.
+                    logerror(LOGGER, 'Unexpected error during event listener\'s lifetime: %s: %s', e.__class__.__name__, e.message)
+                    self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
+                    self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
                     break
 
             # Otherwise, wait and retry
