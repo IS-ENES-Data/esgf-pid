@@ -398,7 +398,7 @@ class ConnectionBuilder(object):
         self.thread._channel = None
         if self.__was_user_shutdown(reply_code, reply_text):
             loginfo(LOGGER, 'Connection to %s closed.', self.__current_rabbitmq_host)
-            self.__make_permanently_closed_by_user()
+            self.make_permanently_closed_by_user()
         else:
             self.__wait_and_trigger_reconnection(connection, reply_code, reply_text)
 
@@ -421,7 +421,8 @@ class ConnectionBuilder(object):
             return True
         return False
 
-    def __make_permanently_closed_by_user(self):
+    ''' Called by thread, by shutter module.'''
+    def make_permanently_closed_by_user(self):
         # This changes the state of the state machine!
         # This needs to be called from the shutter module
         # in case there is a force_finish while the connection

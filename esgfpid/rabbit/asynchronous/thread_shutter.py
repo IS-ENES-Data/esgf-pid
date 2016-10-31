@@ -230,7 +230,7 @@ class ShutDowner(object):
                     # called, so the ioloop continues, possibly waiting for reconnect.
                     # So we need to prevent reconnects or other events. As long
                     # as ioloop runs, thread cannot be finished/joined.
-                    self.thread._make_permanently_closed_by_user()
+                    self.thread.make_permanently_closed_by_user()
                 elif self.thread._connection.is_open:
                     logdebug(LOGGER, 'Connection is open. Closing now. This will trigger the RabbitMQ callbacks.')
                     self.thread._connection.close(reply_code=reply_code, reply_text=reply_text)

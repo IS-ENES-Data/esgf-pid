@@ -366,3 +366,7 @@ class RabbitThread(threading.Thread):
     ''' Called by builder, in case the old exchange caused an error.'''
     def set_exchange_name(self, new_name):
         return self.__feeder.set_exchange_name(new_name)
+
+    ''' Called by shutter, in case a connectio is already closing/closed... '''
+    def make_permanently_closed_by_user(self):
+        return self.__builder.make_permanently_closed_by_user()
