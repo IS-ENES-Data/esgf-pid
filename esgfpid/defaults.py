@@ -5,7 +5,7 @@ ACCEPTED_PREFIXES = ['21.14100','21.14foo']
 
 
 # Custom logging
-LOG_INFO_TO_DEBUG=False # info messages are printed as "debug" to not appear on publisher console. Should be False.
+LOG_INFO_TO_DEBUG=False # info messages are printed as "debug" to not appear on publisher console. Should be False, unless you want to almost silence it.
 LOG_DEBUG_TO_INFO=False # debug messages are printed as "info" to appear on publisher console. Should be False, except for during tests.
 LOG_TRACE_TO_DEBUG=False # Print extremely detailed log messages of rabbit module as "DEBUG" messages. Should be False, except for during tests.
 LOG_SHOW_TO_INFO=False # So I can selectively show some log messages to Katharina without having to modify the whole code. Deprecated.

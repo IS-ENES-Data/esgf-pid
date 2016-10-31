@@ -177,12 +177,12 @@ class RabbitFeeder(object):
             if self.thread._channel is None:
                 logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because there is no channel.', self.__delivery_number+1)
             else:
-                logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ (unexpected error %s)', self.__delivery_number+1, e.message)
+                logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ (unexpected error %s:%s)', self.__delivery_number+1, e.__class__.__name__, e.message)
 
         except AssertionError as e:
             logwarn(LOGGER, 'Cannot publish message to RabbitMQ %i because of AssertionError: "%s"', self.__delivery_number+1,e)
             if e.message == 'A non-string value was supplied for self.exchange':
-                logwarn(LOGGER, 'Exchange was "%s" (type %s)',self.__exchange_name, type(self.__exchange_name))
+                logwarn(LOGGER, 'Exchange was "%s" (type %s)', self.__exchange_name, type(self.__exchange_name))
 
 
     '''
