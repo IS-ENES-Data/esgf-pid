@@ -93,6 +93,14 @@ class RabbitThread(threading.Thread):
         Shared with the main thread!
         '''
         self.__gently_finish_ready = threading.Event()
+
+        '''
+        Synchronization event which makes sure the main thread
+        waits for the rabbit thread to be ready for events before
+        sending events, without having to use time.sleep().
+        Shared with the main thread!
+        '''
+        self.__connection_is_set = threading.Event()
         
         '''
         Thread-safe Queue that will contain the unpublished messages.
@@ -238,7 +246,23 @@ class RabbitThread(threading.Thread):
     from the main thread. 
     '''
     def __add_event(self, event):
-        self._connection.add_timeout(self.__PUBLISH_INTERVAL_SECONDS, event)
+        if self._connection is not None:
+            self._connection.add_timeout(self.__PUBLISH_INTERVAL_SECONDS, event)
+        else:
+            # If the main thread wants to add an event so quickly after starting the
+            # thread that not even the connection object is listening for events yet,
+            # we need to force it to wait.
+            # Event listening is the first thing that happens when a thread is started,
+            # but e.g. for shopping carts, the main thread just sends one message and
+            # then wants to close again.
+            # In that case, the thread cannot even receive the close event, as it is
+            # not started yet.
+            logdebug(LOGGER, 'Main thread wants to add event to thread that is not ready to receive events yet. Blocking and waiting.')
+            self.__wait_for_thread_to_accept_events()
+            logdebug(LOGGER, 'Thread declared itself ready to receive events.')
+            self._connection.add_timeout(self.__PUBLISH_INTERVAL_SECONDS, event)
+            logerror(LOGGER, 'Added event after having waited for thread to open.')
+
 
 
     '''
@@ -256,6 +280,14 @@ class RabbitThread(threading.Thread):
         self.__gently_finish_ready.wait()
         logdebug(LOGGER, 'Finished waiting for gentle close-down of RabbitMQ connection.')
 
+    def __wait_for_thread_to_accept_events(self):
+        logdebug(LOGGER, 'Now waiting for the connection before I can even close of RabbitMQ connection...')
+        self.__connection_is_set.wait()
+
+    def tell_publisher_to_stop_waiting_for_thread_to_accept_events(self):
+        self.__connection_is_set.set()
+        logdebug(LOGGER, 'Finished waiting for thread to start.')
+ 
     #
     # Methods called from inside the thread
     # These are to be called only by the submodules!

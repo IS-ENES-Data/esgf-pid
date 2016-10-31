@@ -132,7 +132,10 @@ class ShutDowner(object):
         logdebug(LOGGER, 'Gentle finish: Waiting some more for pending messages...')
         # Instead of time.sleep(), add an event to the thread's ioloop
         self.__close_decision_iterations += 1
-        self.thread._connection.add_timeout(wait_seconds, self.recursive_decision_about_closing)
+        if self.thread._connection is not None:
+            self.thread._connection.add_timeout(wait_seconds, self.recursive_decision_about_closing)
+        else:
+            logerror(LOGGER, 'Gentle finish: Connection is None when we tried to close it.')
     
     def __tell_publisher_to_stop_waiting(self):
         logdebug(LOGGER, 'Main thread does not need to wait anymore. (%s).', get_now_utc_as_formatted_string())

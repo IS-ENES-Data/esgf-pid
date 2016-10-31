@@ -94,6 +94,15 @@ class ConnectionBuilder(object):
                 try:
                     logdebug(LOGGER, 'Starting ioloop...')
                     logtrace(LOGGER, 'ioloop is owned by connection %s...', self.thread._connection)
+                    logdebug(LOGGER, 'Starting ioloop, can now fire events...')
+
+                    # Tell the main thread that we're now open for events.
+                    # As soon as the thread._connection object is not None anymore, it
+                    # can receive events.
+                    # TODO Or do we need to wait for the ioloop to be started? In that case,
+                    # the "...stop_waiting..." would have to be called after starting the
+                    # ioloop, which does not work, as the ioloop.start() blocks.
+                    self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events() 
                     self.thread._connection.ioloop.start()
                     break
 
@@ -152,6 +161,12 @@ class ConnectionBuilder(object):
     def on_connection_open(self, unused_connection):
         logdebug(LOGGER, 'Opening connection... done.')
         loginfo(LOGGER, 'Connection to RabbitMQ at %s opened... (%s)', self.__current_rabbitmq_host, get_now_utc_as_formatted_string())
+
+        # Tell the main thread we're open for events now:
+        # When the connection is open, the thread is ready to accept events.
+        # Note: It was already ready when the connection object was created,
+        # not just now that it's actually open.
+        self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events()
         self.__add_on_connection_close_callback()
         self.__please_open_rabbit_channel()
 
