@@ -135,7 +135,8 @@ class ShutDowner(object):
         if self.thread._connection is not None:
             self.thread._connection.add_timeout(wait_seconds, self.recursive_decision_about_closing)
         else:
-            logerror(LOGGER, 'Gentle finish: Connection is None when we tried to close it.')
+            logerror(LOGGER, 'Connection was None when trying to wait for pending messages. Synchronization error between threads!')
+
     
     def __tell_publisher_to_stop_waiting(self):
         logdebug(LOGGER, 'Main thread does not need to wait anymore. (%s).', get_now_utc_as_formatted_string())
@@ -234,9 +235,11 @@ class ShutDowner(object):
                     logdebug(LOGGER, 'Connection is open. Closing now. This will trigger the RabbitMQ callbacks.')
                     self.thread._connection.close(reply_code=reply_code, reply_text=reply_text)
                     # "If there are any open channels, it will attempt to close them prior to fully disconnecting." (pika docs)
+            else:
+                logerror(LOGGER, 'Connection was None when trying to close. Synchronization error between threads!')
 
         except AttributeError as e:
-            logdebug(LOGGER, 'AttributeError from pika during connection closedown (%s)' % e.message)
+            logdebug(LOGGER, 'AttributeError from pika during connection closedown (%s: %s)', e.__class__.__name__, e.message)
 
     def __inform_about_state_at_shutdown(self):
         unsent = self.thread.get_num_unpublished()

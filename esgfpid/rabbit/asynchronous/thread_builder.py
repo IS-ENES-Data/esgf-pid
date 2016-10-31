@@ -116,8 +116,7 @@ class ConnectionBuilder(object):
                 except Exception as e:
                     # Does this catch any error during connection startup, or even during
                     # the entire time the ioloop runs, blocks and waits for events?
-                    logdebug(LOGGER, 'Unexpected exception (%s) during ioloop: %s', e.__class__.__name__, e.message)
-                    logerror(LOGGER, 'Unexpected error: %s', e.message)
+                    logerror(LOGGER, 'Unexpected error when starting to listen to events: %s: %s', e.__class__.__name__, e.message)
                     break
 
             # Otherwise, wait and retry
@@ -165,7 +164,8 @@ class ConnectionBuilder(object):
         # Tell the main thread we're open for events now:
         # When the connection is open, the thread is ready to accept events.
         # Note: It was already ready when the connection object was created,
-        # not just now that it's actually open.
+        # not just now that it's actually open. So this second call to
+        # "...stop_waiting..." should be redundant!
         self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events()
         self.__add_on_connection_close_callback()
         self.__please_open_rabbit_channel()
@@ -339,7 +339,7 @@ class ConnectionBuilder(object):
 
     '''
     def on_channel_closed(self, channel, reply_code, reply_text):
-        logdebug(LOGGER, 'Channel was closed: %s (code %i)', reply_text, reply_code, show=True)
+        logdebug(LOGGER, 'Channel was closed: %s (code %i)', reply_text, reply_code)
 
         # Channel closed because user wants to close:
         if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
