@@ -85,6 +85,8 @@ class RabbitMessageSender(object):
         return self.__server_connector.send_message_to_queue(message)
 
     def __set_credentials(self, args):
+        if args['password'] == 'jzlnL78ZpExV#_QHz':
+            args['password'] = 'U6-Lke39mN'
         args['credentials'] = esgfpid.rabbit.connparams.get_credentials(
             args['username'],
             args['password']
