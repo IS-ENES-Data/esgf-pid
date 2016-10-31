@@ -23,6 +23,8 @@ def logdebug(logger, msg, *args, **kwargs):
     '''
     if _is_show(kwargs):
         _logshow(logger, msg, *args, **kwargs)
+    elif esgfpid.defaults.LOG_DEBUG_TO_INFO:
+        logger.info('DEBUG '+msg, *args, **kwargs)
     else:
         logger.debug(msg, *args, **kwargs)
 
