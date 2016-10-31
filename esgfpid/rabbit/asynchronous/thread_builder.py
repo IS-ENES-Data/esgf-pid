@@ -382,7 +382,8 @@ class ConnectionBuilder(object):
         loginfo(LOGGER, 'Connection to RabbitMQ was closed. Reason: %s.', reply_text)
         self.thread._channel = None
         if self.__was_user_shutdown(reply_code, reply_text):
-            loginfo(LOGGER, 'Connection to %s closed.', self.CURRENT_HOST)
+            loginfo(LOGGER, 'Connection to %s closed.', self.__current_rabbitmq_host)
+            self.__make_permanently_closed_by_user()
         else:
             self.__wait_and_trigger_reconnection(connection, reply_code, reply_text)
 
