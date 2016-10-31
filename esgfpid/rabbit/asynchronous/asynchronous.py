@@ -163,7 +163,7 @@ class AsynchronousRabbitConnector(object):
             for i in xrange(10):
                 time.sleep(1) # blocking
             loginfo(LOGGER, 'Joining the thread failed once... Retrying.')
-            self.__force_finish()
+            self.__thread.add_event_force_finish()
             success = self.__join()
             if success:
                 self.__rescue_leftovers()
