@@ -1,4 +1,8 @@
 import logging
+import pika
+import json
+import esgfpid.defaults as defaults
+import esgfpid.assistant.messages
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 
 LOGGER = logging.getLogger(__name__)
@@ -35,21 +39,21 @@ class UnacceptedMessagesHandler(object):
 
         # If it already HAS the emergency routing key, do not adapt the routing key
         # (This means the message already came back a second time...)
-        if body_json[messages.JSON_KEY_ROUTING_KEY] == defaults.RABBIT_EMERGENCY_ROUTING_KEY:
+        if body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] == defaults.RABBIT_EMERGENCY_ROUTING_KEY:
             pass
 
         # Otherwise, store the original one in another field...
         # and overwrite it by the emergency routing key:
         else:
             try:
-                body_json['original_routing_key'] = body_json[messages.JSON_KEY_ROUTING_KEY]
+                body_json['original_routing_key'] = body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY]
 
             # If there was no routing key, set the original one to 'None'
             except KeyError:
                 body_json['original_routing_key'] = 'None'
 
 
-            body_json[messages.JSON_KEY_ROUTING_KEY] = defaults.RABBIT_EMERGENCY_ROUTING_KEY
+            body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] = defaults.RABBIT_EMERGENCY_ROUTING_KEY
         return body_json
 
     def __resend_an_unroutable_message(self, message):
