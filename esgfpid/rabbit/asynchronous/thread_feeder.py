@@ -232,7 +232,7 @@ class RabbitFeeder(object):
             success = False
             logwarn(LOGGER, 'Message was not published. Putting back to queue. Reason: %s: "%s"',e.__class__.__name__, e.message)
             self.thread.put_one_message_into_queue_of_unsent_messages(message)
-            logtrace(LOGGER, 'Now (after putting back) left in queue to be published: %i messages.', self.thread.unpublished_messages_queue.qsize())
+            logtrace(LOGGER, 'Now (after putting back) left in queue to be published: %i messages.', self.thread.get_num_unpublished())
             raise e
 
     '''
