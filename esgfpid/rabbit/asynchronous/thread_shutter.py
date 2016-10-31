@@ -19,6 +19,14 @@ class ShutDowner(object):
         '''
         self.__close_decision_iterations = 0
 
+        '''
+        To see, in case of a reconnect, if the module was in
+        the process of gently finishing, so we can add that
+        to the new ioloop.
+        Otherwise, the gently-closing is lost during a reconnect.
+        '''
+        self.__is_in_process_of_gently_closing = False
+
     ####################
     ### Force finish ###
     ####################
@@ -49,11 +57,21 @@ class ShutDowner(object):
 
         # Go through decision tree (close or wait for pending messages)
         self.__close_decision_iterations = 1
+        self.__is_in_process_of_gently_closing = True
         self.recursive_decision_about_closing()
         # This iteratively checks if all messages are published+confirmed.
         # If not, it waits and then rechecks, up to a maximum number of iterations.
         # THe main thread waits for this by using a threading.Event.
 
+    ''' Called by builder (via thread), so close-events are not lost if a new ioloop is started.'''
+    def continue_gently_closing_if_applicable(self):
+        if self.__is_in_process_of_gently_closing:
+            logdebug(LOGGER, 'Continue gentle shutdown even after reconnect (iteration %i)...', self.__close_decision_iterations)
+            if self.thread._connection is not None:
+                wait_seconds = defaults.RABBIT_ASYN_FINISH_WAIT_SECONDS
+                self.thread._connection.add_timeout(wait_seconds, self.recursive_decision_about_closing)
+            else:
+                logerror(LOGGER, 'Connection was None when trying to wait for pending messages (after reconnect). Synchronization error between threads!')
 
     def recursive_decision_about_closing(self):
         logdebug(LOGGER, 'Gentle finish: Deciding about whether we can close the thread or not... %i', self.__close_decision_iterations)
@@ -134,6 +152,15 @@ class ShutDowner(object):
         self.__close_decision_iterations += 1
         if self.thread._connection is not None:
             self.thread._connection.add_timeout(wait_seconds, self.recursive_decision_about_closing)
+            self.__is_in_process_of_gently_closing = True
+            # Problem: If a reconnect occurs after this, this event will be lost.
+            # I cannot retrieve if from the ioloop and pass it to the new one.
+            # So, during a reconnection, we check if gently-finish was running,
+            # and add a new timeout to the new ioloop, using
+            # "continue_gently_closing_if_applicable()".
+            # This may mess up the amount of time the gently-finish takes, though.
+            # TODO Maybe one day it is possible to transfer events from one ioloop to
+            # another?
         else:
             logerror(LOGGER, 'Connection was None when trying to wait for pending messages. Synchronization error between threads!')
 
@@ -149,27 +176,21 @@ class ShutDowner(object):
         self.__tell_publisher_to_stop_waiting()
 
     def __close_because_no_point_in_waiting(self):
-        logdebug(LOGGER, 'Gentle finish: Closing, as there is no point in waiting any longer.')
 
+        # Logging, depending on why we closed...
+        logdebug(LOGGER, 'Gentle finish: Closing, as there is no point in waiting any longer.')
         if self.statemachine.detail_closed_by_publisher:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (previously closed by user).')
-            self.__force_finish('Force finish as we are not sending the messages anyway.')
-            self.__tell_publisher_to_stop_waiting()
-
         elif self.statemachine.detail_could_not_connect:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (unable to connect).')
-            self.__force_finish('Force finish as we are not sending the messages anyway.') # TODO does this actually make sense here?
-            self.__tell_publisher_to_stop_waiting()
-
         elif self.statemachine.detail_authentication_exception:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (authentication exception).')
-            self.__force_finish('Force finish as we are not sending the messages anyway.') # TODO does this actually make sense here?
-            self.__tell_publisher_to_stop_waiting()
-
         else:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (unsure why).')
-            self.__force_finish('Force finish as we are not sending the messages anyway.') # TODO does this actually make sense here?
-            self.__tell_publisher_to_stop_waiting()
+
+        # Actual close
+        self.__force_finish('Force finish as we are not sending the messages anyway.')
+        self.__tell_publisher_to_stop_waiting()
 
     def __close_because_waited_long_enough(self):
         logdebug(LOGGER, 'We have waited long enough. Now closing by force.')

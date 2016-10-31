@@ -103,6 +103,7 @@ class ConnectionBuilder(object):
                     # the "...stop_waiting..." would have to be called after starting the
                     # ioloop, which does not work, as the ioloop.start() blocks.
                     self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events() 
+                    self.thread.continue_gently_closing_if_applicable()
                     self.thread._connection.ioloop.start()
                     break
 
@@ -488,6 +489,9 @@ class ConnectionBuilder(object):
         # This is the old connection ioloop instance, stop its ioloop
         logdebug(LOGGER, 'Reconnect: Stopping ioloop of connection %s...', self.thread._connection)
         self.thread._connection.ioloop.stop()
+        # Note: All events still waiting on the ioloop are lost.
+        # Messages are kept track of in the Queue.Queue or in the confirmer
+        # module. Closing events are kept track on in shutter module.
 
         # Now we trigger the actual reconnection, which
         # works just like the first connection to RabbitMQ.

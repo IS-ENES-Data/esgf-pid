@@ -370,3 +370,7 @@ class RabbitThread(threading.Thread):
     ''' Called by shutter, in case a connectio is already closing/closed... '''
     def make_permanently_closed_by_user(self):
         return self.__builder.make_permanently_closed_by_user()
+
+    ''' Called by builder any time a new ioloop starts to listen.'''
+    def continue_gently_closing_if_applicable(self):
+        return self.__shutter.continue_gently_closing_if_applicable()
