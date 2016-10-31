@@ -281,7 +281,7 @@ class RabbitThread(threading.Thread):
         logdebug(LOGGER, 'Finished waiting for gentle close-down of RabbitMQ connection.')
 
     def __wait_for_thread_to_accept_events(self):
-        logdebug(LOGGER, 'Now waiting for the connection before I can even close of RabbitMQ connection...')
+        logdebug(LOGGER, 'Now waiting for the connection before I can even close RabbitMQ connection...')
         self.__connection_is_set.wait()
 
     def tell_publisher_to_stop_waiting_for_thread_to_accept_events(self):

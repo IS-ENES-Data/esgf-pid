@@ -32,7 +32,7 @@ class ShutDowner(object):
     ####################
 
     def force_finish(self):
-        self.__force_finish('Forced finish from unknown source')
+        self.__force_finish('Forced finish from outside the thread.')
 
     #####################
     ### Gentle finish ###

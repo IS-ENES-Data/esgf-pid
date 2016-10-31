@@ -108,10 +108,7 @@ class ConnectionBuilder(object):
                     break
 
                 except pika.exceptions.ProbableAuthenticationError as e:
-                    # If the authentication exception is thrown during connection startup,
-                    # is it caught here?
-                    # TODO Test this!
-                    logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception: %s %s', e.__class__.__name__, e.message)
+                    logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception during startup ("%s")', e.__class__.__name__)
                     self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
                     self.statemachine.detail_authentication_exception = True
                     self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
@@ -221,10 +218,10 @@ class ConnectionBuilder(object):
             self.__check_for_already_arrived_messages_and_publish_them()
 
         # It was force-closed in the meantime:
-        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE(): # TODO called by whom?
+        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE(): # state was set in shutter module's __close_down()
             if self.statemachine.detail_closed_by_publisher:
                 logdebug(LOGGER, 'Setup is finished now, but the module was already force-closed in the meantime.')
-                self.shutter.safety_finish('closed before connection was ready. reclosing.') # TODO Needed?
+                self.shutter.safety_finish('closed before connection was ready. reclosing.')
             elif self.statemachine.detail_could_not_connect:
                 logerror(LOGGER, 'This is not supposed to happen. If the connection failed, this part of the code should not be reached.')
             else:
@@ -344,9 +341,6 @@ class ConnectionBuilder(object):
     (3) There was some problem that closed the connection, which causes
         the channel to close.
         In this case, we want to reopen a connection.
-        TODO I THINK IN THIS CASE, RabbitMQ ONLY CALLS ON_CONNECTION_CLOSED,
-        NOT ON_CHANNEL_CLOSED!!!
-        We trigger reconnection anyway.
 
     '''
     def on_channel_closed(self, channel, reply_code, reply_text):
@@ -365,7 +359,6 @@ class ConnectionBuilder(object):
         # Other unexpected channel close:
         else:
             logerror(LOGGER,'Unexpected channel shutdown. Need to close connection to trigger all the necessary close down steps.')
-            # TODO Is this called every time a connection is closed?
             self.thread._connection.close()
 
     '''
