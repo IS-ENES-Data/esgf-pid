@@ -141,6 +141,7 @@ class RabbitFeeder(object):
         self.__message_number += 1 # IMPORTANT: This has to be incremented BEFORE we use it as delivery tag etc.!
         self.confirmer.put_to_unconfirmed_delivery_tags(self.__message_number)
         self.confirmer.put_to_unconfirmed_messages_dict(self.__message_number, msg)
+        loginfo(LOGGER, 'Message sent (no. %i).', self.__message_number)
         logtrace(LOGGER, 'Feeding carrot %i (%s)... done.',
             self.__message_number,
             msg_string)

@@ -323,6 +323,7 @@ class ConnectionBuilder(object):
         loginfo(LOGGER, 'Connection was closed, reason: %s (code %i)', reply_text, reply_code, show=True)
         self.thread._channel = None
         if self.__was_user_shutdown(reply_code, reply_text):
+            loginfo(LOGGER, 'Connection to %s closed.', self.CURRENT_HOST)
             self._make_permanently_closed_by_user()
         else:
             self.__make_reconnect_soon(connection, reply_code, reply_text)
