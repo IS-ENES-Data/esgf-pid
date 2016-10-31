@@ -11,7 +11,7 @@ def logtrace(logger, msg, *args, **kwargs):
     Otherwise, they are ignored.
     '''
     if esgfpid.defaults.LOG_TRACE_TO_DEBUG:
-        logdebug(logger, '[trace] '+msg, *args, **kwargs)
+        logdebug(logger, '[trace] %s' % msg, *args, **kwargs)
     else:
         pass
 
@@ -24,7 +24,7 @@ def logdebug(logger, msg, *args, **kwargs):
     if _is_show(kwargs):
         _logshow(logger, msg, *args, **kwargs)
     elif esgfpid.defaults.LOG_DEBUG_TO_INFO:
-        logger.info('DEBUG '+msg, *args, **kwargs)
+        logger.info('DEBUG %s ' % msg, *args, **kwargs)
     else:
         logger.debug(msg, *args, **kwargs)
 
@@ -55,13 +55,13 @@ def loginfo(logger, msg, *args, **kwargs):
 
 def logwarn(logger, msg, *args, **kwargs):
     if _is_show(kwargs):
-        _logshow(logger, '[WARN] '+msg, *args, **kwargs)
+        _logshow(logger, '[WARN] %s' % msg, *args, **kwargs)
     else:
         logger.warn(msg, *args, **kwargs)
 
 def logerror(logger, msg, *args, **kwargs):
     if _is_show(kwargs):
-        _logshow(logger, '[ERROR] '+msg, *args, **kwargs)
+        _logshow(logger, '[ERROR] %s' % msg, *args, **kwargs)
     else:
         logger.error(msg, *args, **kwargs)
 
