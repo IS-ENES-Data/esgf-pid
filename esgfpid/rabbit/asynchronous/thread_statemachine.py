@@ -18,6 +18,7 @@ class StateMachine(object):
         self.detail_closed_by_publisher = False
         self.detail_asked_to_closed_by_publisher = False
         self.detail_could_not_connect = False
+        self.detail_authentication_exception = False
 
     #
     # Setters

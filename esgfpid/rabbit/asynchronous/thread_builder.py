@@ -110,7 +110,10 @@ class ConnectionBuilder(object):
                     # If the authentication exception is thrown during connection startup,
                     # is it caught here?
                     # TODO Test this!
-                    logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception: %s.', e.message)
+                    logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception: %s %s', e.__class__.__name__, e.message)
+                    self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
+                    self.statemachine.detail_authentication_exception = True
+                    self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
                     break
 
                 except Exception as e:

@@ -161,6 +161,11 @@ class ShutDowner(object):
             self.__force_finish('Force finish as we are not sending the messages anyway.') # TODO does this actually make sense here?
             self.__tell_publisher_to_stop_waiting()
 
+        elif self.statemachine.detail_authentication_exception:
+            logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (authentication exception).')
+            self.__force_finish('Force finish as we are not sending the messages anyway.') # TODO does this actually make sense here?
+            self.__tell_publisher_to_stop_waiting()
+
         else:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (unsure why).')
             self.__force_finish('Force finish as we are not sending the messages anyway.') # TODO does this actually make sense here?
