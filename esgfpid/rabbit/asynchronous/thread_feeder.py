@@ -96,6 +96,13 @@ class RabbitFeeder(object):
 
     '''
     def publish_message(self):
+        try:
+            return self.__publish_message()
+        except Exception as e:
+            logwarn(LOGGER, 'Error in feeder.publish_message(): %s: %s' % e.__class__.__name__, e.message)
+            raise e
+
+    def __publish_message(self):
         self.__logcounter_trigger += 1
 
         if self.statemachine.is_NOT_STARTED_YET() or self.statemachine.is_WAITING_TO_BE_AVAILABLE():

@@ -32,13 +32,24 @@ class ShutDowner(object):
     ####################
 
     def force_finish(self):
-        self.__force_finish('Forced finish from outside the thread.')
+        try:
+            return self.__force_finish('Forced finish from outside the thread.')
+        except Exception as e:
+            logwarn(LOGGER, 'Error in shutter.force_finish(): %s: %s' % e.__class__.__name__, e.message)
+            raise e
 
     #####################
     ### Gentle finish ###
     #####################
 
     def finish_gently(self):
+        try:
+            return self.__finish_gently()
+        except Exception as e:
+            logwarn(LOGGER, 'Error in shutter.finish_gently(): %s: %s' % e.__class__.__name__, e.message)
+            raise e
+
+    def __finish_gently(self):
         # Called directly from outside the thread!
         #self.statemachine.asked_to_closed_by_publisher = True # TODO
 
