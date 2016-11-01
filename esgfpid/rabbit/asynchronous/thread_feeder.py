@@ -261,7 +261,7 @@ class RabbitFeeder(object):
         logtrace(LOGGER, 'Publishing messages %i to RabbitMQ... done.', self.__delivery_number-1)
         if (self.__delivery_number-1 == 1):
             loginfo(LOGGER, 'First message published to RabbitMQ.')
-        loginfo(LOGGER, 'Message published (no. %i)', self.__delivery_number-1)
+        logdebug(LOGGER, 'Message published (no. %i)', self.__delivery_number-1)
 
     '''
     Reset the delivery_number for the messages.
