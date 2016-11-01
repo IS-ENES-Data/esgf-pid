@@ -44,7 +44,7 @@ except(IOError, ImportError):
 
 setup(
     name='esgfpid',
-    version='0.4.2',
+    version='0.4.3',
     author='Merret Buurman, German Climate Computing Centre (DKRZ)',
     author_email='buurman@dkrz.de',
     url='https://github.com/IS-ENES-Data/esgf-pid',
@@ -62,5 +62,6 @@ setup(
        'License :: OSI Approved :: Apache Software License',
        'Intended Audience :: Developers',
        'Topic :: Software Development :: Libraries :: Python Modules',
-    ]
+    ],
+    zip_safe=False
 )
