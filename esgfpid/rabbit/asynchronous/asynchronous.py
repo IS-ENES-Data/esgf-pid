@@ -50,12 +50,8 @@ class AsynchronousRabbitConnector(object):
     :param credentials: RabbitMQ credentials of type TODO.
 
     '''
-    def __init__(self, **args):
+    def __init__(self, node_manager):
         logdebug(LOGGER, 'Initializing rabbit connector...')
-
-        # Check args
-        mandatory_args = ['exchange_name', 'url_preferred', 'urls_fallback', 'credentials']
-        esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
         '''
         To check whether the thread has been started yet.
@@ -79,7 +75,7 @@ class AsynchronousRabbitConnector(object):
         self.__LOGFREQUENCY = 10
 
         # Actually created the thread:
-        self.__thread = RabbitThread(self.__statemachine, self.__unpublished_messages_queue, self, **args)
+        self.__thread = RabbitThread(self.__statemachine, self.__unpublished_messages_queue, self, node_manager)
 
         logdebug(LOGGER, 'Initializing rabbit connector... done.')
 

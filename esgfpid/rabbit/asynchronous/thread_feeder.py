@@ -19,7 +19,7 @@ is publish_message(), which is called from the main thread.
 '''
 class RabbitFeeder(object):
 
-    def __init__(self, thread, statemachine, exchange_name):
+    def __init__(self, thread, statemachine):
         self.thread = thread
 
         '''
@@ -27,13 +27,6 @@ class RabbitFeeder(object):
         Before publishing a message, we check the state, and we log 
         the state. '''
         self.statemachine = statemachine
-
-        '''
-        The name of the exchange to publish the messages to.
-        Is given during startup, but may be changed if the exchange does not
-        exist (in that case, RabbitMQ closes the channel, so this is handled
-        by the "builder.on_channel_close()"). '''
-        self.__exchange_name = exchange_name
 
         '''
         The deliver_number is important. It defines the number of the message
@@ -58,19 +51,6 @@ class RabbitFeeder(object):
         self.__LOGFREQUENCY = 10
         self.__have_not_warned_about_connection_fail_yet = True
         self.__have_not_warned_about_force_close_yet = True
-
-    '''
-    (called by builder, to reconnect to a different exchange,
-    if the former did not exist).
-    '''
-    def set_exchange_name(self, exchange_name):
-        self.__exchange_name = exchange_name
-
-    '''
-    (called by builder module, for logging only).
-    '''
-    def get_exchange_name(self):
-        return self.__exchange_name
 
     '''
     Triggers the publication of one message to RabbitMQ, if the
@@ -189,7 +169,8 @@ class RabbitFeeder(object):
         except AssertionError as e:
             logwarn(LOGGER, 'Cannot publish message to RabbitMQ %i because of AssertionError: "%s"', self.__delivery_number+1,e)
             if e.message == 'A non-string value was supplied for self.exchange':
-                logwarn(LOGGER, 'Exchange was "%s" (type %s)', self.__exchange_name, type(self.__exchange_name))
+                exch = self.thread.get_exchange_name()
+                logwarn(LOGGER, 'Exchange was "%s" (type %s)', exch, type(exch))
 
 
     '''
@@ -224,7 +205,7 @@ class RabbitFeeder(object):
 
             # Actual publish to exchange
             self.thread._channel.basic_publish(
-                exchange=self.__exchange_name,
+                exchange=self.thread.get_exchange_name(),
                 routing_key=routing_key,
                 body=msg_string,
                 properties=properties,

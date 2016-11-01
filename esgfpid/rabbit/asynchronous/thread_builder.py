@@ -12,7 +12,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 class ConnectionBuilder(object):
     
-    def __init__(self, thread, statemachine, confirmer, returnhandler, shutter, args):
+    def __init__(self, thread, statemachine, confirmer, returnhandler, shutter, nodemanager):
         self.thread = thread
         self.statemachine = statemachine
 
@@ -31,29 +31,13 @@ class ConnectionBuilder(object):
         '''
         self.shutter = shutter
 
+        '''
+        TODO Document
+        '''
+        self.__node_manager = nodemanager
+
         ''' To count how many times we have tried to reconnect to the same RabbitMQ URL.'''
         self.__reconnect_counter = 0
-
-
-        self.__store_settings_for_rabbit(args)
-        self.__inform_about_settings()
-
-    def __store_settings_for_rabbit(self, args):
-        self.__args = args # If we need to reset them
-        self.__other_rabbitmq_hosts = copy.copy(args['urls_fallback'])
-        self.__current_rabbitmq_host = copy.copy(args['url_preferred'])
-        self.__rabbitmq_credentials = copy.copy(args['credentials'])
-
-    def __inform_about_settings(self):
-        logdebug(LOGGER, 'Messaging server username: "%s".', self.__rabbitmq_credentials.username)
-        logdebug(LOGGER, 'Messaging server password: "%s".', self.__rabbitmq_credentials.password)
-        logdebug(LOGGER, 'Messaging server URL: "%s".', self.__current_rabbitmq_host)
-
-        if len(self.__other_rabbitmq_hosts) > 0:
-            for i in xrange(len(self.__other_rabbitmq_hosts)):
-                logdebug(LOGGER, 'Alternative URLs %i: "%s".', i+1, self.__other_rabbitmq_hosts[i])
-        else:
-            logdebug(LOGGER, 'No alternative URLs provided.')
 
     ####################
     ### Start ioloop ###
@@ -146,10 +130,9 @@ class ConnectionBuilder(object):
 
     ''' Asynchronous, waits for answer from RabbitMQ.'''
     def __please_open_connection(self):
-        logdebug(LOGGER, 'Connecting to RabbitMQ at %s... (%s)', self.__current_rabbitmq_host, get_now_utc_as_formatted_string())
-        params = esgfpid.rabbit.connparams.get_connection_parameters(
-            self.__rabbitmq_credentials,
-            self.__current_rabbitmq_host)
+        params = self.__node_manager.get_connection_parameters()
+        logdebug(LOGGER, 'Connecting to RabbitMQ at %s... (%s)',
+            params.host, get_now_utc_as_formatted_string())
         loginfo(LOGGER, 'Opening connection to RabbitMQ...')
         self.thread._connection = pika.SelectConnection(
             parameters=params,
@@ -162,7 +145,9 @@ class ConnectionBuilder(object):
     ''' Callback, called by RabbitMQ.'''
     def on_connection_open(self, unused_connection):
         logdebug(LOGGER, 'Opening connection... done.')
-        loginfo(LOGGER, 'Connection to RabbitMQ at %s opened... (%s)', self.__current_rabbitmq_host, get_now_utc_as_formatted_string())
+        loginfo(LOGGER, 'Connection to RabbitMQ at %s opened... (%s)',
+            self.__node_manager.get_connection_parameters().host,
+            get_now_utc_as_formatted_string())
 
         # Tell the main thread we're open for events now:
         # When the connection is open, the thread is ready to accept events.
@@ -257,11 +242,12 @@ class ConnectionBuilder(object):
     def on_connection_error(self, connection, msg):
 
         # If there is alternative URLs, try one of those:
-        if self.__is_fallback_url_left():
-            oldhost = self.__current_rabbitmq_host
-            logdebug(LOGGER, 'Failed connecting to "%s": %s. %i fallback URLs left to try.', oldhost, msg, len(self.__other_rabbitmq_hosts))
-            self.__choose_next_host(msg)
-            loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s. Now trying to connect to %s.', oldhost, msg, self.__current_rabbitmq_host)
+        if self.__node_manager.has_more_urls():
+            oldhost = self.__node_manager.get_connection_parameters().host
+            logdebug(LOGGER, 'Failed connecting to "%s": %s. %s fallback URLs left to try.', oldhost, msg, self.__node_manager.get_num_left_urls())
+            self.__node_manager.set_next_host()
+            newhost = self.__node_manager.get_connection_parameters().host
+            loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s. Now trying to connect to %s.', oldhost, msg, newhost)
             reopen_seconds = 0
             self.__wait_and_trigger_reconnection(connection, reopen_seconds)
             # Use "__wait_and_trigger_reconnection()" instead of "__please_open_connection()", because
@@ -273,7 +259,7 @@ class ConnectionBuilder(object):
         else:
             self.__reconnect_counter += 1;
             if self.__reconnect_counter <= defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES:
-                loginfo(LOGGER, 'Failed connecting to RabbitMQ at %s. Will retry (%i/%i).', self.__current_rabbitmq_host, self.__reconnect_counter, defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
+                loginfo(LOGGER, 'Failed connecting to RabbitMQ at %s. Will retry (%s/%s).', self.__node_manager.get_connection_parameters().host, self.__reconnect_counter, defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
                 #self.__store_settings_for_rabbit(self.__args) # Resetting hosts... TODO Why are we resetting the host here?
                 reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
                 self.__wait_and_trigger_reconnection(connection, reopen_seconds)
@@ -282,20 +268,9 @@ class ConnectionBuilder(object):
             else:
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
-                logdebug(LOGGER, 'Failed connection to "%s": %s. No fallback URL left to try.', self.__current_rabbitmq_host, msg)
+                logdebug(LOGGER, 'Failed connection to "%s": %s. No fallback URL left to try.', self.__node_manager.get_connection_parameters().host, msg)
                 logwarn(LOGGER, 'Permanently failed to connect to RabbitMQ. No PID requests will be sent.')
                 return None # TODO Why return None here? Necessary?
-
-    def __is_fallback_url_left(self):
-        num_fallbacks = len(self.__other_rabbitmq_hosts)
-        if num_fallbacks > 0:
-            return True
-        else:
-            return False
-
-    def __choose_next_host(self, msg):
-        nexthost = self.__other_rabbitmq_hosts.pop()
-        self.__current_rabbitmq_host = nexthost
 
     #############################
     ### React to channel and  ###
@@ -353,7 +328,7 @@ class ConnectionBuilder(object):
 
         # Channel closed because exchange did not exist:
         elif reply_code == 404:
-            logdebug(LOGGER, 'Channel closed because the exchange "%s" did not exist.', self.thread.get_exchange_name())
+            logdebug(LOGGER, 'Channel closed because the exchange "%s" did not exist.', self.__node_manager.get_exchange_name())
             self.__use_different_exchange_and_reopen_channel()
 
         # Other unexpected channel close:
@@ -401,7 +376,7 @@ class ConnectionBuilder(object):
         loginfo(LOGGER, 'Connection to RabbitMQ was closed. Reason: %s.', reply_text)
         self.thread._channel = None
         if self.__was_user_shutdown(reply_code, reply_text):
-            loginfo(LOGGER, 'Connection to %s closed.', self.__current_rabbitmq_host)
+            loginfo(LOGGER, 'Connection to %s closed.', self.__node_manager.get_connection_parameters().host)
             self.make_permanently_closed_by_user()
         else:
             reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
@@ -442,7 +417,7 @@ class ConnectionBuilder(object):
 
     '''
     This triggers a reconnection to whatever host is stored in
-    self.__current_rabbitmq_host at the moment of reconnection.
+    self.__node_manager.get_connection_parameters().host at the moment of reconnection.
 
     If it is called to reconnect to the same host, it is better
     to wait some seconds.

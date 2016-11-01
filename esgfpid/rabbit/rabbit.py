@@ -9,6 +9,7 @@ import esgfpid.defaults
 import esgfpid.rabbit.synchronous
 import esgfpid.rabbit.asynchronous
 import esgfpid.rabbit.rabbitutils
+import esgfpid.rabbit.nodemanager
 
 # Normal logger:
 LOGGER = logging.getLogger(__name__)
@@ -31,17 +32,18 @@ class RabbitMessageSender(object):
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
-        esgfpid.rabbit.rabbitutils.ensure_urls_are_a_list(args, LOGGER)
-        esgfpid.rabbit.rabbitutils.set_preferred_url(args, LOGGER)
-        esgfpid.rabbit.rabbitutils.ensure_no_duplicate_urls(args, LOGGER)
+        # RabbitMQ Settings
+        esgfpid.rabbit.rabbitutils.ensure_urls_are_a_list(args, LOGGER) # TODO: Remove
+        esgfpid.rabbit.rabbitutils.ensure_no_duplicate_urls(args, LOGGER) # TODO: Remove
+        self.__node_manager = self.__make_rabbit_settings(args)
 
         self.__test_publication = args['test_publication']
-        self.__set_credentials(args)
-        self.__server_connector = self.__init_server_connector(args)
+        self.__server_connector = self.__init_server_connector(args, self.__node_manager)
 
-    def __init_server_connector(self, args):
+
+    def __init_server_connector(self, args, node_manager):
         if ASYNCHRONOUS:
-            return esgfpid.rabbit.asynchronous.AsynchronousRabbitConnector(**args)
+            return esgfpid.rabbit.asynchronous.AsynchronousRabbitConnector(node_manager)
         else:
             return esgfpid.rabbit.synchronous.SynchronousServerConnector(**args)
 
@@ -84,13 +86,28 @@ class RabbitMessageSender(object):
             message['test_publication'] = True
         return self.__server_connector.send_message_to_queue(message)
 
-    def __set_credentials(self, args):
-        if args['password'] == 'jzlnL78ZpExV#_QHz':
-            args['password'] = 'U6-Lke39mN'
-        args['credentials'] = esgfpid.rabbit.connparams.get_credentials(
-            args['username'],
-            args['password']
-        )
-        del args['username']
-        del args['password']
+    def __make_rabbit_settings(self, args):
+
+        node_manager = esgfpid.rabbit.nodemanager.NodeManager()
+
+        # Add the trusted node, if there is one:
+        if not args['password'] == 'jzlnL78ZpExV#_QHz':
+            node_manager.add_trusted_node(
+                username=args['username'],
+                password=args['password'],
+                host=args['url_preferred'],
+                exchange_name=args['exchange_name']
+            )
+
+        # Open nodes are always added:
+        for hostname in args['urls_fallback']:
+            node_manager.add_open_node(
+                #username=args['username']+'-open',
+                username='esgf-publisher-open',
+                password='U6-Lke39mN',
+                host=hostname,
+                exchange_name=args['exchange_name']
+            )
+
+        return node_manager
 

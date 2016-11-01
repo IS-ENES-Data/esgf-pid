@@ -67,7 +67,7 @@ without needed references to each other.
 '''
 class RabbitThread(threading.Thread):
 
-    def __init__(self, statemachine, queue, facade, **args):
+    def __init__(self, statemachine, queue, facade, node_manager):
         threading.Thread.__init__(self)
 
         '''
@@ -132,15 +132,16 @@ class RabbitThread(threading.Thread):
         self._channel = None
 
         # Submodules that do the actual work:
+        self.__nodemanager = node_manager
         self.__confirmer = Confirmer()
         self.__returnhandler = UnacceptedMessagesHandler(self)
-        self.__feeder = RabbitFeeder(self, self.__statemachine, args['exchange_name'])
+        self.__feeder = RabbitFeeder(self, self.__statemachine)
         self.__shutter = ShutDowner(self, self.__statemachine)
 
         '''
         Needed to trigger the connection in run()
         '''
-        self.__builder = ConnectionBuilder(self, self.__statemachine, self.__confirmer, self.__returnhandler, self.__shutter, args)
+        self.__builder = ConnectionBuilder(self, self.__statemachine, self.__confirmer, self.__returnhandler, self.__shutter, node_manager)
 
 
         '''
@@ -361,7 +362,7 @@ class RabbitThread(threading.Thread):
 
     ''' Called by builder, only for logging. '''
     def get_exchange_name(self):
-        return self.__feeder.get_exchange_name()
+        return self.__nodemanager.get_exchange_name()
 
     ''' Called by builder, in case the old exchange caused an error.'''
     def set_exchange_name(self, new_name):
