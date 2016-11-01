@@ -126,6 +126,7 @@ class ConnectionBuilder(object):
     ########################################
 
     def __trigger_connection_to_rabbit_etc(self):
+        self.statemachine.set_to_waiting_to_be_available()
         self.__please_open_connection()
 
     ''' Asynchronous, waits for answer from RabbitMQ.'''
