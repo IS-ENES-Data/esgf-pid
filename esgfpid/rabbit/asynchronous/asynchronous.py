@@ -287,6 +287,9 @@ class AsynchronousRabbitConnector(object):
                    '(Please call the PID connector\'s "start_messaging_thread()" before trying '+
                    'to send messages, and do not forget to "finish_messaging_thread()" afterwards.')
             raise OperationNotAllowed(msg)
+            # Note: This exception is only thrown if the code that calls the library does
+            # it wrong. So we throw this exception to remind the developer to start the rabbit
+            # before using it.
         self.__send_a_message(message)
 
     '''
@@ -316,13 +319,18 @@ class AsynchronousRabbitConnector(object):
 
         elif self.__statemachine.is_AVAILABLE_BUT_WANTS_TO_STOP() or self.__statemachine.is_PERMANENTLY_UNAVAILABLE():
             errormsg = 'Accepting no more messages'
-            logwarn(LOGGER, errormsg+' (dropping %s).', message)
-            raise OperationNotAllowed(errormsg)
+            logdebug(LOGGER, errormsg+' (dropping %s).', message)
+            logwarn(LOGGER, 'RabbitMQ module was closed and does not accept any more messages. Dropping message. Reason: %s', self.__statemachine.get_reason_shutdown())
+            #raise OperationNotAllowed(errormsg)
+            # Note: This may happen if the connection failed. We may not stop
+            # the publisher in this case, so we do not raise an exception.
 
         elif self.__statemachine.is_NOT_STARTED_YET():
             errormsg('Cannot send a message, the messaging thread was not started yet!')
             logwarn(LOGGER, errormsg+' (dropping %s).', message)
             raise OperationNotAllowed(errormsg)
+            # This is almost the same as the one raised if self.__not_started_yet is True.
+
 
     def __send_many_messages(self, messages):
         if self.__statemachine.is_WAITING_TO_BE_AVAILABLE():
