@@ -108,7 +108,7 @@ class ConnectionBuilder(object):
 
             # Otherwise, wait and retry
             elif counter_of_tries < max_retries:
-                logdebug(LOGGER, 'Very unexpected: Connection object is not ready in try %i/%i. Trying again after %i seconds.', counter_of_tries, max_retries, retry_seconds)
+                logdebug(LOGGER, 'Very unexpected: Connection object is not ready in try %s/%s. Trying again after %s seconds.', counter_of_tries, max_retries, retry_seconds)
                 time.sleep(retry_seconds)
 
             # If we have reached the max number of retries:
@@ -116,7 +116,7 @@ class ConnectionBuilder(object):
             # always exists, no matter if the actual connection to RabbitMQ
             # succeeds of not.
             else:
-                logdebug(LOGGER, 'Very unexpected: Connection object is not ready in try %i/%i. Giving up.', counter_of_tries, max_retries)
+                logdebug(LOGGER, 'Very unexpected: Connection object is not ready in try %s/%s. Giving up.', counter_of_tries, max_retries)
                 logerror(LOGGER, 'Cannot properly start the thread. Connection object is not ready.')
                 break
 
@@ -166,7 +166,7 @@ class ConnectionBuilder(object):
     ''' Callback, called by RabbitMQ. '''
     def on_channel_open(self, channel):
         logdebug(LOGGER, 'Opening channel... done.')
-        logtrace(LOGGER, 'Channel has number: %i.', channel.channel_number)
+        logtrace(LOGGER, 'Channel has number: %s.', channel.channel_number)
         self.thread._channel = channel
         self.__reconnect_counter = 0
         self.__add_on_channel_close_callback()
@@ -218,7 +218,7 @@ class ConnectionBuilder(object):
         logdebug(LOGGER, 'Checking if messages have arrived in the meantime...')
         num = self.thread.get_num_unpublished()
         if num > 0:
-            loginfo(LOGGER, 'Ready to publish messages to RabbitMQ. %i messages are already waiting to be published.', num)
+            loginfo(LOGGER, 'Ready to publish messages to RabbitMQ. %s messages are already waiting to be published.', num)
             for i in xrange(num):
                 self.thread.add_event_publish_message()
         else:
@@ -319,7 +319,7 @@ class ConnectionBuilder(object):
 
     '''
     def on_channel_closed(self, channel, reply_code, reply_text):
-        logdebug(LOGGER, 'Channel was closed: %s (code %i)', reply_text, reply_code)
+        logdebug(LOGGER, 'Channel was closed: %s (code %s)', reply_text, reply_code)
 
         # Channel closed because user wants to close:
         if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
@@ -427,7 +427,7 @@ class ConnectionBuilder(object):
     '''
     def __wait_and_trigger_reconnection(self, connection, wait_seconds):
         self.statemachine.set_to_waiting_to_be_available()
-        loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %i seconds.', wait_seconds)
+        loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
         connection.add_timeout(wait_seconds, self.reconnect)
         logtrace(LOGGER, 'Reconnect event added to connection %s (not to %s)', connection, self.thread._connection)
 
@@ -494,7 +494,7 @@ class ConnectionBuilder(object):
         # module, as this deletes the collection of unconfirmed messages.
         rescued_messages = self.thread.get_unconfirmed_messages_as_list_copy_during_lifetime()
         if len(rescued_messages)>0:
-            logdebug(LOGGER, '%i unconfirmed messages were saved and are sent now.', len(rescued_messages))
+            logdebug(LOGGER, '%s unconfirmed messages were saved and are sent now.', len(rescued_messages))
             self.thread.send_many_messages(rescued_messages)
             # Note: The actual publish of these messages to rabbit
             # happens when the connection is there again, so no wrong delivery
