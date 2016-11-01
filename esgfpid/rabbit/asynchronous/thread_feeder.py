@@ -99,7 +99,7 @@ class RabbitFeeder(object):
         try:
             return self.__publish_message()
         except Exception as e:
-            logwarn(LOGGER, 'Error in feeder.publish_message(): %s: %s' % e.__class__.__name__, e.message)
+            logwarn(LOGGER, 'Error in feeder.publish_message(): %s: %s', e.__class__.__name__, e.message)
             raise e
 
     def __publish_message(self):

@@ -35,7 +35,7 @@ class ShutDowner(object):
         try:
             return self.__force_finish('Forced finish from outside the thread.')
         except Exception as e:
-            logwarn(LOGGER, 'Error in shutter.force_finish(): %s: %s' % e.__class__.__name__, e.message)
+            logwarn(LOGGER, 'Error in shutter.force_finish(): %s: %s', e.__class__.__name__, e.message)
             raise e
 
     #####################
@@ -46,7 +46,7 @@ class ShutDowner(object):
         try:
             return self.__finish_gently()
         except Exception as e:
-            logwarn(LOGGER, 'Error in shutter.finish_gently(): %s: %s' % e.__class__.__name__, e.message)
+            logwarn(LOGGER, 'Error in shutter.finish_gently(): %s: %s', e.__class__.__name__, e.message)
             raise e
 
     def __finish_gently(self):
