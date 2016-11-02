@@ -25,49 +25,61 @@ class NodeManager(object):
         # Current node
         self.__current_node = None
 
+        # Important info
+        self.__has_trusted = False
+
     def add_trusted_node(self, **kwargs):
         if self.__has_necessary_info(kwargs):
             node_info = copy.deepcopy(kwargs)
-            self.__complete_info_dict(node_info)
+            self.__complete_info_dict(node_info, False)
             self.__trusted_nodes.append(node_info)
-            loginfo(LOGGER, 'Trusted rabbit: %s, %s, %s', node_info['host'], node_info['username'], node_info['password'])
+            self.__has_trusted = True
+            logdebug(LOGGER, 'Trusted rabbit: %s, %s, %s', node_info['host'], node_info['username'], node_info['password'])
 
     def add_open_node(self, **kwargs):
         if self.__has_necessary_info(kwargs):
             node_info = copy.deepcopy(kwargs)
-            self.__complete_info_dict(node_info)
+            self.__complete_info_dict(node_info, True)
             self.__open_nodes.append(node_info)
-            loginfo(LOGGER, 'Open rabbit: %s, %s, %s', node_info['host'], node_info['username'], node_info['password'])
+            logdebug(LOGGER, 'Open rabbit: %s, %s, %s', node_info['host'], node_info['username'], node_info['password'])
 
     def __has_necessary_info(self, node_info_dict):
         if ('username' in node_info_dict and
            'password' in node_info_dict and
            'host' in node_info_dict and 
            'exchange_name' in node_info_dict):
-           return True
+            return True
         else:
             return False
             # TODO Log what is missing
 
-    def __complete_info_dict(self, node_info_dict):
+    def __complete_info_dict(self, node_info_dict, is_open):
+
         # Make pika credentials
-        node_info_dict['credentials'] = pika.PlainCredentials(
+        creds = pika.PlainCredentials(
             node_info_dict['username'],
             node_info_dict['password']
         )
+
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_ASYN_SOCKET_TIMEOUT
         connection_attempts = esgfpid.defaults.RABBIT_ASYN_CONNECTION_ATTEMPTS
         retry_delay = esgfpid.defaults.RABBIT_ASYN_CONNECTION_RETRY_DELAY_SECONDS
+        
         # Make pika connection params
         # https://pika.readthedocs.org/en/0.9.6/connecting.html
-        node_info_dict['params'] = pika.ConnectionParameters(
+        params = pika.ConnectionParameters(
             host=node_info_dict['host'], # TODO: PORTS ETC.
             credentials=node_info_dict['credentials'],
             socket_timeout=socket_timeout,
             connection_attempts=connection_attempts,
             retry_delay=retry_delay
         )
+
+        # Add some stuff
+        node_info_dict['credentials'] = cred
+        node_info_dict['is_open'] = is_open
+        node_info_dict['params'] = params
         '''
         https://pika.readthedocs.org/en/0.9.6/connecting.html
         class pika.connection.ConnectionParameters(
@@ -128,3 +140,28 @@ class NodeManager(object):
 
     def get_exchange_name(self):
         return self.__exchange_name
+
+    '''
+    This flag is appended to the routing key 
+    so that we can route messages from the untrusted nodes 
+    to other queues.
+
+    Note: The binding has to be done in the RabbitMQ exit 
+    node (by the consumer).
+    '''
+    def get_open_word_for_routing_key(self):
+
+        # Message is published via an open node:
+        if self.__current_node['is_open'] == True:
+            if self.__has_trusted:
+                return 'untrusted-fallback'
+            else:
+                return 'untrusted-only'
+
+        # Message is published via a trusted node:
+        elif self.__current_node['is_open'] == False:
+            return 'trusted'
+
+        else:
+            logerror(LOGGER, 'Problem: Unsure whether the current node is open or not!')
+            return 'untrusted-unsure'

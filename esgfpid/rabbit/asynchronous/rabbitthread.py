@@ -385,3 +385,8 @@ class RabbitThread(threading.Thread):
     ''' Called by builder any time a new ioloop starts to listen.'''
     def continue_gently_closing_if_applicable(self):
         return self.__shutter.continue_gently_closing_if_applicable()
+
+    ''' Called by feeder to add a word (trusted/untrusted rabbit?)
+    to the routing key. '''
+    def get_open_word_for_routing_key(self):
+        if self.__nodemanager.get_open_word_for_routing_key()
