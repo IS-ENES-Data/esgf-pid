@@ -112,6 +112,13 @@ class RabbitThread(threading.Thread):
 
         # These are only used by the rabbit thread:
         '''
+        If the messages should not be published to the exchange that
+        was passed from the publisher in config, but to a fallback 
+        solution, this will be set:
+        '''
+        self.__fallback_exchange = None
+        
+        '''
         An object of type "pika.SelectConnection".
         It contains the connection to the RabbitMQ.
         It provides a channel to do the publications and
@@ -362,11 +369,14 @@ class RabbitThread(threading.Thread):
 
     ''' Called by builder, only for logging. '''
     def get_exchange_name(self):
-        return self.__nodemanager.get_exchange_name()
+        if self.__fallback_exchange is not None:
+            return self.__fallback_exchange
+        else:
+            return self.__nodemanager.get_exchange_name()
 
     ''' Called by builder, in case the old exchange caused an error.'''
     def set_exchange_name(self, new_name):
-        return self.__feeder.set_exchange_name(new_name)
+        self.__fallback_exchange = new_name
 
     ''' Called by shutter, in case a connectio is already closing/closed... '''
     def make_permanently_closed_by_user(self):
