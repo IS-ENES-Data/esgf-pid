@@ -45,7 +45,11 @@ class RabbitMessageSender(object):
         if ASYNCHRONOUS:
             return esgfpid.rabbit.asynchronous.AsynchronousRabbitConnector(node_manager)
         else:
-            return esgfpid.rabbit.synchronous.SynchronousServerConnector(**args)
+            logerror(LOGGER, 'Synchronous communication with RabbitMQ is not supported anymore.')
+            raise ValueError('Synchronous communication with RabbitMQ is not supported anymore.')
+            # The synchronous module has to be fixed. The way of passing credentials was modified
+            # and this was not modified in the synchronous module.
+            #return esgfpid.rabbit.synchronous.SynchronousServerConnector(**args)
 
     def open_rabbit_connection(self):
         if not ASYNCHRONOUS:
