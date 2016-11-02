@@ -32,22 +32,23 @@ class Connector(object):
 
     def __check_presence_of_args(self, args):
         mandatory_args = [
-            'messaging_service_urls',
+            'messaging_service_urls_open',
             'messaging_service_exchange_name',
-            'messaging_service_username',
+            'messaging_service_username_open',
             'handle_prefix'
         ]
         optional_args = [
-            'solr_url',
-            'data_node',
-            'messaging_service_url_preferred',
+            'messaging_service_url_trusted',
+            'messaging_service_username_trusted',
             'messaging_service_password',
+            'data_node',
+            'thredds_service_path',
+            'test_publication',
+            'solr_url',
             'solr_https_verify',
             'disable_insecure_request_warning',
             'solr_switched_off',
-            'thredds_service_path',
-            'consumer_solr_url',
-            'test_publication'
+            'consumer_solr_url'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)

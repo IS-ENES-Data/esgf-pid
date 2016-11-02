@@ -24,19 +24,16 @@ class RabbitMessageSender(object):
 
         mandatory_args = [
             'exchange_name',
-            'url_preferred',
-            'urls_fallback',
-            'username',
+            'url_trusted', # can be None
+            'urls_open',
+            'username_trusted', # can be None
+            'username_open',
             'password',
             'test_publication'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
-        # RabbitMQ Settings
-        esgfpid.rabbit.rabbitutils.ensure_urls_are_a_list(args, LOGGER) # TODO: Remove
-        esgfpid.rabbit.rabbitutils.ensure_no_duplicate_urls(args, LOGGER) # TODO: Remove
         self.__node_manager = self.__make_rabbit_settings(args)
-
         self.__test_publication = args['test_publication']
         self.__server_connector = self.__init_server_connector(args, self.__node_manager)
 
@@ -96,18 +93,23 @@ class RabbitMessageSender(object):
 
         # Add the trusted node, if there is one:
         if not args['password'] == 'jzlnL78ZpExV#_QHz':
+            if not 'username_trusted' in args:
+                logwarn(LOGGER, 'A RabbitMQ password was provided, but no username.')
+            if not 'url_trusted' in args:
+                logwarn(LOGGER, 'A RabbitMQ password was provided, but no URL.')
             node_manager.add_trusted_node(
-                username=args['username'],
+                username=args['username_trusted'],
                 password=args['password'],
-                host=args['url_preferred'],
+                host=args['url_trusted'],
                 exchange_name=args['exchange_name']
             )
 
         # Open nodes are always added:
-        for hostname in args['urls_fallback']:
+        urls_open = self.__get_urls_as_list(args['urls_open'])
+        urls_open = list(set(urls_open))
+        for hostname in urls_open:
             node_manager.add_open_node(
-                #username=args['username']+'-open',
-                username='esgf-publisher-open',
+                username=args['username_open'],
                 password='U6-Lke39mN',
                 host=hostname,
                 exchange_name=args['exchange_name']
@@ -115,3 +117,19 @@ class RabbitMessageSender(object):
 
         return node_manager
 
+
+    def __get_urls_as_list(self, urls_open):
+
+        if isinstance(urls_open, basestring):
+            return [urls_open]
+
+        elif urls_open is None:
+            logwarn(LOGGER, 'No fallback RabbitMQ URLs specified!')
+            return []
+
+        elif not isinstance(urls_open, (list, tuple)):
+            msg = ('RabbitMQ URLs are neither list nor string, but %s: %s' %
+               (type(args['urls_fallback']), args['urls_fallback']))
+            raise ValueError(msg)
+        else:
+            return urls_open

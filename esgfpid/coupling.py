@@ -29,10 +29,11 @@ class Coupler(object):
             test_publication = False
 
         self.__rabbit_message_sender = esgfpid.rabbit.rabbit.RabbitMessageSender(
-            exchange_name=args['messaging_service_exchange_name'],
-            urls_fallback=args['messaging_service_urls'],
-            url_preferred=args['messaging_service_url_preferred'],
-            username=args['messaging_service_username'],
+            exchange_name=args['messaging_service_exchange_name'],       # mandatory
+            urls_open=args['messaging_service_urls_open'],               # mandatory
+            username_open=args['messaging_service_username_open'],       # mandatory
+            url_trusted=args['messaging_service_url_trusted'],           # can be None
+            username_trusted=args['messaging_service_username_trusted'], # can be None
             password=password,
             test_publication=test_publication
         )
