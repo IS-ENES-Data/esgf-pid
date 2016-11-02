@@ -27,12 +27,16 @@ class ConnectionBuilder(object):
         self.returnhandler = returnhandler
 
         '''
-        (1) ...
+        We need this to be able to trigger all the closing mechanisms 
+        in case the module should close down as soon it was opened, i.e.
+        if the close-command was issued while the connection was still
+        building up.
         '''
         self.shutter = shutter
 
         '''
-        TODO Document
+        The node manager keeps all the info about the RabbitMQ nodes,
+        e.g. URLs, usernames, passwords.
         '''
         self.__node_manager = nodemanager
 
