@@ -229,10 +229,14 @@ class DatasetPublicationAssistant(object):
             logdebug(LOGGER, 'No consistency check was carried out.')
 
     def __create_and_send_dataset_publication_message_to_queue(self):
+        self.__remove_duplicates_from_list_of_file_handles()
         message = self.__create_dataset_publication_message()
         self.__send_message_to_queue(message)
         logdebug(LOGGER, 'Dataset publication message handed to rabbit thread.')
         logtrace(LOGGER, 'Dataset publication message: %s (%s, version %s).', self.__dataset_handle, self.__drs_id, self.__version_number)
+
+    def __remove_duplicates_from_list_of_file_handles(self):
+        self.__list_of_file_handles = list(set(self.__list_of_file_handles))
 
     def __send_existing_file_messages_to_queue(self):
         for i in xrange(0, len(self.__list_of_file_messages)):
