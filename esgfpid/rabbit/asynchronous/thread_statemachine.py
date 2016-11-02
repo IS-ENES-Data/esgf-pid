@@ -87,4 +87,20 @@ class StateMachine(object):
 
 
 
+    #
+    # Reasons for closing
+    #
 
+    '''
+    Needed by asynchronous.py to inform if messages
+    are not accepted anymore.
+    '''
+    def get_reason_shutdown(self):
+        if self.detail_closed_by_publisher or self.detail_asked_to_closed_by_publisher:
+            return 'Was closed by publisher'
+        elif self.detail_could_not_connect:
+            return 'Could not connect'
+        elif self.detail_authentication_exception:
+            return 'Could not authenticate'
+        else:
+            return 'Unknown'
