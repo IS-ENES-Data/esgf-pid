@@ -85,7 +85,7 @@ class ShutDowner(object):
                 logerror(LOGGER, 'Connection was None when trying to wait for pending messages (after reconnect). Synchronization error between threads!')
 
     def recursive_decision_about_closing(self):
-        logdebug(LOGGER, 'Gentle finish: Deciding about whether we can close the thread or not... %i', self.__close_decision_iterations)
+        logdebug(LOGGER, 'Gentle finish: Deciding about whether we can close the thread or not... (iteration %i)', self.__close_decision_iterations)
         iteration = self.__close_decision_iterations
         if self.__are_any_messages_pending():
             self.__inform_about_pending_messages()
@@ -94,7 +94,7 @@ class ShutDowner(object):
             self.__close_because_all_done(iteration)
 
     def __decide_what_to_do_about_pending_messages(self, iteration):
-        logdebug(LOGGER, 'Gentle finish: Decide what to do about the pending messages...')
+        logdebug(LOGGER, 'Gentle finish: Decide what to do about the pending messages... (iteration %i)', self.__close_decision_iterations)
         if self.__have_we_waited_enough_now(iteration):
             self.__close_because_waited_long_enough()
         elif self.__module_is_not_progressing_anymore():
@@ -105,7 +105,7 @@ class ShutDowner(object):
     # Decision rules:
 
     def __have_we_waited_enough_now(self, iteration):
-        logdebug(LOGGER, 'Gentle finish: Check if the rabbit thread has waited long enough...')
+        logdebug(LOGGER, 'Gentle finish: Check if the rabbit thread has waited long enough... (iteration %i)', self.__close_decision_iterations)
 
         wait_seconds = defaults.RABBIT_ASYN_FINISH_WAIT_SECONDS
         max_waits = defaults.RABBIT_ASYN_FINISH_MAX_TRIES
@@ -122,19 +122,19 @@ class ShutDowner(object):
         
         # Return:
         if waited >= max_waits:
-            logdebug(LOGGER, 'Gentle finish: The rabbit thread has waited long enough for pending messages at close down.')
+            logdebug(LOGGER, 'Gentle finish: The rabbit thread has waited long enough for pending messages at close down. (iteration %i)', self.__close_decision_iterations)
             return True
-        logdebug(LOGGER, 'Gentle finish: We need to wait a little more for pending messages.')
+        logdebug(LOGGER, 'Gentle finish: We need to wait a little more for pending messages. (iteration %i)', self.__close_decision_iterations)
         return False
 
     def __are_any_messages_pending(self):
-        logdebug(LOGGER, 'Gentle finish: Checking for any pending messages...')
+        logdebug(LOGGER, 'Gentle finish: Checking for any pending messages... (iteration %i)', self.__close_decision_iterations)
         sent_done = self.__check_all_were_sent()
         confirmed_done = self.__check_all_were_confirmed()
         if sent_done and confirmed_done:
-            logdebug(LOGGER, 'Gentle finish: No more pending messages.')
+            logdebug(LOGGER, 'Gentle finish: No more pending messages. (iteration %i)', self.__close_decision_iterations)
             return False # none pending
-        logdebug(LOGGER, 'Gentle finish: Some pending messages left.')
+        logdebug(LOGGER, 'Gentle finish: Some pending messages left. (iteration %i)', self.__close_decision_iterations)
         return True # some are pending
 
     def __check_all_were_sent(self):
@@ -152,13 +152,13 @@ class ShutDowner(object):
 
     def __module_is_not_progressing_anymore(self):
         if self.statemachine.is_PERMANENTLY_UNAVAILABLE(): # TODO Do I have to check anything else?
-            logdebug(LOGGER, 'Gentle finish: The rabbit thread is not active anymore, so we might as well close it.')
+            logdebug(LOGGER, 'Gentle finish: The rabbit thread is not active anymore, so we might as well close it. (iteration %i)', self.__close_decision_iterations)
             return True
         return False
 
     def __wait_some_more_and_redecide(self, iteration):
         wait_seconds = defaults.RABBIT_ASYN_FINISH_WAIT_SECONDS
-        logdebug(LOGGER, 'Gentle finish: Waiting some more for pending messages...')
+        logdebug(LOGGER, 'Gentle finish: Waiting some more for pending messages...%i', self.__close_decision_iterations)
         # Instead of time.sleep(), add an event to the thread's ioloop
         self.__close_decision_iterations += 1
         if self.thread._connection is not None:

@@ -228,6 +228,7 @@ class ConnectionBuilder(object):
                 self.thread.add_event_publish_message()
         else:
             loginfo(LOGGER, 'Ready to publish messages to RabbitMQ.')
+            logdebug(LOGGER, 'Ready to publish messages to RabbitMQ. No messages waiting yet.')
         
 
     ########################
