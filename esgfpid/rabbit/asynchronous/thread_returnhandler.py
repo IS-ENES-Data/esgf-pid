@@ -34,7 +34,7 @@ class UnacceptedMessagesHandler(object):
         # Was it the first or second time it comes back?
         if returned_frame.reply_text == 'NO_ROUTE':
             loginfo(LOGGER, 'The message was returned because it could not be assigned to any queue. No binding for routing key "%s".', returned_frame.routing_key)
-            if returned_frame.routing_key == defaults.RABBIT_EMERGENCY_ROUTING_KEY:
+            if returned_frame.routing_key.startswith(defaults.RABBIT_EMERGENCY_ROUTING_KEY):
                 self.__log_about_double_return(returned_frame, body)
             else:
                 self.__resend_message(returned_frame, props, body)
