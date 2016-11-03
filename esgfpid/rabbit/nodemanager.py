@@ -21,6 +21,8 @@ class NodeManager(object):
         # Nodes
         self.__trusted_nodes = []
         self.__open_nodes = []
+        self.__trusted_nodes_archive = copy.deepcopy(self.__trusted_nodes)
+        self.__open_nodes_archive = copy.deepcopy(self.__open_nodes)
 
         # Current node
         self.__current_node = None
@@ -165,3 +167,8 @@ class NodeManager(object):
         else:
             logerror(LOGGER, 'Problem: Unsure whether the current node is open or not!')
             return 'untrusted-unsure'
+
+    def reset_nodes(self):
+        self.__trusted_nodes = copy.deepcopy(self.__trusted_nodes_archive)
+        self.__open_nodes = copy.deepcopy(self.__open_nodes_archive)
+        self.set_next_host()
