@@ -69,27 +69,6 @@ class StateMachine(object):
             return True
         return False
 
-    #
-    # Combined getters
-    # (convenience wrappers)
-    #
-
-    def is_available_for_client_publishes(self):
-        return self.__IS_AVAILABLE
-
-    def is_available_for_server_communication(self):
-        if self.__IS_AVAILABLE:
-            return True
-        if self.__IS_AVAILABLE_BUT_WANTS_TO_STOP:
-            return True
-        return False
-
-
-
-
-    #
-    # Reasons for closing
-    #
 
     '''
     Needed by asynchronous.py to inform if messages
