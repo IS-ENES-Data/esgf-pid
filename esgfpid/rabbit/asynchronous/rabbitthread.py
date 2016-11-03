@@ -389,4 +389,4 @@ class RabbitThread(threading.Thread):
     ''' Called by feeder to add a word (trusted/untrusted rabbit?)
     to the routing key. '''
     def get_open_word_for_routing_key(self):
-        if self.__nodemanager.get_open_word_for_routing_key()
+        return self.__nodemanager.get_open_word_for_routing_key()

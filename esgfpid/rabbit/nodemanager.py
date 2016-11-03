@@ -60,6 +60,7 @@ class NodeManager(object):
             node_info_dict['username'],
             node_info_dict['password']
         )
+        node_info_dict['credentials'] = creds
 
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_ASYN_SOCKET_TIMEOUT
@@ -75,11 +76,10 @@ class NodeManager(object):
             connection_attempts=connection_attempts,
             retry_delay=retry_delay
         )
+        node_info_dict['params'] = params
 
         # Add some stuff
-        node_info_dict['credentials'] = cred
         node_info_dict['is_open'] = is_open
-        node_info_dict['params'] = params
         '''
         https://pika.readthedocs.org/en/0.9.6/connecting.html
         class pika.connection.ConnectionParameters(
