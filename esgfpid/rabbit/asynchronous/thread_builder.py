@@ -387,8 +387,9 @@ class ConnectionBuilder(object):
             loginfo(LOGGER, 'Connection to %s closed.', self.__node_manager.get_connection_parameters().host)
             self.make_permanently_closed_by_user()
         else:
-            reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
-            self.__wait_and_trigger_reconnection(connection, reopen_seconds)
+            #reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+            #self.__wait_and_trigger_reconnection(connection, reopen_seconds)
+            self.on_connection_error(connection, reply_text)
 
     def __was_user_shutdown(self, reply_code, reply_text):
         if self.__was_forced_user_shutdown(reply_code, reply_text):
