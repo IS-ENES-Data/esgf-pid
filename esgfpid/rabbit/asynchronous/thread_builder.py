@@ -97,6 +97,8 @@ class ConnectionBuilder(object):
 
                 except pika.exceptions.ProbableAuthenticationError as e:
                     logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception during startup ("%s")', e.__class__.__name__)
+                    if self.thread.get_num_unpublished() > 0:
+                        logerror(LOGGER, 'The %i messages that are waiting to be published will not be published.', self.thread.get_num_unpublished())
                     self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
                     self.statemachine.detail_authentication_exception = True
                     self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
