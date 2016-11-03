@@ -189,8 +189,8 @@ class ShutDowner(object):
     def __close_because_no_point_in_waiting(self):
 
         # Logging, depending on why we closed...
-        logdebug(LOGGER, 'Gentle finish: Closing, as there is no point in waiting any longer.')
-        if self.statemachine.detail_closed_by_publisher:
+        logdebug(LOGGER, 'Gentle finish (iteration %i): Closing, as there is no point in waiting any longer.', self.__close_decision_iterations)
+        if self.statemachine.get_detail_closed_by_publisher():
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (previously closed by user).')
         elif self.statemachine.detail_could_not_connect:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (unable to connect).')
@@ -255,7 +255,7 @@ class ShutDowner(object):
 
         # Change the state of the state machine:
         self.statemachine.set_to_permanently_unavailable()
-        self.statemachine.detail_closed_by_publisher = True
+        self.statemachine.set_detail_closed_by_publisher()
 
         # Close connection
         try:

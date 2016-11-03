@@ -317,9 +317,11 @@ class AsynchronousRabbitConnector(object):
             errormsg = 'Accepting no more messages'
             logdebug(LOGGER, errormsg+' (dropping %s).', message)
             logwarn(LOGGER, 'RabbitMQ module was closed and does not accept any more messages. Dropping message. Reason: %s', self.__statemachine.get_reason_shutdown())
-            #raise OperationNotAllowed(errormsg)
             # Note: This may happen if the connection failed. We may not stop
             # the publisher in this case, so we do not raise an exception.
+            # We only raise an exception if the closing was asked by the publisher!
+            if self.__statemachine.get_detail_closed_by_publisher():
+                raise OperationNotAllowed(errormsg)
 
         elif self.__statemachine.is_NOT_STARTED_YET():
             errormsg('Cannot send a message, the messaging thread was not started yet!')

@@ -209,7 +209,7 @@ class ConnectionBuilder(object):
 
         # It was force-closed in the meantime:
         elif self.statemachine.is_PERMANENTLY_UNAVAILABLE(): # state was set in shutter module's __close_down()
-            if self.statemachine.detail_closed_by_publisher:
+            if self.statemachine.get_detail_closed_by_publisher():
                 logdebug(LOGGER, 'Setup is finished now, but the module was already force-closed in the meantime.')
                 self.shutter.safety_finish('closed before connection was ready. reclosing.')
             elif self.statemachine.detail_could_not_connect:
@@ -329,7 +329,7 @@ class ConnectionBuilder(object):
 
         # Channel closed because user wants to close:
         if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
-            if self.statemachine.detail_closed_by_publisher:
+            if self.statemachine.get_detail_closed_by_publisher():
                 logdebug(LOGGER,'Channel close event due to close command by user. This is expected.')
 
         # Channel closed because exchange did not exist:
