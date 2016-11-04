@@ -60,10 +60,12 @@ class UnacceptedMessagesHandler(object):
             logerror(LOGGER, 'Could not resend message: %s: %s', e.__class__.__name__, e.message)
 
     def __add_emergency_routing_key(self, body_json):
+        emergency_routing_key = defaults.RABBIT_EMERGENCY_ROUTING_KEY
+
 
         # If it already HAS the emergency routing key, do not adapt the routing key
         # (This means the message already came back a second time...)
-        if body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] == defaults.RABBIT_EMERGENCY_ROUTING_KEY:
+        if body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] == emergency_routing_key:
             pass
 
         # Otherwise, store the original one in another field...
@@ -77,8 +79,8 @@ class UnacceptedMessagesHandler(object):
                 logerror('Very unexpected: RabbitMQ returned a message that had no routing key: %s', body_json)
                 body_json['original_routing_key'] = 'None'
 
-
-            body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] = defaults.RABBIT_EMERGENCY_ROUTING_KEY
+            logdebug(LOGGER, 'Adding emergency routing key %s', emergency_routing_key)
+            body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] = emergency_routing_key
         return body_json
 
     def __resend_an_unroutable_message(self, message):
