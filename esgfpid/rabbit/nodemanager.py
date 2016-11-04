@@ -21,8 +21,8 @@ class NodeManager(object):
         # Nodes
         self.__trusted_nodes = []
         self.__open_nodes = []
-        self.__trusted_nodes_archive = copy.deepcopy(self.__trusted_nodes)
-        self.__open_nodes_archive = copy.deepcopy(self.__open_nodes)
+        self.__trusted_nodes_archive = []
+        self.__open_nodes_archive = []
 
         # Current node
         self.__current_node = None
@@ -35,6 +35,7 @@ class NodeManager(object):
             node_info = copy.deepcopy(kwargs)
             self.__complete_info_dict(node_info, False)
             self.__trusted_nodes.append(node_info)
+            self.__trusted_nodes_archive.append(copy.deepcopy(node_info))
             self.__has_trusted = True
             logdebug(LOGGER, 'Trusted rabbit: %s', self.__get_node_log_string(node_info))
 
@@ -43,6 +44,7 @@ class NodeManager(object):
             node_info = copy.deepcopy(kwargs)
             self.__complete_info_dict(node_info, True)
             self.__open_nodes.append(node_info)
+            self.__open_nodes_archive.append(copy.deepcopy(node_info))
             logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
 
     def __get_node_log_string(self, node_info):
@@ -172,6 +174,7 @@ class NodeManager(object):
             return 'untrusted-unsure'
 
     def reset_nodes(self):
+        logdebug(LOGGER, 'Resetting hosts...')
         self.__trusted_nodes = copy.deepcopy(self.__trusted_nodes_archive)
         self.__open_nodes = copy.deepcopy(self.__open_nodes_archive)
         self.set_next_host()
