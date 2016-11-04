@@ -263,11 +263,13 @@ class ConnectionBuilder(object):
     def on_connection_error(self, connection, msg):
 
         oldhost = self.__node_manager.get_connection_parameters().host
+        loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s.', oldhost, msg)
+
         reopen_seconds = None
         
         # If there is alternative URLs, try one of them:
         if self.__node_manager.has_more_urls():
-            logdebug(LOGGER, 'Failed connecting to "%s": %s. %s fallback URLs left to try.', oldhost, msg, self.__node_manager.get_num_left_urls())
+            logdebug(LOGGER, 'Connection failure: %s fallback URLs left to try.', self.__node_manager.get_num_left_urls())
             self.__node_manager.set_next_host()
             reopen_seconds = 0
 
@@ -276,22 +278,24 @@ class ConnectionBuilder(object):
         else:
             self.__reconnect_counter += 1;
             if self.__reconnect_counter <= defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES:
-                logdebug(LOGGER, 'Failed connecting to "%s": %s. No untried URLs left to try. Starting over.', oldhost, msg)
-                self.__node_manager.reset_nodes()
                 reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+                logdebug(LOGGER, 'Connection failure: Failed connecting to all hosts. Waiting %s seconds and starting over.', reopen_seconds)
+                self.__node_manager.reset_nodes()
 
             # Give up after so many tries...
             else:
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
-                logdebug(LOGGER, 'Failed connection to "%s": %s. Tried all hosts %s times. Giving up.',
-                    self.__node_manager.get_connection_parameters().host, msg, defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
+                logdebug(LOGGER, 'Connection failure: Tried all hosts %s times. Giving up.', defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
                 logwarn(LOGGER, 'Permanently failed to connect to RabbitMQ. No PID requests will be sent.')
                 return None # to avoid reconnection
 
         # The actual reconnection is triggered here:
         newhost = self.__node_manager.get_connection_parameters().host
-        loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s. Now trying to connect to %s.', oldhost, msg, newhost)
+        if reopen_seconds == 0:
+            loginfo(LOGGER, 'Connection failure: Trying to connect (now) to %s.', newhost)
+        else:
+            loginfo(LOGGER, 'Connection failure: Trying to connect (in %s seconds) to %s.', reopen_seconds, newhost)
         self.__wait_and_trigger_reconnection(connection, reopen_seconds)
 
     #############################

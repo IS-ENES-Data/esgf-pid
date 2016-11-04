@@ -36,14 +36,17 @@ class NodeManager(object):
             self.__complete_info_dict(node_info, False)
             self.__trusted_nodes.append(node_info)
             self.__has_trusted = True
-            logdebug(LOGGER, 'Trusted rabbit: %s, %s, %s', node_info['host'], node_info['username'], node_info['password'])
+            logdebug(LOGGER, 'Trusted rabbit: %s', self.__get_node_log_string(node_info))
 
     def add_open_node(self, **kwargs):
         if self.__has_necessary_info(kwargs):
             node_info = copy.deepcopy(kwargs)
             self.__complete_info_dict(node_info, True)
             self.__open_nodes.append(node_info)
-            logdebug(LOGGER, 'Open rabbit: %s, %s, %s', node_info['host'], node_info['username'], node_info['password'])
+            logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
+
+    def __get_node_log_string(self, node_info):
+        return ('%s, %s, %s (exchange "%s")' % (node_info['host'], node_info['username'], node_info['password'], node_info['exchange_name']))
 
     def __has_necessary_info(self, node_info_dict):
         if ('username' in node_info_dict and
