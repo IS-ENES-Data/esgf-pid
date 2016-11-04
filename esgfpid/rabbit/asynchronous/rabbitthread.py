@@ -172,6 +172,7 @@ class RabbitThread(threading.Thread):
         self.ERROR_CODE_CONNECTION_CLOSED_BY_USER=999
         self.ERROR_TEXT_CONNECTION_FORCE_CLOSED='(forced finish)'
         self.ERROR_TEXT_CONNECTION_NORMAL_SHUTDOWN='(not reopen)'
+        self.ERROR_TEXT_CONNECTION_PERMANENT_ERROR='(permanent error)'
 
     #
     # Methods called from the main thread
@@ -187,6 +188,15 @@ class RabbitThread(threading.Thread):
     def run(self):
         logdebug(LOGGER, 'Starting thread...')
         self.__builder.first_connection()
+
+    '''
+    At close down because of permanent errors.
+    We need to make sure the main thread does not wait for 
+    any event.
+    '''
+    def unblock_events(self):
+        self.__gently_finish_ready.set()
+        self.__connection_is_set.set()
 
     def add_event_publish_message(self):
         logdebug(LOGGER, 'Asking rabbit thread to publish a message...')

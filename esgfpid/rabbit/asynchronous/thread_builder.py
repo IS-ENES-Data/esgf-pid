@@ -348,6 +348,11 @@ class ConnectionBuilder(object):
             if self.statemachine.get_detail_closed_by_publisher():
                 logdebug(LOGGER,'Channel close event due to close command by user. This is expected.')
 
+        # Channel closed because even fallback exchange did not exist:
+        elif reply_code == 404 and "NOT_FOUND - no exchange 'FALLBACK'" in reply_text:
+            logerror(LOGGER,'Channel closed because FALLBACK exchange does not exist. Need to close connection to trigger all the necessary close down steps.')
+            self.thread._connection.close(999, self.thread.ERROR_TEXT_CONNECTION_PERMANENT_ERROR)
+
         # Channel closed because exchange did not exist:
         elif reply_code == 404:
             logdebug(LOGGER, 'Channel closed because the exchange "%s" did not exist.', self.__node_manager.get_exchange_name())
@@ -356,7 +361,7 @@ class ConnectionBuilder(object):
         # Other unexpected channel close:
         else:
             logerror(LOGGER,'Unexpected channel shutdown. Need to close connection to trigger all the necessary close down steps.')
-            self.thread._connection.close()
+            self.thread._connection.close() # This will reconnect!
 
     '''
     An attempt to publish to a nonexistent exchange will close
@@ -400,10 +405,18 @@ class ConnectionBuilder(object):
         if self.__was_user_shutdown(reply_code, reply_text):
             loginfo(LOGGER, 'Connection to %s closed.', self.__node_manager.get_connection_parameters().host)
             self.make_permanently_closed_by_user()
+        elif self.__was_permanent_error(reply_code, reply_text):
+            loginfo(LOGGER, 'Connection to %s closed.', self.__node_manager.get_connection_parameters().host)
+            self.make_permanently_closed_by_error(connection, reply_text)
         else:
             #reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
             #self.__wait_and_trigger_reconnection(connection, reopen_seconds)
             self.on_connection_error(connection, reply_text)
+
+    def __was_permanent_error(self, reply_code, reply_text):
+        if self.thread.ERROR_TEXT_CONNECTION_PERMANENT_ERROR in reply_text:
+            return True
+        return False
 
     def __was_user_shutdown(self, reply_code, reply_text):
         if self.__was_forced_user_shutdown(reply_code, reply_text):
@@ -437,6 +450,25 @@ class ConnectionBuilder(object):
         self.thread._connection.ioloop.stop()
         loginfo(LOGGER, 'Stopped listening for RabbitMQ events (%s).', get_now_utc_as_formatted_string())
         logdebug(LOGGER, 'Connection to messaging service closed by user. Will not reopen.')
+
+    def make_permanently_closed_by_error(self, connection, reply_text):
+        # This changes the state of the state machine!
+        # This needs to be called if there is a permanent
+        # error and we don't want the library to reonnect,
+        # and we also don't want to pretend it was closed
+        # by the user.
+        # This is really rarely needed. 
+        self.statemachine.set_to_permanently_unavailable()
+        logtrace(LOGGER, 'Stop waiting for events due to permanent error!')
+
+        # In case the main thread was waiting for any synchronization event.
+        self.thread.unblock_events()
+
+        # Close ioloop, which blocks the thread.
+        logdebug(LOGGER, 'Permanent close: Stopping ioloop of connection %s...', self.thread._connection)
+        self.thread._connection.ioloop.stop()
+        loginfo(LOGGER, 'Stopped listening for RabbitMQ events (%s).', get_now_utc_as_formatted_string())
+        logdebug(LOGGER, 'Connection to messaging service closed because of error. Will not reopen. Reason: %s', reply_text)
 
     '''
     This triggers a reconnection to whatever host is stored in
