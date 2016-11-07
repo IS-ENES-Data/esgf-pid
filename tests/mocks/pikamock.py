@@ -76,9 +76,10 @@ class MockPikaSelectConnection(object):
         self.is_open = True
         self.is_closed = False
         self.is_closing = False # for simplicity, leave always false
+        self.ioloop = mock.MagicMock()
         self.__channel = MockChannel()
 
-    def channel(self): # This mocks the original API
+    def channel(self, on_open_callback): # This mocks the original API
         return self.__channel
 
     def close(self, *args, **kwargs): # This mocks the original API
@@ -87,3 +88,7 @@ class MockPikaSelectConnection(object):
 
     def add_timeout(self, seconds, to_be_called):
         to_be_called()
+
+    def add_on_close_callback(self, callback):
+        pass
+
