@@ -20,7 +20,7 @@ from resources.TESTVALUES import TESTVALUES as TESTVALUES
 class ShoppingCartTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test (%s) ##########', __name__)
 
     def tearDown(self):
         LOGGER.info('#############################')

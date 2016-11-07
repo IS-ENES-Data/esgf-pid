@@ -39,7 +39,7 @@ if __name__ == '__main__':
     parser.add_argument('-m','--modules', metavar='mod', nargs='*',
                    help=('Which modules to test. '+
                          'Possible values: "all", "solr", "rabbit", "publish", "unpublish", '+
-                         '"errata", "utils", "api", "check", "messages", "check", "shopping_cart"). '+
+                         '"errata", "utils", "api", "check", "messages", "consistency", "shopping_cart"). '+
                          'Defaults to "all".'),
                    default=['all'], action='store')
 
