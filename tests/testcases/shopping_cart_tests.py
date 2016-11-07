@@ -62,7 +62,7 @@ class ShoppingCartTestCase(unittest.TestCase):
         # Check result:
         self.assertIsInstance(assistant, esgfpid.assistant.shoppingcart.ShoppingCartAssistant, 'Constructor fail.')
 
-    def test_add_content_one_as_string(self):
+    def test_add_content_several(self):
 
         # Test variables
         testcoupler = self.make_test_coupler_for_sending_messages()
@@ -75,27 +75,56 @@ class ShoppingCartTestCase(unittest.TestCase):
         )
 
         # Run code to be tested:
-        assistant.make_shopping_cart_pid('foo')
+        assistant.make_shopping_cart_pid({'foo':'foo', 'bar':'bar'})
 
         # Check result:
         expected_rabbit_task = {
-            "handle": "hdl:"+prefix+'/a5bf60bd-fe2d-3fac-bbd7-404751e6ca66',
+            "handle": "hdl:"+prefix+'/339427df-edbd-3f43-acf2-80ddc7729f27',
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "data_cart_content":['foo'],
+            "data_cart_content":{'foo':'foo', 'bar':'bar'},
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 
-    def test_add_content_several(self):
+    def test_add_content_some_none(self):
+
+        # Test variablesl
+        testcoupler = self.make_test_coupler_for_sending_messages()
+        prefix = TESTVALUES['prefix']
+  
+        # Preparations
+        assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
+            prefix=prefix,
+            coupler=testcoupler
+        )
+
+        # Run code to be tested:
+        assistant.make_shopping_cart_pid({'foo':'foo', 'bar':None})
+
+        # Check result:
+        expected_rabbit_task = {
+            "handle": "hdl:"+prefix+'/339427df-edbd-3f43-acf2-80ddc7729f27',
+            "operation": "shopping_cart",
+            "message_timestamp":"anydate",
+            "data_cart_content":{'foo':'foo', 'bar':None},
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
+        }
+        received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
+        same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
+        self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
+
+    def test_add_content_several_old(self):
 
         # Test variables
         testcoupler = self.make_test_coupler_for_sending_messages()
         prefix = TESTVALUES['prefix']
-        content1 = ['foo', 'hdl:bar', 'hdl:BAZ']
-        content2 = ['baz', 'bar', 'foo']
+        content1 = {'foo':'foo', 'bar':'bar'}
+        content2 = {'foo':'foo', 'bar': None}
+        content3 = {'foo':'foo', 'bar':'hdl:bar'}
+
 
         # Preparations
         assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
@@ -108,25 +137,37 @@ class ShoppingCartTestCase(unittest.TestCase):
         received_rabbit_task1 = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         pid2 = assistant.make_shopping_cart_pid(content2)
         received_rabbit_task2 = self.__get_received_message_from_rabbit_mock(testcoupler, 1)
+        pid3 = assistant.make_shopping_cart_pid(content3)
+        received_rabbit_task3 = self.__get_received_message_from_rabbit_mock(testcoupler, 2)
 
         # Check result:
-        expected_handle_both_cases = "hdl:"+prefix+"/27785cdf-bae8-3fd1-857a-58399ab16385"
+        expected_handle_both_cases = "hdl:"+prefix+"/339427df-edbd-3f43-acf2-80ddc7729f27"
         expected_rabbit_task1 = {
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "data_cart_content":['foo', 'hdl:bar', 'hdl:BAZ'],
+            "data_cart_content":content1,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         expected_rabbit_task2 = {
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "data_cart_content":['baz', 'bar', 'foo'],
+            "data_cart_content":content2,
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
+        }
+        expected_rabbit_task3 = {
+            "handle": expected_handle_both_cases,
+            "operation": "shopping_cart",
+            "message_timestamp":"anydate",
+            "data_cart_content":content3,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         same1 = utils.is_json_same(expected_rabbit_task1, received_rabbit_task1)
         same2 = utils.is_json_same(expected_rabbit_task2, received_rabbit_task2)
+        same3 = utils.is_json_same(expected_rabbit_task3, received_rabbit_task3)
         self.assertTrue(same1, error_message(expected_rabbit_task1, received_rabbit_task1))
         self.assertTrue(same2, error_message(expected_rabbit_task2, received_rabbit_task2))
-        self.assertTrue(pid1==pid2, 'Both pids are not the same.')
+        self.assertTrue(same3, error_message(expected_rabbit_task3, received_rabbit_task3))
+        self.assertTrue(pid1==pid2, 'Pids 1&2 are not the same.')
+        self.assertTrue(pid1==pid3, 'Pids 1&3 are not the same.')

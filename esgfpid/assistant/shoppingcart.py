@@ -15,15 +15,22 @@ class ShoppingCartAssistant(object):
         self.__prefix = args['prefix']
         self.__coupler = args['coupler']
 
-    def make_shopping_cart_pid(self, list_of_drs_ids):
+    def make_shopping_cart_pid(self, dict_of_drs_ids_and_pids):
         logdebug(LOGGER, 'Making a PID for a shopping cart full of datasets...')
 
+        # Check arg
+        if not type(dict_of_drs_ids_and_pids) == type(dict()):
+            if type(dict_of_drs_ids_and_pids) == type([]):
+                raise esgfpid.exceptions.ArgumentError('Please provide a dictionary of dataset ids and handles, not a list')
+            else:
+                raise esgfpid.exceptions.ArgumentError('Please provide a dictionary of dataset ids and handles')
+
         # Make a pid (hash on the content):
-        list_of_drs_ids = self.__get_strings_as_list(list_of_drs_ids)
+        list_of_drs_ids = dict_of_drs_ids_and_pids.keys()
         cart_handle = self.__get_handle_for_cart(list_of_drs_ids, self.__prefix)
 
         # Make and send message
-        message = self.__make_message(cart_handle, list_of_drs_ids)
+        message = self.__make_message(cart_handle, dict_of_drs_ids_and_pids)
         self.__send_message_to_queue(message)
 
         # Return pid
@@ -31,23 +38,17 @@ class ShoppingCartAssistant(object):
         loginfo(LOGGER, 'Requesting to create PID for data cart (%s).', cart_handle)
         return cart_handle
 
-    def __get_strings_as_list(self, strings):
-        if type(strings) == type([]):
-            return strings
-        else:
-            return [strings]
-
     def __get_handle_for_cart(self, list_of_drs_ids, prefix):
         hash_basis = esgfpid.utils.make_sorted_lowercase_list_without_hdl(list_of_drs_ids)
         return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix)
         # This sorts the list, removes all "hdl:", and makes a hash
 
-    def __make_message(self, cart_handle, data_cart_content):
+    def __make_message(self, cart_handle, dict_of_drs_ids_and_pids):
         message_timestamp = esgfpid.utils.get_now_utc_as_formatted_string()
         message = esgfpid.assistant.messages.make_shopping_cart_message(
             cart_handle = cart_handle,
             timestamp = message_timestamp,
-            data_cart_content = data_cart_content
+            data_cart_content = dict_of_drs_ids_and_pids
         )
         return message
 
