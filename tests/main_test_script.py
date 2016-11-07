@@ -79,7 +79,7 @@ if __name__ == '__main__':
             n = tests.countTestCases()
             numtests += n
 
-            from testcases.rabbit_util_tests import RabbitUtilsTestCase
+            from testcases.rabbit_rabbitutil_tests import RabbitUtilsTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(RabbitUtilsTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
