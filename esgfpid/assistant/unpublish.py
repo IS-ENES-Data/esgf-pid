@@ -27,7 +27,7 @@ class AssistantOneVersion(object):
 
         if handle and version_number:
             self.__both_given(handle, version_number)
-            loginfo(LOGGER, 'Requesting to unpublish version %i of dataset %s from %s (handle: %s).', version_number, self._drs_id, self._data_node, handle)
+            loginfo(LOGGER, 'Requesting to unpublish version %s of dataset %s from %s (handle: %s).', version_number, self._drs_id, self._data_node, handle)
         elif handle:
             self.__only_handle_given(handle)
             loginfo(LOGGER, 'Requesting to unpublish a version of dataset %s from %s (handle: %s).', self._drs_id, self._data_node, handle)
