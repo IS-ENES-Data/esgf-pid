@@ -10,6 +10,7 @@ import esgfpid.rabbit.synchronous
 import esgfpid.rabbit.asynchronous
 import esgfpid.rabbit.rabbitutils
 import esgfpid.rabbit.nodemanager
+from esgfpid.utils import logwarn
 
 # Normal logger:
 LOGGER = logging.getLogger(__name__)
@@ -93,9 +94,9 @@ class RabbitMessageSender(object):
 
         # Add the trusted node, if there is one:
         if not args['password'] == 'jzlnL78ZpExV#_QHz':
-            if not 'username_trusted' in args:
+            if not 'username_trusted' in args or args['username_trusted'] is None:
                 logwarn(LOGGER, 'A RabbitMQ password was provided, but no username.')
-            if not 'url_trusted' in args:
+            if not 'url_trusted' in args or args['url_trusted'] is None:
                 logwarn(LOGGER, 'A RabbitMQ password was provided, but no URL.')
             node_manager.add_trusted_node(
                 username=args['username_trusted'],

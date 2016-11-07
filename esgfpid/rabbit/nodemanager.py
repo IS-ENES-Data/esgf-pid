@@ -3,6 +3,7 @@ import copy
 import logging
 import random
 import esgfpid.defaults
+import esgfpid.exceptions
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 
 LOGGER = logging.getLogger(__name__)
@@ -31,21 +32,24 @@ class NodeManager(object):
         self.__has_trusted = False
 
     def add_trusted_node(self, **kwargs):
+        node_info = self.__add_node(self.__trusted_nodes, self.__trusted_nodes_archive, **kwargs)
+        self.__has_trusted = True
+        logdebug(LOGGER, 'Trusted rabbit: %s', self.__get_node_log_string(node_info))
+
+    def add_open_node(self, **kwargs):
+        added = node_info = self.__add_node(self.__open_nodes, self.__open_nodes_archive, **kwargs)
+        logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
+
+    def __add_node(self, store_where, store_archive, **kwargs):
         if self.__has_necessary_info(kwargs):
             node_info = copy.deepcopy(kwargs)
             self.__complete_info_dict(node_info, False)
-            self.__trusted_nodes.append(node_info)
-            self.__trusted_nodes_archive.append(copy.deepcopy(node_info))
-            self.__has_trusted = True
-            logdebug(LOGGER, 'Trusted rabbit: %s', self.__get_node_log_string(node_info))
+            store_where.append(node_info)
+            store_archive.append(copy.deepcopy(node_info))
+            return node_info
+        else:
+            raise esgfpid.exceptions.ArgumentError('Cannot add this RabbitMQ node. Missing info. Required: username, password, host and exchange_name. Provided: '+str(kwargs))
 
-    def add_open_node(self, **kwargs):
-        if self.__has_necessary_info(kwargs):
-            node_info = copy.deepcopy(kwargs)
-            self.__complete_info_dict(node_info, True)
-            self.__open_nodes.append(node_info)
-            self.__open_nodes_archive.append(copy.deepcopy(node_info))
-            logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
 
     def __get_node_log_string(self, node_info):
         return ('%s, %s, %s (exchange "%s")' % (node_info['host'], node_info['username'], node_info['password'], node_info['exchange_name']))
@@ -54,11 +58,14 @@ class NodeManager(object):
         if ('username' in node_info_dict and
            'password' in node_info_dict and
            'host' in node_info_dict and 
-           'exchange_name' in node_info_dict):
+           'exchange_name' in node_info_dict and
+            node_info_dict['username'] is not None and
+            node_info_dict['password'] is not None and
+            node_info_dict['host'] is not None and
+            node_info_dict['exchange_name'] is not None):
             return True
         else:
             return False
-            # TODO Log what is missing
 
     def __complete_info_dict(self, node_info_dict, is_open):
 
