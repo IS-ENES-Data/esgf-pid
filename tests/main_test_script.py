@@ -101,11 +101,13 @@ if __name__ == '__main__':
 
         if 'check' in param.modules or 'all' in param.modules:
 
-            from testcases.check_tests import CheckTestCase
-            tests = unittest.TestLoader().loadTestsFromTestCase(CheckTestCase)
-            tests_to_run.append(tests)
-            n = tests.countTestCases()
-            numtests += n
+            pass
+            # TODO
+            #from testcases.check_tests import CheckTestCase
+            #tests = unittest.TestLoader().loadTestsFromTestCase(CheckTestCase)
+            #tests_to_run.append(tests)
+            #n = tests.countTestCases()
+            #numtests += n
 
         if 'shopping_cart' in param.modules or 'all' in param.modules:
 
@@ -151,40 +153,42 @@ if __name__ == '__main__':
 
             if param.asyn:
 
-                from testcases.rabbit_rabbit_asyn_tests import RabbitTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
+                # TODO
+                
+                #from testcases.rabbit_rabbit_asyn_tests import RabbitTestCase
+                #tests = unittest.TestLoader().loadTestsFromTestCase(RabbitTestCase)
+                #tests_to_run.append(tests)
+                #numtests += tests.countTestCases()
 
-                from testcases.rabbit_asynchronous_asynchronous_tests import RabbitAsynConnectorTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynConnectorTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
+                #from testcases.rabbit_asynchronous_asynchronous_tests import RabbitAsynConnectorTestCase
+                #tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynConnectorTestCase)
+                #tests_to_run.append(tests)
+                #numtests += tests.countTestCases()
 
-                from testcases.rabbit_thread_confirmer_tests import ThreadConfirmerTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadConfirmerTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
+                #from testcases.rabbit_thread_confirmer_tests import ThreadConfirmerTestCase
+                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadConfirmerTestCase)
+                #tests_to_run.append(tests)
+                #numtests += tests.countTestCases()
 
-                from testcases.rabbit_thread_acceptor_tests import ThreadAcceptorTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadAcceptorTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
+                #from testcases.rabbit_thread_acceptor_tests import ThreadAcceptorTestCase
+                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadAcceptorTestCase)
+                #tests_to_run.append(tests)
+                #numtests += tests.countTestCases()
 
-                from testcases.rabbit_thread_shutter_tests import ThreadShutterTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadShutterTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
+                #from testcases.rabbit_thread_shutter_tests import ThreadShutterTestCase
+                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadShutterTestCase)
+                #tests_to_run.append(tests)
+                #numtests += tests.countTestCases()
 
-                from testcases.rabbit_thread_feeder_tests import ThreadFeederTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadFeederTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
+                #from testcases.rabbit_thread_feeder_tests import ThreadFeederTestCase
+                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadFeederTestCase)
+                #tests_to_run.append(tests)
+                #numtests += tests.countTestCases()
 
-                from testcases.rabbit_thread_builder_tests import ThreadBuilderTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadBuilderTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
+                #from testcases.rabbit_thread_builder_tests import ThreadBuilderTestCase
+                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadBuilderTestCase)
+                #tests_to_run.append(tests)
+                #numtests += tests.countTestCases()
 
                 from testcases.rabbit_asynchronous_asynchronous_module_tests import RabbitAsynModuleTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynModuleTestCase)
@@ -239,11 +243,13 @@ if __name__ == '__main__':
 
         if 'consistency' in param.modules or 'all' in param.modules:
 
-            from testcases.consistency_tests import ConsistencyTestCase
-            tests = unittest.TestLoader().loadTestsFromTestCase(ConsistencyTestCase)
-            tests_to_run.append(tests)
-            n = tests.countTestCases()
-            numtests += n
+            pass
+            # TODO
+            #from testcases.consistency_tests import ConsistencyTestCase
+            #tests = unittest.TestLoader().loadTestsFromTestCase(ConsistencyTestCase)
+            #tests_to_run.append(tests)
+            #n = tests.countTestCases()
+            #numtests += n
 
     if param.inte:
 
