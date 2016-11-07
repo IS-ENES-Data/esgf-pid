@@ -38,9 +38,9 @@ class Checker(object):
     ### Preparation ###
 
     def __data_consistency_check_preparation(self):
-        logdebug(LOGGER, 'Asking solr for info for consistency check.', show=True)
+        logdebug(LOGGER, 'Asking solr for info for consistency check.')
         self.__retrieve_list_of_previous_files_from_solr()
-        logdebug(LOGGER, 'Asking solr for info for consistency check... done.', show=True)
+        logdebug(LOGGER, 'Asking solr for info for consistency check... done.')
         self.__decide_whether_run_check_and_inform()
 
     def __retrieve_list_of_previous_files_from_solr(self):
@@ -77,7 +77,7 @@ class Checker(object):
     def __log_solr_error_occured(self, exception):
         msg = ('No dataset integrity test could be run. Message: '+exception.message)
         self.__message_why_not = msg
-        loginfo(LOGGER, msg, show=True)
+        loginfo(LOGGER, msg)
 
     def __log_previously_stored_files_found(self):
         concat_files = ', '.join(self.__list_of_previous_files)
@@ -113,7 +113,7 @@ class Checker(object):
             raise ValueError('Consistency check can not be run. Reason: %s' % self.__message_why_not)
 
     def __data_consistency_check(self, list_of_given_files):
-        logdebug(LOGGER, 'Performing consistency check...', show=True)
+        logdebug(LOGGER, 'Performing consistency check...')
         list_too_many_files = self.__check_for_superfluous_files(list_of_given_files)
         list_missing_files = self.__check_for_missing_files(list_of_given_files)
 
@@ -122,10 +122,10 @@ class Checker(object):
         if any_inconsistency:
             self.__log_missing_files_if_any(list_missing_files)
             self.__log_too_many_files_if_any(list_too_many_files)
-            logdebug(LOGGER, 'Performing consistency check... done (fail)', show=True)
+            logdebug(LOGGER, 'Performing consistency check... done (fail)')
             return False
         else:
-            logdebug(LOGGER, 'Performing consistency check... done (success)', show=True)
+            logdebug(LOGGER, 'Performing consistency check... done (success)')
             return True
 
     def __check_for_superfluous_files(self, list_of_given_files):

@@ -21,23 +21,10 @@ def logdebug(logger, msg, *args, **kwargs):
     unless show=True and esgfpid.defaults.LOG_SHOW_TO_INFO=True,
     (then it logs messages as INFO).
     '''
-    if _is_show(kwargs):
-        _logshow(logger, msg, *args, **kwargs)
-    elif esgfpid.defaults.LOG_DEBUG_TO_INFO:
+    if esgfpid.defaults.LOG_DEBUG_TO_INFO:
         logger.info('DEBUG %s ' % msg, *args, **kwargs)
     else:
         logger.debug(msg, *args, **kwargs)
-
-def _is_show(kwargs):
-    show_this_message = ('show' in kwargs) and (kwargs['show'] == True)
-    kwargs.pop('show', None) # Need to remove show=xyz before passing kwargs to logger!
-    if show_this_message and esgfpid.defaults.LOG_SHOW_TO_INFO:
-        return True
-    return False
-
-def _logshow(logger, msg, *args, **kwargs):
-    kwargs.pop('show', None) # Need to remove show=xyz before passing kwargs to logger!
-    logger.info(msg, *args, **kwargs)
 
 def loginfo(logger, msg, *args, **kwargs):
     '''
@@ -45,25 +32,17 @@ def loginfo(logger, msg, *args, **kwargs):
     unless esgfpid.defaults.LOG_INFO_TO_DEBUG,
     (then it logs messages as DEBUG).
     '''
-    if _is_show(kwargs):
-        _logshow(logger, msg, *args, **kwargs)
-    elif esgfpid.defaults.LOG_INFO_TO_DEBUG:
+    if esgfpid.defaults.LOG_INFO_TO_DEBUG:
         logger.debug(msg, *args, **kwargs)
     else:
         logger.info(msg, *args, **kwargs)
 
 
 def logwarn(logger, msg, *args, **kwargs):
-    if _is_show(kwargs):
-        _logshow(logger, '[WARN] %s' % msg, *args, **kwargs)
-    else:
-        logger.warn(msg, *args, **kwargs)
+    logger.warn(msg, *args, **kwargs)
 
 def logerror(logger, msg, *args, **kwargs):
-    if _is_show(kwargs):
-        _logshow(logger, '[ERROR] %s' % msg, *args, **kwargs)
-    else:
-        logger.error(msg, *args, **kwargs)
+    logger.error(msg, *args, **kwargs)
 
 def log_every_x_times(logger, counter, x, msg, *args, **kwargs):
     '''

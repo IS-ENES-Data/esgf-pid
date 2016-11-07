@@ -27,14 +27,14 @@ class SolrInteractor(object):
     def __init__(self, **args):
 
         if self.__should_be_switched_off(args):
-            logdebug(LOGGER, 'Initializing solr module without access..', show=True)
+            logdebug(LOGGER, 'Initializing solr module without access..')
             self.__init_without_access(args)
-            logdebug(LOGGER, 'Initializing solr module without access.. done', show=True)
+            logdebug(LOGGER, 'Initializing solr module without access.. done')
 
         else:
-            logdebug(LOGGER, 'Initializing solr module..', show=True)
+            logdebug(LOGGER, 'Initializing solr module..')
             self.__init_with_access(args)
-            logdebug(LOGGER, 'Initializing solr module.. done', show=True)
+            logdebug(LOGGER, 'Initializing solr module.. done')
 
     def __should_be_switched_off(self, args):
         if 'switched_off' in args.keys() and args['switched_off'] == True:
