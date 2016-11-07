@@ -28,11 +28,12 @@ class ShoppingCartTestCase(unittest.TestCase):
     def make_test_coupler_for_sending_messages(self):
         testcoupler = esgfpid.coupling.Coupler(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls = TESTVALUES['url_messaging_service'],
-            messaging_service_url_preferred = TESTVALUES['url_messaging_service'],
-            messaging_service_exchange_name = TESTVALUES['messaging_exchange'],
+            messaging_service_urls_open = TESTVALUES['url_rabbit_open'],
+            messaging_service_url_trusted = TESTVALUES['url_rabbit_trusted'],
+            messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
             solr_url = TESTVALUES['solr_url'],
-            messaging_service_username = TESTVALUES['rabbit_username'],
+            messaging_service_username_open = TESTVALUES['rabbit_username_open'],
+            messaging_service_username_trusted = TESTVALUES['rabbit_username_trusted'],
             messaging_service_password = TESTVALUES['rabbit_password'],
             solr_switched_off = True,
             solr_https_verify=False
