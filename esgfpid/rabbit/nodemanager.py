@@ -185,3 +185,9 @@ class NodeManager(object):
         self.__trusted_nodes = copy.deepcopy(self.__trusted_nodes_archive)
         self.__open_nodes = copy.deepcopy(self.__open_nodes_archive)
         self.set_next_host()
+
+    ''' Only for unit testing! '''
+    def _get_num_trusted_and_open_nodes(self):
+        n_open = len(self.__open_nodes_archive)
+        n_trusted = len(self.__trusted_nodes_archive)
+        return (n_trusted,n_open)

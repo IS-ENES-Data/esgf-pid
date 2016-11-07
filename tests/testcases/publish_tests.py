@@ -23,7 +23,7 @@ from resources.TESTVALUES import TESTVALUES as TESTVALUES
 class PublishTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test (%s) ##########', __name__)
 
     def tearDown(self):
         LOGGER.info('#############################')
@@ -92,11 +92,11 @@ class PublishTestCase(unittest.TestCase):
     def __make_patched_testcoupler(self, solr_off=False):
         testcoupler = esgfpid.coupling.Coupler(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls = 'rabbit_should_not_be_used',
-            messaging_service_url_preferred = None,
-            messaging_service_exchange_name = TESTVALUES['messaging_exchange'],
-            messaging_service_username = TESTVALUES['rabbit_username'],
-            messaging_service_password = TESTVALUES['rabbit_password'],
+            messaging_service_urls_open = 'rabbit_should_not_be_used',
+            messaging_service_url_trusted = TESTVALUES['url_rabbit_trusted'],
+            messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
+            messaging_service_username_open = TESTVALUES['rabbit_username_open'],
+            messaging_service_username_trusted = TESTVALUES['rabbit_username_trusted'],
             data_node = TESTVALUES['data_node'],
             thredds_service_path = TESTVALUES['thredds_service_path'],
             solr_url = 'solr_should_not_be_used',
@@ -289,7 +289,7 @@ class PublishTestCase(unittest.TestCase):
         # Check result (dataset):
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         expected_rabbit_task = self.__get_normal_rabbit_task_dataset()
-        expected_rabbit_task['files'] = [handle1, handle2]
+        expected_rabbit_task['files'] = [handle2, handle1]
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 

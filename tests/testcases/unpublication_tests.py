@@ -14,8 +14,11 @@ LOGGER.addHandler(logging.NullHandler())
 
 class UnpublicationTestCase(unittest.TestCase):
 
-    def setUp(self):
+    def tearDown(self):
+        LOGGER.info('#############################')
 
+    def setUp(self):
+        LOGGER.info('######## Next test (%s) ##########', __name__)
         self.prefix = '123456'
         self.data_node = 'my.data.node'
         self.drs_id = 'mytest'
@@ -50,10 +53,11 @@ class UnpublicationTestCase(unittest.TestCase):
     def get_args_for_coupler(self):
         args = dict(
             handle_prefix=self.prefix,
-            messaging_service_urls='www.rabbit.foo',
-            messaging_service_url_preferred=None,
+            messaging_service_urls_open='www.rabbit.foo',
+            messaging_service_url_trusted='www.trusted-rabbit.foo',
             messaging_service_exchange_name='exch',
-            messaging_service_username='rogerRabbit',
+            messaging_service_username_open='rogerRabbit',
+            messaging_service_username_trusted='rogerRabbit',
             messaging_service_password='mySecretCarrotDream',
             solr_url='foo.solr.bar',
             solr_https_verify=False,
