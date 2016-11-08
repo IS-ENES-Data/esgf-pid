@@ -222,7 +222,9 @@ class ApiTestCase(unittest.TestCase):
             "message_timestamp":"anydate",
             "aggregation_level":"dataset",
             "data_node": TESTVALUES['data_node'],
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "drs_id":drs_id,
+            "version_number": int(version_number)
         }
         received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
         tests.utils.replace_date_with_string(received_rabbit_task)
@@ -261,7 +263,9 @@ class ApiTestCase(unittest.TestCase):
             "message_timestamp":"anydate",
             "aggregation_level":"dataset",
             "data_node": TESTVALUES['data_node'],
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "drs_id":drs_id,
+            "version_number": int(version_number)
         } # We don't get the consumer_solr_url, because it is only needed for all versions.
         received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
         tests.utils.replace_date_with_string(received_rabbit_task)

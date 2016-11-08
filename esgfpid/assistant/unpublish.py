@@ -41,7 +41,7 @@ class AssistantOneVersion(object):
     def __both_given(self, handle, version_number):
         self.__check_whether_handle_and_version_number_match(handle, version_number)
         logdebug(LOGGER, 'Unpublishing dataset with handle %s (one version, %s).', handle, version_number)
-        message = self.__make_message(handle)
+        message = self.__make_message(handle, version_number=version_number)
         self._send_message_to_queue(message)
 
     def __only_handle_given(self, handle):
@@ -52,7 +52,7 @@ class AssistantOneVersion(object):
     def __only_version_given(self, version_number):
         handle = self.__derive_handle_from_version(version_number)
         logdebug(LOGGER, 'Unpublishing dataset with handle %s (one version, %s). Handle was derived from version number', handle, version_number)
-        message = self.__make_message(handle)
+        message = self.__make_message(handle, version_number=version_number)
         self._send_message_to_queue(message)
 
     def __derive_handle_from_version(self, version_number):
@@ -75,14 +75,17 @@ class AssistantOneVersion(object):
             raise ValueError(msg)
             # TODO COMPLAIN LOUDLY
 
-    def __make_message(self, handle,):
+    def __make_message(self, handle, **kwargs):
         message_timestamp = esgfpid.utils.get_now_utc_as_formatted_string()
 
         message = esgfpid.assistant.messages.unpublish_one_version(
             timestamp = message_timestamp,
             data_node = self._data_node,
             dataset_handle = handle,
+            drs_id = self._drs_id
         )
+        if 'version_number' in kwargs:
+            message['version_number'] = int(kwargs['version_number'])
         return message
 
     def _send_message_to_queue(self, message):

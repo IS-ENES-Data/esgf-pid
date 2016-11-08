@@ -108,7 +108,9 @@ class UnpublicationTestCase(unittest.TestCase):
             "operation": "unpublish_one_version",
             "message_timestamp":"anydate",
             "data_node": self.data_node,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "drs_id":self.drs_id,
+            "version_number":int(version_number)
         }
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(self.coupler, 0)
 
@@ -137,7 +139,9 @@ class UnpublicationTestCase(unittest.TestCase):
             "operation": "unpublish_one_version",
             "message_timestamp":"anydate",
             "data_node": self.data_node,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "drs_id":self.drs_id,
+            "version_number":int(version_number)
         }
         received_rabbit_task = self.__get_received_message_from_rabbit_mock(self.coupler, 0)
         messagesOk = tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task)
@@ -287,7 +291,8 @@ class UnpublicationTestCase(unittest.TestCase):
             "message_timestamp": "anydate",
             "data_node": self.data_node,
             "handle":list_of_handles[0],
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "drs_id": self.drs_id
         }
         expected_rabbit_task_1 = {
             "operation": "unpublish_one_version",
@@ -295,7 +300,8 @@ class UnpublicationTestCase(unittest.TestCase):
             "message_timestamp": "anydate",
             "data_node": self.data_node,
             "handle":list_of_handles[1],
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "drs_id": self.drs_id
         }
         received_rabbit_task_0 = self.__get_received_message_from_rabbit_mock(self.coupler, 0)
         received_rabbit_task_1 = self.__get_received_message_from_rabbit_mock(self.coupler, 1)
@@ -327,7 +333,9 @@ class UnpublicationTestCase(unittest.TestCase):
             "message_timestamp": "anydate",
             "data_node": self.data_node,
             "handle": "hdl:"+self.prefix+"/68f3d5ab-bddd-3701-abf4-4b24ccd54525",
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "drs_id": self.drs_id,
+            "version_number": 12345
         }
         expected_rabbit_task_1 = {
             "operation": "unpublish_one_version",
@@ -335,7 +343,9 @@ class UnpublicationTestCase(unittest.TestCase):
             "message_timestamp": "anydate",
             "data_node": self.data_node,
             "handle": "hdl:"+self.prefix+"/fca5741d-89c1-3149-a34d-c7fb37be75a8",
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one'
+            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "drs_id": self.drs_id,
+            "version_number": 54321
         }
         received_rabbit_task_0 = self.__get_received_message_from_rabbit_mock(self.coupler, 0)
         received_rabbit_task_1 = self.__get_received_message_from_rabbit_mock(self.coupler, 1)

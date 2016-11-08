@@ -19,7 +19,7 @@ from resources.TESTVALUES import TESTVALUES as TESTVALUES
 class MessageCreationTestcase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test (%s) ##########', __name__)
 
     def tearDown(self):
         LOGGER.info('#############################')
@@ -192,7 +192,8 @@ class MessageCreationTestcase(unittest.TestCase):
         args_dict = dict(
             dataset_handle = 'abc/def',
             data_node = 'dkrz.de',
-            timestamp = 'todayish'
+            timestamp = 'todayish',
+            drs_id = 'mytest'
         )
 
         # Run code to be tested:

@@ -107,7 +107,7 @@ def unpublish_allversions_consumer_must_find_versions(**args):
 
 def unpublish_one_version(**args):
 
-    mandatory_args = ['data_node', 'timestamp', 'dataset_handle']
+    mandatory_args = ['data_node', 'timestamp', 'dataset_handle', 'drs_id']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
     message = dict(
@@ -115,8 +115,11 @@ def unpublish_one_version(**args):
         aggregation_level = 'dataset',
         message_timestamp = args['timestamp'],
         handle = args['dataset_handle'],
-        data_node=args['data_node']
+        data_node=args['data_node'],
+        drs_id = args['drs_id']
     )
+    if 'version_number' in args:
+        message['version_number'] = args['version_number']
 
     message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['unpubli_one']
 
