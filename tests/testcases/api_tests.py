@@ -421,8 +421,8 @@ class ApiTestCase(unittest.TestCase):
 
         # Test variables
         prefix = TESTVALUES['prefix']
-        content1 = ['foo', 'hdl:bar', 'hdl:BAZ']
-        content2 = ['baz', 'bar', 'foo']
+        content1 = {'foo':'foo', 'bar':'bar'}
+        content2 = {'foo':'foo', 'bar': None}
 
         # Run code to be tested:
         default_testconnector = self.make_patched_connector()
@@ -432,19 +432,19 @@ class ApiTestCase(unittest.TestCase):
         received_rabbit_task2 = self.default_rabbitmock.send_message_to_queue.call_args[0][0]
 
         # Check result:
-        expected_handle_both_cases = "hdl:"+prefix+"/27785cdf-bae8-3fd1-857a-58399ab16385"
+        expected_handle_both_cases = "hdl:"+prefix+"/339427df-edbd-3f43-acf2-80ddc7729f27"
         expected_rabbit_task1 = {
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "data_cart_content":['foo', 'hdl:bar', 'hdl:BAZ'],
+            "data_cart_content":content1,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         expected_rabbit_task2 = {
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
-            "data_cart_content":['baz', 'bar', 'foo'],
+            "data_cart_content":content2,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         
