@@ -291,7 +291,7 @@ if __name__ == '__main__':
     print '\nStarting tests:'
     logging.info("Starting tests:")
     test_result = unittest.TextTestRunner(descriptions=descriptions, verbosity=verbosity).run(test_suites)
-    sys.exit(rest_result)
+    sys.exit(test_result)
 
     # Run with:
     # python -m coverage run main_test_script.py
