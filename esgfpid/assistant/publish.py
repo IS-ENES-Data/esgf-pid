@@ -261,6 +261,7 @@ class DatasetPublicationAssistant(object):
             file_name=args['file_name'],
             checksum=args['checksum'],
             data_url=args['data_url'],
+            data_node=self.__data_node,
             parent_dataset=self.__dataset_handle,
             checksum_type=args['checksum_type'],
             file_version=args['file_version'],

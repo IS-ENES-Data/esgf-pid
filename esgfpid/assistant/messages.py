@@ -25,7 +25,8 @@ def publish_file(**args):
 
     # Check args:
     mandatory_args = ['file_handle', 'is_replica', 'file_size', 'file_name', 'checksum',
-                      'data_url', 'parent_dataset', 'timestamp', 'checksum_type', 'file_version']
+                      'data_url', 'parent_dataset', 'timestamp', 'checksum_type',
+                    'file_version', 'data_node']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
     # Message:
@@ -38,6 +39,7 @@ def publish_file(**args):
         file_size=args['file_size'],
         checksum=args['checksum'],
         data_url=args['data_url'],
+        data_node=args['data_node'],
         parent_dataset=args['parent_dataset'],
         message_timestamp = args['timestamp'],
         checksum_type = args['checksum_type'],
