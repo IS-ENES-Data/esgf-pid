@@ -32,6 +32,7 @@ class MessageCreationTestcase(unittest.TestCase):
             file_name='filey.nc',
             checksum='xyz',
             data_url='myurl.de',
+            data_node='dkrz.de',
             parent_dataset='abc/def',
             timestamp='todayish',
             checksum_type='SHA999',

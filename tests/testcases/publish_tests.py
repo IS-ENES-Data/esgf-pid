@@ -80,6 +80,7 @@ class PublishTestCase(unittest.TestCase):
             "is_replica":False,
             "file_name": TESTVALUES['file_name1'],
             "data_url":expected_data_url,
+            "data_node":TESTVALUES['data_node'],
             "file_size":TESTVALUES['file_size1'],
             "checksum":TESTVALUES['checksum1'],
             "checksum_type":TESTVALUES['checksum_type1'],
