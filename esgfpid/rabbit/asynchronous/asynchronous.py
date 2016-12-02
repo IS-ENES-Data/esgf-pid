@@ -1,3 +1,28 @@
+'''
+This module is responsible for all the communication with the RabbitMQ
+messaging service. It provides one class, the "AsynchronousRabbitConnector".
+
+It communicates with the server in an asychronous way, by opening
+another thread which runs in parallel, waits for events from the library
+(e.g. message publication requests) and from the RabbitMQ (e.g. message
+receival confirmations).
+
+After initialisation, it is necessary to start the thread by calling
+"start_messaging_thread()". This opens the parallel thread and triggers 
+the connection to the server.
+
+Then, the messages can be sent using "send_message_to_queue()" or
+"send_many_messages()".
+
+After the messaging business is done, it is necessary to close the
+thread by calling "finish_rabbit_thread()" or "force_finish_rabbit_thread()".
+
+  .. note:: Please note that KeyboardInterrupts may not work while a
+    second thread is running. They need to be explicitly caught in
+    the code calling the esgfpid library.
+
+'''
+
 import Queue
 import threading
 import pika
@@ -15,30 +40,7 @@ from .exceptions import OperationNotAllowed
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-'''
-This class is responsible for all the communication with the RabbitMQ
-messaging service.
 
-It communicates with the server in an asychronous way, by opening
-another thread which runs in parallel, waits for events from the library
-(e.g. message publication requests) and from the RabbitMQ (e.g. message
-receival confirmations).
-
-After initialisation, it is necessary to start the thread by calling
-"start_messaging_thread()". This opens the parallel thread and triggers 
-the connection to the server.
-
-Then, the messages can be sent using "send_message_to_queue()" or
-"send_many_messages()".
-
-After the messaging business is done, it is necessary to close the
-thread by calling "finish_rabbit_thread()" or "force_finish_rabbit_thread()".
-
-Please not that KeyboardInterrupts may not work while a second thread
-is running. They need to be explicitly caught in the code calling
-the esgfpid library.
-
-'''
 class AsynchronousRabbitConnector(object):
 
     '''
@@ -88,7 +90,15 @@ class AsynchronousRabbitConnector(object):
     thread as early as possible, even before using the library
     to publish messages.
     This is only possible if the thread can be started (and
-    stopped )separately from the rest of the library's functionality.
+    stopped) separately from the rest of the library's functionality.
+
+    Reasons for this method not to be called during init of
+    the library may be:
+
+    * Some usage may not need any connection, e.g. if the library is only used for creating handle strings.
+    * Testing of the library is easier.
+    * If starting needs to be called explicitly, it is less likely that the stopping is forgotten, so abandoned connections and unjoined threads are avoided.
+
     '''
     def start_rabbit_thread(self):
         self.__not_started_yet = False

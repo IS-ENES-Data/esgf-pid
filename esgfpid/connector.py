@@ -181,6 +181,27 @@ class Connector(object):
                 % (self.prefix, ', '.join(esgfpid.defaults.ACCEPTED_PREFIXES)))
 
     def create_publication_assistant(self, **args):
+        '''
+        Create an assistant for a dataset that allows to make PID
+        requests for the dataset and all of its files.
+
+        :param drs_id: Mandatory. The dataset id of the dataset
+            to be published.
+
+        :param version_number: Mandatory. The version number of the
+            dataset to be published.
+
+        :param is_replica: Mandatory. Flag to indicate whether the
+            dataset is a replica.
+
+        .. note:: If the replica flag is set to False, the publication
+            may still be considered a replica by the consuming servlet,
+            namely if the dataset was already published at a different
+            host. For this, please refer to the consumer documentation.
+
+        :return: A publication assistant which provides all necessary
+            methods to publish a dataset and its files.
+        '''
 
         # Check args
         logdebug(LOGGER, 'Creating publication assistant..')
@@ -216,6 +237,33 @@ class Connector(object):
         return assistant
 
     def unpublish_one_version(self, **args):
+        '''
+        Sends a PID update request for the unpublication of one version
+        of a dataset currently published at the given data node.
+
+        Either the handle or the pair of drs_id and version_number
+        have to be provided, otherwise an exception will occur.
+
+        The consumer will of course check the PID request message's
+        timestamp with the timestamp of the last publication, so that
+        republications in the mean time are not unpublished.
+
+        The unpublication of the files is included in this method.
+
+        :param handle: Optional. The handle of the dataset
+            to be unpublished.
+
+        :param drs_id: Optional. The dataset id of the dataset
+            to be unpublished.
+
+        :param version_number: Optional. The version number of
+            the dataset to be unpublished.
+
+        :raises: ArgumentError: If not enough arguments are passed
+            to identify the dataset, or if no data node was specified
+            during library init.
+
+        '''
 
         # Check args
         optional_args = ['handle', 'drs_id', 'version_number']
@@ -253,7 +301,7 @@ class Connector(object):
         republished in the meantime.
 
         :param drs_id: Dataset id of the dataset to be unpublished.
-        :raises: esgfpid.exceptions.ArgumentError: If the data node
+        :raises: ArgumentError: If the data node
                  was not provided at library initialization.
 
         '''
@@ -398,18 +446,9 @@ class Connector(object):
         is ready).
 
         .. important:: Please do not forget to finish the thread at the end,
-                       using :meth:`~esgfpid.connector.Connector.finish_messaging_thread`
-                       or :meth:`~esgfpid.connector.Connector.force_finish_messaging_thread`.
+            using :meth:`~esgfpid.connector.Connector.finish_messaging_thread`
+            or :meth:`~esgfpid.connector.Connector.force_finish_messaging_thread`.
 
-
-        Reasons for this method not to be called during init of
-        the library may be:
-        * Some usage may not need any connection, e.g. if the
-          library is only used for creating handle strings.
-        * Testing of the library is easier.
-        * If starting needs to be called explicitly, it is less
-          likely that the stopping is forgotten, so abandoned
-          connections and unjoined threads are avoided.
         '''
         self.__coupler.start_rabbit_connection()
 

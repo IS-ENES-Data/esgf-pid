@@ -95,11 +95,66 @@ class DatasetPublicationAssistant(object):
 
 
     def get_dataset_handle(self):
+        '''
+        This returns the handle string of the dataset to be
+        published, so that the publisher can use it for its
+        own purposes, e.g. publishing it on a website.
+
+        The handle string consists of the prefix specified
+        at library init, and a suffix. The suffix is created
+        by making a hash over dataset id and version number.
+
+        :return: The handle string of this dataset,
+            e.g.: "hdl:21.14100/foobar".
+        '''
         return self.__dataset_handle
 
     # work horses:
 
     def add_file(self, **args):
+        '''
+        Adds a file's information to the set of files to be
+        published in this dataset.
+
+        :param file_name: Mandatory. The file name (string).
+            This information will simply be included in the
+            PID record, but not used for anything.
+
+        :param file_handle: Mandatory. The handle (PID) of
+            this file (string). It is included in the file's netcdf
+            header. It must bear the prefix that this library 
+            (or rather, the consuming servlet that will consume
+            this library's requests), has write access to.
+
+        :param file_size: Mandatory. The file size (as string or
+            integer. Will be transformed to integer). This
+            information will be included in the handle record
+            and used for consistency checks during republications
+            of files with the same handle.
+
+        :param checksum: Mandatory. The file's checksum. This
+            information will be included in the handle record
+            and used for consistency checks during republications
+            of files with the same handle.
+
+        :param checksum_type: Mandatory. The checksum type/method
+            (string), e.g. "MD5" or "SHA256". This information will
+            be included in the handle record and used for consistency
+            checks during republications of files with the same handle.
+
+        :param publish_path: Mandatory. The THREDDS publish path as
+            a string. This is part of the URL for accessing the file,
+            which will be part of the handle record. It will not be
+            accessed, neither by the library nor by the consumer.
+            The URL consists of the dataset's "data_node", the dataset's 
+            "thredds_service_path", and this "publish_path". Redundant
+            slashes are removed. If the URL does not start with "http",
+            "http://" is added.
+
+        :param file_version: Mandatory. Any string. File versions
+            are not managed in the PID. This information will simply be
+            included in the PID record, but not used for any reasoning.
+        '''
 
         # Check if allowed:
         self.__check_if_adding_files_allowed_right_now()
@@ -181,9 +236,10 @@ class DatasetPublicationAssistant(object):
     def dataset_publication_finished(self, ignore_exception=False):
         '''
         This is the "commit". It triggers the creation/update of handles.
-         - Check if the set of files corresponds to the previously published set (if applicable, and if solr url given, and if solr replied)
-         - The dataset publication message is created and sent to the queue.
-         - All file publication messages are sent to the queue.
+        
+        * Check if the set of files corresponds to the previously published set (if applicable, and if solr url given, and if solr replied)
+        * The dataset publication message is created and sent to the queue.
+        * All file publication messages are sent to the queue.
 
         '''
         self.__check_if_dataset_publication_allowed_right_now()
