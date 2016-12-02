@@ -19,9 +19,123 @@ from esgfpid.utils import loginfo, logdebug, logwarn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+
 class Connector(object):
+    '''
+    This class provides the main functionality for the ESGF PID
+    module. 
+
+    Author: Merret Buurman (DKRZ), 2015-2016
+    '''
 
     def __init__(self, **args):
+        '''
+        Create a connector object with the necessary config
+        to connect to a RabbitMQ messaging server and perform
+        PID creations/updates.
+
+        The arguments have to be passed as named parameters.
+        Please contact your ESGF index node or CDNOT for this
+        information.
+
+        Some of the arguments are needed for making connections
+        from this library to RabbitMQ or to solr. Other arguments
+        are only passed on to the consuming servlet inside the
+        messages.
+
+        :param handle_prefix: Mandatory. The handle prefix (as a
+            string) for the handles to be created/updates. This
+            has to match the handle prefix that the message queue
+            consuming servlet has write access to. In CMIP6, this
+            is "21.14100".
+
+        :param messaging_service_url_trusted: Optional. The URL
+            of the messaging queue server to send PID requests to.
+            If this is not provided, the mandatory fallback URL and
+            credentials are used.
+        
+        :param messaging_service_username_trusted: Optional. The
+            username to be used to authenticate at the primary
+            messaging queue server.
+            If this is not provided, the mandatory fallback URL and
+            credentials are used.
+        
+        :param messaging_service_password: Optional. The password
+            to be used to authenticate at the primary messaging queue
+            server.
+            If this is not provided, the mandatory fallback URL and
+            credentials are used.
+        
+        :param messaging_service_urls_open: Mandatory. The URL
+            of the fallback messaging queue server to connect to, in
+            case the above server is down, or no valid credentials
+            are passed to the library.
+        
+        :param messaging_service_username_open: Mandatory. The
+            username to be used to authenticate at the fallback
+            messaging queue server.
+        
+        :param messaging_service_exchange_name: Mandatory. The
+            name of the messaging exchange that will forward the
+            messages to a specific queue.
+
+        :param data_node: Mandatory/Optional.
+
+            (Mandatory for publications and unpublications,
+            ignored for any other usage of the library. No default.)
+
+            The data node (host name) at which (un)publication takes
+            place. This will be included in the handle records. Trailing
+            slashes are removed.
+
+            Used during publication and unpublication (modules
+            assistant.publish and assistant.unpublish):
+
+            * Publication: Used to construct the file data URL (together
+              with thredds service path and file publish path). Sent along
+              in rabbit message. Used for consistency check, if solr use 
+              is enabled.
+            * Unpublication: Sent along in rabbit message.
+        
+        :param thredds_service_path: Mandatory for publications,
+            ignored for any other usage of the library. No default.
+            The thredds service path where the files of a publication
+            reside. Will be combined with files' publish path and data
+            node to form the files' data access URLs.
+
+        :param solr_url: Optional. The URL of the solr to be uses by this
+            library for the dataset consistency check. No default. If not provided,
+            the check is not done.
+            Note: This is currently switched off for performance reasons.
+
+        :param solr_https_verify: Optional flag to indicate whether
+            requests to solr should verify the SSL certificate.
+            Please see documentation of requests library: http://docs.python-requests.org/en/master/user/advanced/
+
+        :param disable_insecure_request_warning: Optional flag (only for
+            use during testing). If True, warnings are not printed during
+            insecure SSL requests.
+            Important: This is not passed through to the solr module, so
+            that switching off the warnings is not possible. It can only
+            be passed directly to the solr module during tests.
+
+        :param solr_switched_off: Optional flag to tell if the solr module
+            should be switched off. In that case, no connections to solr
+            are made. 
+
+        :param consumer_solr_url: Optional. URL of a solr instance that
+            is to be used by the consumer (e.g. for finding versions), *not*
+            by this library.
+
+        :param test_publication: Optional flag. If True, the
+            handles that are created are test handles
+            that will be overwritten by real publications. Also,
+            test publications cannot update real handles.
+
+        :returns: An instance of the connector, configured for one 
+            data node, and for connection with a specific RabbitMQ node.
+
+        '''
         LOGGER.debug(40*'-')
         LOGGER.debug('Creating PID connector object ..')
         self.__check_presence_of_args(args)
@@ -127,6 +241,22 @@ class Connector(object):
         )
  
     def unpublish_all_versions(self, **args):
+        '''
+        Sends a PID update request for the unpublication of all versions
+        of a dataset currently published at the given data node.
+
+        If the library has solr access, it will try to find all the
+        dataset versions and their handles from solr, and send individual
+        messages for each version. Otherwise, one message is sent, and the
+        queue consuming servlet has to identify the relevant versions,
+        also making sure not to unpublish any versions that may have been
+        republished in the meantime.
+
+        :param drs_id: Dataset id of the dataset to be unpublished.
+        :raises: esgfpid.exceptions.ArgumentError: If the data node
+                 was not provided at library initialization.
+
+        '''
 
         # Check args
         mandatory_args = ['drs_id']
@@ -155,6 +285,26 @@ class Connector(object):
         assistant.unpublish_all_dataset_versions()
 
     def add_errata_ids(self, **args):
+        '''
+        Add errata ids to a dataset handle record.
+
+        To call this method, you do not need to provide the
+        PID of the dataset. Instead, the PID string is derived
+        from the dataset id and the version number.
+
+        :param errata_ids: Mandatory. A list of errata ids (strings)
+            to be added to the handle record.
+
+        :param drs_id: Mandatory. The dataset id of the dataset
+            to whose handle record the errata ids are to be
+            added. (This is needed because the handle is found
+            by making a hash over dataset id and version number).
+
+        :param version_number: Mandatory. The version number of the
+            dataset to whose handle record the errata ids are to be
+            added. (This is needed because the handle is found by
+            making a hash over dataset id and version number).
+        '''
 
         # Check args:
         mandatory_args = ['drs_id', 'version_number', 'errata_ids']
@@ -173,6 +323,27 @@ class Connector(object):
         )
 
     def remove_errata_ids(self, **args):
+        '''
+        Remove errata ids from a dataset handle record.
+
+        To call this method, you do not need to provide the
+        PID of the dataset. Instead, the PID string is derived
+        from the dataset id and the version number.
+
+        :param errata_ids: Mandatory. A list of errata ids (strings) to
+            be removed from the handle record.
+
+        :param drs_id: Mandatory. The dataset id of the dataset
+            from whose handle record the errata ids are to be
+            removed. (This is needed because the handle is found
+            by making a hash over dataset id and version number).
+
+        :param version_number: Mandatory. The version number of the
+            dataset from whose handle record the errata ids are to be
+            removed. (This is needed because the handle is found by
+            making a hash over dataset id and version number).
+
+        '''
 
         # Check args:
         mandatory_args = ['drs_id', 'version_number', 'errata_ids']
@@ -190,22 +361,105 @@ class Connector(object):
             errata_ids=args['errata_ids']
         )
 
-    def create_shopping_cart_pid(self, list_of_handles_or_drs_strings):
+    def create_shopping_cart_pid(self, dict_of_drs_ids_and_pids):
+        '''
+        Create a handle record for a data cart (a custom set of datasets).
+
+        The handle string is made of the prefix passed to tbe library,
+        and a hash over all the dataset ids in the cart. This way, if exactly
+        the same set of datasets is passed several times, the same handle
+        record is created, instead of making a new one.
+
+        :param dict_of_drs_ids_and_pids: A dictionary of all dataset ids
+            and their pid strings. If a dataset has no (known) PID, use
+            "None".
+
+        :return: The handle string for this data cart.
+        '''
         assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
             prefix=self.prefix,
             coupler=self.__coupler
         )
-        return assistant.make_shopping_cart_pid(list_of_handles_or_drs_strings)
+        return assistant.make_shopping_cart_pid(dict_of_drs_ids_and_pids)
 
     def start_messaging_thread(self):
+        '''
+        Start the parallel thread that takes care of the asynchronous
+        communication with RabbitMQ.
+
+        If PID creation/update requests are attempted before
+        this was called, an exception will be raised.
+
+        Preferably call this method as early as possible, so that
+        the module has some time to build the connection before
+        the first PID requests are made.
+        (If PID requests are made before the connection is ready,
+        they will not be lost, but pile up and sent once the connection
+        is ready).
+
+        .. important:: Please do not forget to finish the thread at the end,
+                       using :meth:`~esgfpid.connector.Connector.finish_messaging_thread`
+                       or :meth:`~esgfpid.connector.Connector.force_finish_messaging_thread`.
+
+
+        Reasons for this method not to be called during init of
+        the library may be:
+        * Some usage may not need any connection, e.g. if the
+          library is only used for creating handle strings.
+        * Testing of the library is easier.
+        * If starting needs to be called explicitly, it is less
+          likely that the stopping is forgotten, so abandoned
+          connections and unjoined threads are avoided.
+        '''
         self.__coupler.start_rabbit_connection()
 
     def finish_messaging_thread(self):
+        '''
+        Finish and join the parallel thread that takes care of
+        the asynchronous communication with RabbitMQ.
+
+        If some messages are still in the stack to be sent,
+        or if some messages were not confirmed yet, this method
+        blocks and waits for some time while it iteratively
+        checks for message confirmation.
+
+        Currently, it waits up to 5 seconds: It checks up to
+        11 times, waiting 0.5 seconds in between - these
+        values can be configured in the defaults module).
+        '''
         self.__coupler.finish_rabbit_connection()
 
     def force_finish_messaging_thread(self):
+        '''
+        Finish and join the parallel thread that takes care of
+        the asynchronous communication with RabbitMQ.
+
+        This method does not wait for any pending messages.
+        Messages that are not sent yet are lost. Messages that
+        are not confirmed yet are probably not lost, but their
+        receival is not guaranteed.
+
+        Note:
+        The rabbit module keeps a copy of all unsent and
+        unconfirmed messages, so they could be resent in
+        a later connection. It would also be easy to expose
+        a method for the library caller to retrieve those
+        messages, e.g. to write them into some file.
+
+
+        '''
         self.__coupler.force_finish_rabbit_connection()
 
     def make_handle_from_drsid_and_versionnumber(self, **args):
+        '''
+        Create a handle string for a specific dataset, based
+        on its dataset id and version number, and the prefix
+        passed to the library at initializing.
+
+        :param drs_id: The dataset id of the dataset.
+        :param version_number: The version number of the dataset
+            (as a string or integer, this does not matter)
+        :return: A handle string (e.g. "hdl:21.14100/abcxyzfoo")
+        '''
         args['prefix'] = self.prefix
         return esgfpid.utils.make_handle_from_drsid_and_versionnumber(**args)
