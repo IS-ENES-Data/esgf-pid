@@ -33,6 +33,8 @@ TEST_DRS = 'test.drs.id1'
 TEST_VERSION1 = 20001111
 TEST_VERSION2 = 20201111
 
+IS_TEST = False
+
 def init_logging():
     path = 'logs'
     logdate = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
