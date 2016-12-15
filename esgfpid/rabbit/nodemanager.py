@@ -5,6 +5,7 @@ import random
 import esgfpid.defaults
 import esgfpid.exceptions
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
+from naturalsorting import natural_keys
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -20,10 +21,10 @@ class NodeManager(object):
         )
 
         # Nodes
-        self.__trusted_nodes = []
-        self.__open_nodes = []
-        self.__trusted_nodes_archive = []
-        self.__open_nodes_archive = []
+        self.__trusted_nodes = {}
+        self.__open_nodes = {}
+        self.__trusted_nodes_archive = {}
+        self.__open_nodes_archive = {}
 
         # Current node
         self.__current_node = None
@@ -44,12 +45,19 @@ class NodeManager(object):
         if self.__has_necessary_info(kwargs):
             node_info = copy.deepcopy(kwargs)
             self.__complete_info_dict(node_info, False)
-            store_where.append(node_info)
-            store_archive.append(copy.deepcopy(node_info))
+            self.__store_node_info_by_priority(node_info, store_where)
+            self.__store_node_info_by_priority(copy.deepcopy(node_info), store_archive)
+            #store_where[node_info['priority']].append(node_info)
+            #store_archive[node_info['priority']].append(copy.deepcopy(node_info))
             return node_info
         else:
             raise esgfpid.exceptions.ArgumentError('Cannot add this RabbitMQ node. Missing info. Required: username, password, host and exchange_name. Provided: '+str(kwargs))
 
+    def __store_node_info_by_priority(self, node_info, store_where):
+        try:
+            store_where[node_info['priority']].append(node_info)
+        except KeyError:
+            store_where[node_info['priority']] = [node_info]
 
     def __get_node_log_string(self, node_info):
         return ('%s, %s, %s (exchange "%s")' % (node_info['host'], node_info['username'], node_info['password'], node_info['exchange_name']))
@@ -75,6 +83,10 @@ class NodeManager(object):
             node_info_dict['password']
         )
         node_info_dict['credentials'] = creds
+        if 'priority' in node_info_dict:
+            node_info_dict['priority'] = str(node_info_dict['priority'])
+        else:
+            node_info_dict['priority'] = 'zzzz_last'
 
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_ASYN_SOCKET_TIMEOUT
@@ -119,26 +131,36 @@ class NodeManager(object):
 
     def set_next_host(self):
 
-        if len(self.__trusted_nodes) == 1:
-            self.__current_node = self.__trusted_nodes.pop()
-            logdebug(LOGGER, 'Selecting the only trusted node: %s', self.__current_node['host'])
+        if len(self.__trusted_nodes) > 0:
+            self.__current_node = self.__get_highest_priority_node(self.__trusted_nodes)
+            logdebug(LOGGER, 'Selected a trusted node: %s', self.__current_node['host'])
 
-        elif len(self.__trusted_nodes) > 1:
-            self.__current_node = self.__select_and_remove_random_url_from_list(self.__trusted_nodes)
-            logdebug(LOGGER, 'Selecting a random trusted node: %s', self.__current_node['host'])
-
-        elif len(self.__open_nodes) == 1:
-            self.__current_node = self.__open_nodes.pop()
-            logdebug(LOGGER, 'Selecting the only open node: %s', self.__current_node['host'])
-
-        elif len(self.__open_nodes) > 1:
-            self.__current_node = self.__select_and_remove_random_url_from_list(self.__open_nodes)
-            logdebug(LOGGER, 'Selecting a random open node: %s', self.__current_node['host'])
+        elif len(self.__open_nodes) > 0:
+            self.__current_node = self.__get_highest_priority_node(self.__open_nodes)
+            logdebug(LOGGER, 'Selected an open node: %s', self.__current_node['host'])
 
         else:
             logwarn(LOGGER, 'No RabbitMQ node left to try! Leaving the last one: %s', self.__current_node['host'])
 
         self.__exchange_name = self.__current_node['exchange_name']
+
+    def __get_highest_priority_node(self, dict_of_nodes):
+
+        # Get highest priority:
+        available_priorities = self.__trusted_nodes.keys()
+        available_priorities.sort(key=natural_keys)
+        current_priority = available_priorities.pop(0)
+        list_of_priority_nodes = self.__trusted_nodes[current_priority]
+
+        # Select one of them
+        if len(list_of_priority_nodes)==1:
+            nexthost = list_of_priority_nodes.pop()
+            if len(list_of_priority_nodes)==0:
+                self.__trusted_nodes.pop(current_priority)
+            return nexthost
+        else:
+            nexthost = self.__select_and_remove_random_url_from_list(list_of_priority_nodes)
+            return nexthost
 
     ''' This returns always the same. Does not depend on node. '''
     def get_properties_for_message_publications(self):

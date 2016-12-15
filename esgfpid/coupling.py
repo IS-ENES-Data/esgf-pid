@@ -18,10 +18,11 @@ class Coupler(object):
         self.__solr_sender = None
 
     def __create_message_sender(self, args):
-        if 'messaging_service_password' in args and args['messaging_service_password'] is not None:
-            password = args['messaging_service_password']
-        else:
-            password = 'jzlnL78ZpExV#_QHz'
+
+        credentials = args['messaging_service_credentials']
+        for cred in credentials:
+            if 'password' not in cred:
+                cred['password'] = 'jzlnL78ZpExV#_QHz'
 
         if 'test_publication' in args:
             test_publication = args['test_publication']
@@ -30,11 +31,7 @@ class Coupler(object):
 
         self.__rabbit_message_sender = esgfpid.rabbit.rabbit.RabbitMessageSender(
             exchange_name=args['messaging_service_exchange_name'],       # mandatory
-            urls_open=args['messaging_service_urls_open'],               # mandatory
-            username_open=args['messaging_service_username_open'],       # mandatory
-            url_trusted=args['messaging_service_url_trusted'],           # can be None
-            username_trusted=args['messaging_service_username_trusted'], # can be None
-            password=password,
+            credentials=args['messaging_service_credentials'],
             test_publication=test_publication
         )
 

@@ -48,36 +48,14 @@ class Connector(object):
             has to match the handle prefix that the message queue
             consuming servlet has write access to. In CMIP6, this
             is "21.14100".
-
-        :param messaging_service_url_trusted: Optional. The URL
-            of the messaging queue server to send PID requests to.
-            If this is not provided, the mandatory fallback URL and
-            credentials are used.
-        
-        :param messaging_service_username_trusted: Optional. The
-            username to be used to authenticate at the primary
-            messaging queue server.
-            If this is not provided, the mandatory fallback URL and
-            credentials are used.
-        
-        :param messaging_service_password: Optional. The password
-            to be used to authenticate at the primary messaging queue
-            server.
-            If this is not provided, the mandatory fallback URL and
-            credentials are used.
-        
-        :param messaging_service_urls_open: Mandatory. The URL
-            of the fallback messaging queue server to connect to, in
-            case the above server is down, or no valid credentials
-            are passed to the library.
-        
-        :param messaging_service_username_open: Mandatory. The
-            username to be used to authenticate at the fallback
-            messaging queue server.
         
         :param messaging_service_exchange_name: Mandatory. The
             name of the messaging exchange that will forward the
             messages to a specific queue.
+
+        :param messaging_service_credentials: Mandatory. List of
+            dictionaries. Each needs to have three entries:
+            "user", "password", "url".
 
         :param data_node: Mandatory/Optional.
 
@@ -146,15 +124,11 @@ class Connector(object):
 
     def __check_presence_of_args(self, args):
         mandatory_args = [
-            'messaging_service_urls_open',
+            'messaging_service_credentials',
             'messaging_service_exchange_name',
-            'messaging_service_username_open',
             'handle_prefix'
         ]
         optional_args = [
-            'messaging_service_url_trusted',
-            'messaging_service_username_trusted',
-            'messaging_service_password',
             'data_node',
             'thredds_service_path',
             'test_publication',
@@ -166,6 +140,18 @@ class Connector(object):
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
+        
+        # Check RabbitMQ credentials:
+        for credentials in args['messaging_service_credentials']:
+            if 'url' not in credentials:
+                raise ArgumentError('Missing URL for messaging service!')
+            if 'user' not in credentials:
+                raise ArgumentError('Missing user for messaging service "'+credentials['url']+'"!')
+            if 'password' not in credentials:
+                pass   
+                # No exception, to enable use of open node!
+                #raise ArgumentError('Missing password for messaging service "'+credentials['url']+'"!')
+
 
     def __store_some_args(self, args):
         self.prefix = args['handle_prefix']

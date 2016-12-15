@@ -25,11 +25,7 @@ class RabbitMessageSender(object):
 
         mandatory_args = [
             'exchange_name',
-            'url_trusted', # can be None
-            'urls_open',
-            'username_trusted', # can be None
-            'username_open',
-            'password',
+            'credentials',
             'test_publication'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
@@ -92,29 +88,26 @@ class RabbitMessageSender(object):
 
         node_manager = esgfpid.rabbit.nodemanager.NodeManager()
 
-        # Add the trusted node, if there is one:
-        if not args['password'] == 'jzlnL78ZpExV#_QHz':
-            if not 'username_trusted' in args or args['username_trusted'] is None:
-                logwarn(LOGGER, 'A RabbitMQ password was provided, but no username.')
-            if not 'url_trusted' in args or args['url_trusted'] is None:
-                logwarn(LOGGER, 'A RabbitMQ password was provided, but no URL.')
-            node_manager.add_trusted_node(
-                username=args['username_trusted'],
-                password=args['password'],
-                host=args['url_trusted'],
-                exchange_name=args['exchange_name']
-            )
+        # Add all RabbitMQ nodes:
+        for cred in args['credentials']:
 
-        # Open nodes are always added:
-        urls_open = self.__get_urls_as_list(args['urls_open'])
-        urls_open = list(set(urls_open))
-        for hostname in urls_open:
-            node_manager.add_open_node(
-                username=args['username_open'],
-                password='U6-Lke39mN',
-                host=hostname,
-                exchange_name=args['exchange_name']
-            )
+            # Open node:
+            if cred['password'] == 'jzlnL78ZpExV#_QHz':
+                node_manager.add_open_node(
+                    username=cred['user'],
+                    password='U6-Lke39mN',
+                    host=cred['url'],
+                    exchange_name=args['exchange_name']
+                )
+
+            # Trusted node:
+            else:
+                node_manager.add_trusted_node(
+                    username=cred['user'],
+                    password=cred['password'],
+                    host=cred['url'],
+                    exchange_name=args['exchange_name']
+                )
 
         return node_manager
 
