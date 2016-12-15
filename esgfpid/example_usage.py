@@ -107,7 +107,7 @@ def add_and_remove_errata(connector, drs_id, version_number):
     )
 
 def shopping_cart(connector):
-    pid = connector.create_shopping_cart_pid(['foo','bar','baz'])
+    pid = connector.create_shopping_cart_pid({'foo':'hdl:123/345','bar':None,'baz':'hdl:123/678'})
     print('Shopping cart:')
     print('hdl.handle.net/%s?noredirect' % pid)
 
