@@ -22,6 +22,8 @@ RABBIT_USER = 'johndoe'
 RABBIT_PW = 'insertme'
 LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
+RABBIT_USER_OPEN = 'foo-user'
+RABBIT_URL_OPEN = 'foo.open.bar'
 
 # For publication:
 DATA_NODE1 = 'foo.bar.test'
@@ -47,12 +49,26 @@ def init_logging():
     print 'Logging to file ".%s"' % filename
 
 def init_connector(data_node):
+    trusted_node1 = {
+        'user':RABBIT_USER,
+        'password':RABBIT_PW,
+        'url':RABBIT_URL,
+        'priority':1
+    }
+    trusted_node2 = {
+        'user':RABBIT_USER,
+        'password':RABBIT_PW,
+        'url':RABBIT_URL,
+        'priority':2
+    }
+    open_node = {
+        'user':RABBIT_USER_OPEN,
+        'url':RABBIT_URL_OPEN
+    }
     connector = esgfpid.Connector(
         handle_prefix=PREFIX,
-        messaging_service_urls=RABBIT_URL,
+        messaging_service_credentials=[trusted_node1,trusted_node2,open_node],
         messaging_service_exchange_name=RABBIT_EXCHANGE,
-        messaging_service_username=RABBIT_USER,
-        messaging_service_password=RABBIT_PW,
         data_node=data_node,
         thredds_service_path=THREDDS_PATH,
         test_publication=IS_TEST
