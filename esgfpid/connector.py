@@ -54,8 +54,14 @@ class Connector(object):
             messages to a specific queue.
 
         :param messaging_service_credentials: Mandatory. List of
-            dictionaries. Each needs to have three entries:
-            "user", "password", "url".
+            dictionaries with credentials for the RabbitMQ nodes.
+            Each needs to have the entries: "user", "password", "url".
+            They may have an integer "priority" too. If two nodes have
+            the same priority, the library chooses randomly between
+            them.
+            Dictionaries for 'open nodes' do not need a password
+            to be provided. Open nodes are only used if no more
+            other nodes are available. 
 
         :param data_node: Mandatory/Optional.
 
