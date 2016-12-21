@@ -34,14 +34,17 @@ class ApiTestCase(unittest.TestCase):
         self.default_rabbitmock = mock.MagicMock()
 
     def make_patched_connector(self):
+        rabbit_creds = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
         testconnector = esgfpid.Connector(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls_open = TESTVALUES['url_rabbit_open'],
             messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
             data_node = TESTVALUES['data_node'],
             thredds_service_path = TESTVALUES['thredds_service_path'],
             solr_url = TESTVALUES['solr_url'],
-            messaging_service_username_open = TESTVALUES['rabbit_username_open']
+            messaging_service_credentials = [rabbit_creds]
         )
         # Replace objects that interact with servers with mocks
         self.__patch_connector_with_solr_mock(testconnector)
@@ -69,14 +72,20 @@ class ApiTestCase(unittest.TestCase):
     '''
     def test_init_trusted_ok(self):
 
+        rabbit_creds_open = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
+        rabbit_creds_trusted = {
+            "url":TESTVALUES['url_rabbit_trusted'],
+            "user":TESTVALUES['rabbit_username_trusted'],
+            "password":TESTVALUES['rabbit_password']
+        }
+
         testconnector = esgfpid.Connector(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls_open = TESTVALUES['url_rabbit_open'],
-            messaging_service_url_trusted = TESTVALUES['url_rabbit_trusted'],
-            messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
-            messaging_service_username_open = TESTVALUES['rabbit_username_open'],
-            messaging_service_username_trusted = TESTVALUES['rabbit_username_trusted'],
-            messaging_service_password = TESTVALUES['rabbit_password']
+            messaging_service_credentials = [rabbit_creds_trusted, rabbit_creds_open],
+            messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name']
         )
 
         # Did init work?
@@ -94,12 +103,14 @@ class ApiTestCase(unittest.TestCase):
     Test the constructor, with only open nodes.
     '''
     def test_init_open_ok(self):
-
+        rabbit_creds_open = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
         testconnector = esgfpid.Connector(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls_open = TESTVALUES['url_rabbit_open'],
             messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
-            messaging_service_username_open = TESTVALUES['rabbit_username_open']
+            messaging_service_credentials = [rabbit_creds_open]
         )
 
         # Did init work?
@@ -115,14 +126,17 @@ class ApiTestCase(unittest.TestCase):
     def test_passing_consumer_solr_url_ok(self):
 
         # Init connector
+        rabbit_creds_open = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
         testconnector = esgfpid.Connector(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls_open = TESTVALUES['url_rabbit_open'],
+            messaging_service_credentials = [rabbit_creds_open],
             messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
             data_node = TESTVALUES['data_node'],
             thredds_service_path = TESTVALUES['thredds_service_path'], # opt
             solr_url = TESTVALUES['solr_url'],
-            messaging_service_username_open = TESTVALUES['rabbit_username_open'],
             consumer_solr_url='fake_solr_whatever'
         )
 
@@ -173,13 +187,16 @@ class ApiTestCase(unittest.TestCase):
     def test_create_publication_assistant_missing_thredds(self):
 
         # Preparations: Make connector without thredds
+        rabbit_creds_open = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
         testconnector = esgfpid.Connector(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls_open = TESTVALUES['url_rabbit_open'],
             messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
             data_node = TESTVALUES['data_node'],
             solr_url = TESTVALUES['solr_url'],
-            messaging_service_username_open = TESTVALUES['rabbit_username_open'],
+            messaging_service_credentials = [rabbit_creds_open]
         )
 
         # Test variables
@@ -239,13 +256,16 @@ class ApiTestCase(unittest.TestCase):
         data_node = TESTVALUES['data_node']
 
         # Make test connector
+        rabbit_creds_open = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
         testconnector = esgfpid.Connector(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls_open = TESTVALUES['url_rabbit_open'],
+            messaging_service_credentials = [rabbit_creds_open],
             messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
             data_node = TESTVALUES['data_node'],
             solr_url = TESTVALUES['solr_url'],
-            messaging_service_username_open = TESTVALUES['rabbit_username_open'],
             consumer_solr_url="fake_solr_whatever"
         )
         self.__patch_connector_with_rabbit_mock(testconnector)
@@ -315,13 +335,16 @@ class ApiTestCase(unittest.TestCase):
         drs_id = TESTVALUES['drs_id1']
         version_number = TESTVALUES['version_number1']
         data_node = TESTVALUES['data_node']
+        rabbit_creds_open = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
         testconnector = esgfpid.Connector(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls_open = TESTVALUES['url_rabbit_open'],
             messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
+            messaging_service_credentials = [rabbit_creds_open],
             data_node = TESTVALUES['data_node'],
             solr_url = TESTVALUES['solr_url'],
-            messaging_service_username_open = TESTVALUES['rabbit_username_open'],
             consumer_solr_url="fake_solr_whatever"
         )
         self.__patch_connector_with_rabbit_mock(testconnector)

@@ -91,13 +91,19 @@ class PublishTestCase(unittest.TestCase):
         return expected_rabbit_task
 
     def __make_patched_testcoupler(self, solr_off=False):
+        rabbit_creds_open = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
+        rabbit_creds_trusted = {
+            "url":TESTVALUES['url_rabbit_trusted'],
+            "user":TESTVALUES['rabbit_username_trusted'],
+            "password":TESTVALUES['rabbit_password']
+        }
         testcoupler = esgfpid.coupling.Coupler(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls_open = 'rabbit_should_not_be_used',
-            messaging_service_url_trusted = TESTVALUES['url_rabbit_trusted'],
+            messaging_service_credentials = [rabbit_creds_trusted, rabbit_creds_open],
             messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
-            messaging_service_username_open = TESTVALUES['rabbit_username_open'],
-            messaging_service_username_trusted = TESTVALUES['rabbit_username_trusted'],
             data_node = TESTVALUES['data_node'],
             thredds_service_path = TESTVALUES['thredds_service_path'],
             solr_url = 'solr_should_not_be_used',

@@ -26,15 +26,20 @@ class ErrataTestCase(unittest.TestCase):
         LOGGER.info('#############################')
 
     def make_test_coupler_for_sending_messages(self):
+        rabbit_creds_open = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
+        rabbit_creds_trusted = {
+            "url":TESTVALUES['url_rabbit_trusted'],
+            "user":TESTVALUES['rabbit_username_trusted'],
+            "password":TESTVALUES['rabbit_password']
+        }
         testcoupler = esgfpid.coupling.Coupler(
             handle_prefix = TESTVALUES['prefix'],
-            messaging_service_urls_open = TESTVALUES['url_rabbit_open'],
-            messaging_service_url_trusted = TESTVALUES['url_rabbit_trusted'],
+            messaging_service_credentials = [rabbit_creds_trusted, rabbit_creds_open],
             messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
             solr_url = TESTVALUES['solr_url'],
-            messaging_service_username_open = TESTVALUES['rabbit_username_open'],
-            messaging_service_username_trusted = TESTVALUES['rabbit_username_trusted'],
-            messaging_service_password = TESTVALUES['rabbit_password'],
             solr_switched_off = True,
             solr_https_verify=False
         )

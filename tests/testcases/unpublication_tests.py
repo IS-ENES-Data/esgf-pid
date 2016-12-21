@@ -12,6 +12,9 @@ from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+# Test resources:
+from resources.TESTVALUES import TESTVALUES as TESTVALUES
+
 class UnpublicationTestCase(unittest.TestCase):
 
     def tearDown(self):
@@ -51,14 +54,19 @@ class UnpublicationTestCase(unittest.TestCase):
         return coupler._Coupler__rabbit_message_sender.received_messages[index]
 
     def get_args_for_coupler(self):
+        rabbit_creds_open = {
+            "url":TESTVALUES['url_rabbit_open'],
+            "user":TESTVALUES['rabbit_username_open']
+        }
+        rabbit_creds_trusted = {
+            "url":TESTVALUES['url_rabbit_trusted'],
+            "user":TESTVALUES['rabbit_username_trusted'],
+            "password":TESTVALUES['rabbit_password']
+        }
         args = dict(
             handle_prefix=self.prefix,
-            messaging_service_urls_open='www.rabbit.foo',
-            messaging_service_url_trusted='www.trusted-rabbit.foo',
+            messaging_service_credentials = [rabbit_creds_trusted, rabbit_creds_open],
             messaging_service_exchange_name='exch',
-            messaging_service_username_open='rogerRabbit',
-            messaging_service_username_trusted='rogerRabbit',
-            messaging_service_password='mySecretCarrotDream',
             solr_url='foo.solr.bar',
             solr_https_verify=False,
             solr_switched_off=True
