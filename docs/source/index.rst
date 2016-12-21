@@ -12,6 +12,7 @@ Contents:
    overallstructure
    esgfpidpythonlibrary
    asynchronous
+   interfaces
 
 
 Indices and tables
