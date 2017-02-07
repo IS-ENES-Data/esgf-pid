@@ -40,7 +40,7 @@ class ShoppingCartAssistant(object):
 
     def __get_handle_for_cart(self, list_of_drs_ids, prefix):
         hash_basis = esgfpid.utils.make_sorted_lowercase_list_without_hdl(list_of_drs_ids)
-        return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix)
+        return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix, addition='datacart')
         # This sorts the list, removes all "hdl:", and makes a hash
 
     def __make_message(self, cart_handle, dict_of_drs_ids_and_pids):

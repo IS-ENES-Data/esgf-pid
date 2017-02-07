@@ -22,8 +22,15 @@ def _make_uuid_from_basis(hash_basis):
     # It just has to stay the same all the time! Otherwise we will create
     # different handles for the same dataset.
 
-def make_handle_from_list_of_strings(sorted_list_of_strings, prefix):
+def make_handle_from_list_of_strings(sorted_list_of_strings, prefix, addition=None):
     concatenated = ''.join(sorted_list_of_strings)
+
+    # We add a string to the string to make sure the result is not
+    # the same for a shopping cart with only one dataset, and for
+    # the dataset itself.
+    if addition is not None:
+        concatenated = str(addition)+concatenated
+    
     suffix = _make_uuid_from_basis(concatenated)
     return _suffix_to_handle(prefix, suffix)
 
