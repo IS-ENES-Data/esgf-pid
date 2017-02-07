@@ -459,7 +459,7 @@ class ApiTestCase(unittest.TestCase):
         received_rabbit_task2 = self.default_rabbitmock.send_message_to_queue.call_args[0][0]
 
         # Check result:
-        expected_handle_both_cases = "hdl:"+prefix+"/339427df-edbd-3f43-acf2-80ddc7729f27"
+        expected_handle_both_cases = "hdl:"+prefix+"/b597a79e-1dc7-3d3f-b689-75ac5a78167f"
         expected_rabbit_task1 = {
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
