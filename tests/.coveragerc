@@ -1,0 +1,9 @@
+
+[run]
+include = */esgfpid/*
+
+[report]
+include = */esgfpid/*
+omit = */__init__.py
+
+# https://coverage.readthedocs.io/en/coverage-4.3.4/source.html#source
