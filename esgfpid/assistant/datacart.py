@@ -14,7 +14,7 @@ def get_handle_string_for_datacart(dict_of_drs_ids_and_pids, prefix):
     return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix, addition='datacart')
     # This sorts the list, removes all "hdl:", and makes a hash
 
-class ShoppingCartAssistant(object):
+class DataCartAssistant(object):
 
     def __init__(self, **args):
         mandatory_args = ['prefix', 'coupler']
@@ -23,8 +23,8 @@ class ShoppingCartAssistant(object):
         self.__prefix = args['prefix']
         self.__coupler = args['coupler']
 
-    def make_shopping_cart_pid(self, dict_of_drs_ids_and_pids):
-        logdebug(LOGGER, 'Making a PID for a shopping cart full of datasets...')
+    def make_data_cart_pid(self, dict_of_drs_ids_and_pids):
+        logdebug(LOGGER, 'Making a PID for a data cart full of datasets...')
 
         # Check arg
         if not type(dict_of_drs_ids_and_pids) == type(dict()):
@@ -41,13 +41,13 @@ class ShoppingCartAssistant(object):
         self.__send_message_to_queue(message)
 
         # Return pid
-        logdebug(LOGGER, 'Making a PID for a shopping cart full of datasets... done.')
+        logdebug(LOGGER, 'Making a PID for a data cart full of datasets... done.')
         loginfo(LOGGER, 'Requesting to create PID for data cart (%s).', cart_handle)
         return cart_handle
 
     def __make_message(self, cart_handle, dict_of_drs_ids_and_pids):
         message_timestamp = esgfpid.utils.get_now_utc_as_formatted_string()
-        message = esgfpid.assistant.messages.make_shopping_cart_message(
+        message = esgfpid.assistant.messages.make_data_cart_message(
             cart_handle = cart_handle,
             timestamp = message_timestamp,
             data_cart_content = dict_of_drs_ids_and_pids

@@ -163,7 +163,7 @@ def remove_errata_ids_message(**args):
 
     return message
 
-def make_shopping_cart_message(**args):
+def make_data_cart_message(**args):
     mandatory_args = ['cart_handle', 'timestamp', 'data_cart_content']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
     message = dict(

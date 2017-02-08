@@ -9,7 +9,7 @@ import logging
 import esgfpid.assistant.publish
 import esgfpid.assistant.unpublish
 import esgfpid.assistant.errata
-import esgfpid.assistant.shoppingcart
+import esgfpid.assistant.datacart
 import esgfpid.defaults
 import esgfpid.exceptions
 import esgfpid.coupling
@@ -401,7 +401,7 @@ class Connector(object):
             errata_ids=args['errata_ids']
         )
 
-    def create_shopping_cart_pid(self, dict_of_drs_ids_and_pids):
+    def create_data_cart_pid(self, dict_of_drs_ids_and_pids):
         '''
         Create a handle record for a data cart (a custom set of datasets).
 
@@ -416,11 +416,11 @@ class Connector(object):
 
         :return: The handle string for this data cart.
         '''
-        assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
+        assistant = esgfpid.assistant.datacart.DataCartAssistant(
             prefix=self.prefix,
             coupler=self.__coupler
         )
-        return assistant.make_shopping_cart_pid(dict_of_drs_ids_and_pids)
+        return assistant.make_data_cart_pid(dict_of_drs_ids_and_pids)
 
     def start_messaging_thread(self):
         '''
