@@ -2,7 +2,7 @@ import unittest
 import mock
 import logging
 import json
-import esgfpid.assistant.shoppingcart
+import esgfpid.assistant.datacart
 import tests.mocks.rabbitmock
 import tests.mocks.solrmock
 import tests.utils as utils
@@ -17,7 +17,7 @@ LOGGER.addHandler(logging.NullHandler())
 # Test resources:
 from resources.TESTVALUES import TESTVALUES as TESTVALUES
 
-class ShoppingCartTestCase(unittest.TestCase):
+class DataCartTestCase(unittest.TestCase):
 
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
@@ -59,13 +59,13 @@ class ShoppingCartTestCase(unittest.TestCase):
         prefix = TESTVALUES['prefix']
   
         # Run code to be tested:
-        assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
+        assistant = esgfpid.assistant.datacart.DataCartAssistant(
             prefix=prefix,
             coupler=testcoupler
         )
 
         # Check result:
-        self.assertIsInstance(assistant, esgfpid.assistant.shoppingcart.ShoppingCartAssistant, 'Constructor fail.')
+        self.assertIsInstance(assistant, esgfpid.assistant.datacart.DataCartAssistant, 'Constructor fail.')
 
     def test_add_content_several(self):
 
@@ -74,13 +74,13 @@ class ShoppingCartTestCase(unittest.TestCase):
         prefix = TESTVALUES['prefix']
   
         # Preparations
-        assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
+        assistant = esgfpid.assistant.datacart.DataCartAssistant(
             prefix=prefix,
             coupler=testcoupler
         )
 
         # Run code to be tested:
-        assistant.make_shopping_cart_pid({'foo':'foo', 'bar':'bar'})
+        assistant.make_data_cart_pid({'foo':'foo', 'bar':'bar'})
 
         # Check result:
         expected_rabbit_task = {
@@ -101,13 +101,13 @@ class ShoppingCartTestCase(unittest.TestCase):
         prefix = TESTVALUES['prefix']
   
         # Preparations
-        assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
+        assistant = esgfpid.assistant.datacart.DataCartAssistant(
             prefix=prefix,
             coupler=testcoupler
         )
 
         # Run code to be tested:
-        assistant.make_shopping_cart_pid({'foo':'foo', 'bar':None})
+        assistant.make_data_cart_pid({'foo':'foo', 'bar':None})
 
         # Check result:
         expected_rabbit_task = {
@@ -132,17 +132,17 @@ class ShoppingCartTestCase(unittest.TestCase):
 
 
         # Preparations
-        assistant = esgfpid.assistant.shoppingcart.ShoppingCartAssistant(
+        assistant = esgfpid.assistant.datacart.DataCartAssistant(
             prefix=prefix,
             coupler=testcoupler
         )
 
         # Run code to be tested:
-        pid1 = assistant.make_shopping_cart_pid(content1)
+        pid1 = assistant.make_data_cart_pid(content1)
         received_rabbit_task1 = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
-        pid2 = assistant.make_shopping_cart_pid(content2)
+        pid2 = assistant.make_data_cart_pid(content2)
         received_rabbit_task2 = self.__get_received_message_from_rabbit_mock(testcoupler, 1)
-        pid3 = assistant.make_shopping_cart_pid(content3)
+        pid3 = assistant.make_data_cart_pid(content3)
         received_rabbit_task3 = self.__get_received_message_from_rabbit_mock(testcoupler, 2)
 
         # Check result:

@@ -39,7 +39,7 @@ if __name__ == '__main__':
     parser.add_argument('-m','--modules', metavar='mod', nargs='*',
                    help=('Which modules to test. '+
                          'Possible values: "all", "solr", "rabbit", "publish", "unpublish", '+
-                         '"errata", "utils", "api", "check", "messages", "consistency", "shopping_cart"). '+
+                         '"errata", "utils", "api", "check", "messages", "consistency", "data_cart"). '+
                          'Defaults to "all".'),
                    default=['all'], action='store')
 
@@ -115,10 +115,10 @@ if __name__ == '__main__':
             #n = tests.countTestCases()
             #numtests += n
 
-        if 'shopping_cart' in param.modules or 'all' in param.modules:
+        if 'data_cart' in param.modules or 'all' in param.modules:
 
-            from testcases.shopping_cart_tests import ShoppingCartTestCase
-            tests = unittest.TestLoader().loadTestsFromTestCase(ShoppingCartTestCase)
+            from testcases.data_cart_tests import DataCartTestCase
+            tests = unittest.TestLoader().loadTestsFromTestCase(DataCartTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n

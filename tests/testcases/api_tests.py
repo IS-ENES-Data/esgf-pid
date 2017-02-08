@@ -441,10 +441,10 @@ class ApiTestCase(unittest.TestCase):
         self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
 
     #
-    # Shopping Cart
+    # Data Cart
     #
 
-    def test_make_shopping_cart_pid(self):
+    def test_make_data_cart_pid(self):
 
         # Test variables
         prefix = TESTVALUES['prefix']
@@ -453,9 +453,9 @@ class ApiTestCase(unittest.TestCase):
 
         # Run code to be tested:
         default_testconnector = self.make_patched_connector()
-        pid1 = default_testconnector.create_shopping_cart_pid(content1)
+        pid1 = default_testconnector.create_data_cart_pid(content1)
         received_rabbit_task1 = self.default_rabbitmock.send_message_to_queue.call_args[0][0]
-        pid2 = default_testconnector.create_shopping_cart_pid(content2)
+        pid2 = default_testconnector.create_data_cart_pid(content2)
         received_rabbit_task2 = self.default_rabbitmock.send_message_to_queue.call_args[0][0]
 
         # Check result:

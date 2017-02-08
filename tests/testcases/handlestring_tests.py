@@ -41,7 +41,7 @@ class HandleStringTestCase(unittest.TestCase):
         dict_of_drs_ids_and_pids = {
             dataset_id:dataset_pid
         }
-        datacart_pid = esgfpid.assistant.shoppingcart.get_handle_string_for_datacart(
+        datacart_pid = esgfpid.assistant.datacart.get_handle_string_for_datacart(
             dict_of_drs_ids_and_pids,
             prefix
         )
