@@ -6,6 +6,14 @@ from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+# Helper
+
+def get_handle_string_for_datacart(dict_of_drs_ids_and_pids, prefix):
+    list_of_drs_ids = dict_of_drs_ids_and_pids.keys()
+    hash_basis = esgfpid.utils.make_sorted_lowercase_list_without_hdl(list_of_drs_ids)
+    return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix, addition='datacart')
+    # This sorts the list, removes all "hdl:", and makes a hash
+
 class ShoppingCartAssistant(object):
 
     def __init__(self, **args):
@@ -26,8 +34,7 @@ class ShoppingCartAssistant(object):
                 raise esgfpid.exceptions.ArgumentError('Please provide a dictionary of dataset ids and handles')
 
         # Make a pid (hash on the content):
-        list_of_drs_ids = dict_of_drs_ids_and_pids.keys()
-        cart_handle = self.__get_handle_for_cart(list_of_drs_ids, self.__prefix)
+        cart_handle = get_handle_string_for_datacart(dict_of_drs_ids_and_pids, self.__prefix)
 
         # Make and send message
         message = self.__make_message(cart_handle, dict_of_drs_ids_and_pids)
@@ -37,11 +44,6 @@ class ShoppingCartAssistant(object):
         logdebug(LOGGER, 'Making a PID for a shopping cart full of datasets... done.')
         loginfo(LOGGER, 'Requesting to create PID for data cart (%s).', cart_handle)
         return cart_handle
-
-    def __get_handle_for_cart(self, list_of_drs_ids, prefix):
-        hash_basis = esgfpid.utils.make_sorted_lowercase_list_without_hdl(list_of_drs_ids)
-        return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix, addition='datacart')
-        # This sorts the list, removes all "hdl:", and makes a hash
 
     def __make_message(self, cart_handle, dict_of_drs_ids_and_pids):
         message_timestamp = esgfpid.utils.get_now_utc_as_formatted_string()

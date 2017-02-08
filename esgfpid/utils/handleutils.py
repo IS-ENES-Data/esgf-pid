@@ -9,9 +9,12 @@ def make_handle_from_drsid_and_versionnumber(**args):
 def _suffix_to_handle(prefix, suffix):
     return 'hdl:'+prefix+'/'+suffix
 
+def concatenate_drs_and_versionnumber(drs_id, version_number):
+    return drs_id+'.v'+str(version_number)
+
 def make_suffix_from_drsid_and_versionnumber(**args):
     check_presence_of_mandatory_args(args, ['drs_id','version_number'])
-    hash_basis = args['drs_id']+'.v'+str(args['version_number'])
+    hash_basis = concatenate_drs_and_versionnumber(args['drs_id'], args['version_number'])
     return _make_uuid_from_basis(hash_basis)
 
 def _make_uuid_from_basis(hash_basis):

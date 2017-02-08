@@ -11,6 +11,15 @@ from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+# Helper:
+
+def create_dataset_handle(**args):
+    return utils.make_handle_from_drsid_and_versionnumber(
+        drs_id=args['drs_id'],
+        version_number=args['version_number'],
+        prefix=args['prefix']
+    )
+
 class DatasetPublicationAssistant(object):
 
     def __init__(self, **args):
@@ -87,12 +96,11 @@ class DatasetPublicationAssistant(object):
         self.__machine_state = self.__machine_states['dataset_added']
 
     def __create_and_store_dataset_handle(self):
-        self.__dataset_handle = utils.make_handle_from_drsid_and_versionnumber(
-            drs_id=self.__drs_id,
-            version_number=self.__version_number,
-            prefix=self.__prefix
+        self.__dataset_handle = create_dataset_handle(
+            drs_id = self.__drs_id,
+            version_number = self.__version_number,
+            prefix = self.__prefix
         )
-
 
     def get_dataset_handle(self):
         '''
