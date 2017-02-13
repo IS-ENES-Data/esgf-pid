@@ -10,8 +10,33 @@ from naturalsorting import natural_keys
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+'''
+This class is responsible for keeping track of RabbitMQ
+instances and providing tha access info to the library.
+
+At startup, it is fed all the info about the various
+instances, using "add_trusted_node()" and "add_open_node()".
+During the library's functioning, it provides the info to
+the library's RabbitMQ connection modules.
+
+On every call of 
+
+It is fed by all the RabbitMQ instances, their
+access info and priority, in the beginning. Then it is
+responsible for providing this info to the library.
+
+It can deal with trusted and open nodes and with integer
+priorities. It returns the instance access info dictionaries
+in a well-defined order, 
+'''
 class NodeManager(object):
 
+    '''
+    Constructor that takes no params. It creates an empty
+    container for RabbitMQ node information. The node 
+    information then has to be added using "add_trusted_node()"
+    and "add_open_node()".
+    '''
     def __init__(self):
 
         # Props for basic_publish (needed by thread_feeder)
@@ -25,6 +50,14 @@ class NodeManager(object):
         self.__open_nodes = {}
         self.__trusted_nodes_archive = {}
         self.__open_nodes_archive = {}
+        # Each of these dictionaries has the priorities as keys (integers
+        # stored as strings, or 'zzzz_last', if no prio was given).
+        # For each priority, there is a list of node-info-dictionaries:
+        # self.__trusted_nodes = {
+        #     "1":         [node_info1, node_info2],
+        #     "2":         [node_info3],
+        #     "zzzz_last": [node_info4]
+        # }
 
         # Current node
         self.__current_node = None
@@ -32,11 +65,38 @@ class NodeManager(object):
         # Important info
         self.__has_trusted = False
 
+    '''
+    Add information about a trusted RabbitMQ node to
+    the container, for later use.
+
+    :param username: The username to connect to RabbitMQ.
+    :param password: The password to connect to RabbitMQ.
+    :param host: The host name of the RabbitMQ instance.
+    :param exchange_name: The  exchange to which to send the
+                          messages.
+    :param priority: Optional. Integer priority for the use
+                     of this instance.
+    '''
     def add_trusted_node(self, **kwargs):
         node_info = self.__add_node(self.__trusted_nodes, self.__trusted_nodes_archive, **kwargs)
         self.__has_trusted = True
         logdebug(LOGGER, 'Trusted rabbit: %s', self.__get_node_log_string(node_info))
 
+    '''
+    Add information about an open RabbitMQ node to
+    the container, for later use.
+
+    The parameters that are needed are the same as
+    for trusted nodes, except for the password, which
+    is not required here.
+
+    :param username: The username to connect to RabbitMQ.
+    :param host: The host name of the RabbitMQ instance.
+    :param exchange_name: The  exchange to which to send the
+                          messages.
+    :param priority: Optional. Integer priority for the use
+                     of this instance.
+    '''
     def add_open_node(self, **kwargs):
         added = node_info = self.__add_node(self.__open_nodes, self.__open_nodes_archive, **kwargs)
         logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
@@ -116,10 +176,26 @@ class NodeManager(object):
         '''
         return node_info_dict
 
+    '''
+    Return the connection parameters for the current
+    RabbitMQ host.
+
+    :return: Connection parameters (of type pika.ConnectionParameters)
+    '''
     def get_connection_parameters(self):
         if self.__current_node is None:
             self.set_next_host()
         return self.__current_node['params']
+
+    '''
+    Simple getter to find out if any URLs are
+    left.
+
+    TODO: Needed for what, as we start over
+    once all have been used? There is no end!
+
+    :return: Boolean.
+    '''
 
     def has_more_urls(self):
         if self.get_num_left_urls() > 0:
@@ -159,6 +235,11 @@ class NodeManager(object):
     def get_num_left_urls(self):
         return self.get_num_left_open() + self.get_num_left_trusted()
 
+
+    '''
+    Select the next RabbitMQ to be used, using the
+    predefined priorities. It is not returned.
+    '''
     def set_next_host(self):
 
         if len(self.__trusted_nodes) > 0:
@@ -191,12 +272,25 @@ class NodeManager(object):
         else:
             nexthost = self.__select_and_remove_random_url_from_list(list_of_priority_nodes)
             return nexthost
+        # TODO WHAT IF NONE LEFT???
 
-    ''' This returns always the same. Does not depend on node. '''
+    '''
+    Return a pika.BasicProperties object needed for
+    connecting to RabbitMQ.
+
+    This returns always the same. Does not depend on node.
+
+    :return: A  properties object (pika.BasicProperties).'''
     def get_properties_for_message_publications(self):
         return self.__properties
 
-    ''' This modifies the list! '''
+    '''
+    Select and return a random URL from a list.
+    This modifies the list and returns the URL!
+
+    :param list_urls: The list of URLs to randomly select from.
+    :return: Randomly selected URL.
+    '''
     def __select_and_remove_random_url_from_list(self, list_urls):
         num_urls = len(list_urls)
         random_num = random.randint(0,num_urls-1)
@@ -204,16 +298,25 @@ class NodeManager(object):
         list_urls.remove(selected_url)
         return selected_url
 
+    '''
+    Return the current exchange name as string.
+
+    :return: The current exchange name.
+    '''
     def get_exchange_name(self):
         return self.__exchange_name
 
     '''
-    This flag is appended to the routing key 
-    so that we can route messages from the untrusted nodes 
-    to other queues.
+    Return the flag word for open nodes.
+
+    This flag is appended to the routing key so that
+    we can route messages from the untrusted nodes to
+    other queues.
 
     Note: The binding has to be done in the RabbitMQ exit 
     node (by the consumer).
+
+    :return: String to flag messages that are sent to open nodes.
     '''
     def get_open_word_for_routing_key(self):
 
@@ -232,6 +335,15 @@ class NodeManager(object):
             logerror(LOGGER, 'Problem: Unsure whether the current node is open or not!')
             return 'untrusted-unsure'
 
+    '''
+    Reset the list of available RabbitMQ instances to
+    how it was before trying any.
+    Once all RabbitMQ instances have been tried,
+    the list is reset, so we can start over trying
+    to connect.
+
+    TODO: Where is this called?
+    '''
     def reset_nodes(self):
         logdebug(LOGGER, 'Resetting hosts...')
         self.__trusted_nodes = copy.deepcopy(self.__trusted_nodes_archive)
