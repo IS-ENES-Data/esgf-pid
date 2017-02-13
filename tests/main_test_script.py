@@ -51,7 +51,11 @@ if __name__ == '__main__':
                    help=('Run the synchronous rabbit tests?'),
                    action='store_false')
     parser.set_defaults(asyn=True)
-
+    # Slow?
+    parser.add_argument('-ls','--leave_out_slow', dest='slow',
+                   help=('Leave out the slow tests?'),
+                   action='store_false')
+    parser.set_defaults(slow=True)
     param = parser.parse_args()
     #print('Specified test types: '+str(param.testtype))
     print('Modules to be tested: '+ ', '.join(param.modules))
@@ -202,6 +206,9 @@ if __name__ == '__main__':
                 #numtests += tests.countTestCases()
 
                 from testcases.rabbit_asynchronous_asynchronous_module_tests import RabbitAsynModuleTestCase
+
+                if param.slow == False:
+                    RabbitAsynModuleTestCase.setNotSlow()
                 tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynModuleTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()

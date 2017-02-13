@@ -15,9 +15,9 @@ import os
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-SLOW = True
-
 class RabbitAsynModuleTestCase(unittest.TestCase):
+
+    SLOW = True
 
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
@@ -26,6 +26,11 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
 
     def tearDown(self):
         LOGGER.info('#############################')
+
+    @staticmethod
+    def setNotSlow():
+        print('\nNo slow tests please!!!')
+        RabbitAsynModuleTestCase.SLOW = False
 
     def make_nodemanager(self):
         # Make a node manager with three nodes:
@@ -102,11 +107,14 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
         with self.assertRaises(OperationNotAllowed):
                 self.rabbit.send_many_messages_to_queue(['a','b','c'])
 
-    if SLOW:
-        @mock.patch('esgfpid.rabbit.asynchronous.thread_builder.ConnectionBuilder._ConnectionBuilder__please_open_connection')
-        def test_send_message_ok_no_confirm(self, open_connection_patch):
+    @mock.patch('esgfpid.rabbit.asynchronous.thread_builder.ConnectionBuilder._ConnectionBuilder__please_open_connection')
+    def test_send_message_ok_no_confirm(self, open_connection_patch):
 
+        if not RabbitAsynModuleTestCase.SLOW:
+            print('\n\nSKIPPING A SLOW TEST...')
+        else:
             print('\nThis test may take some seconds, as it waits for confirms that can not come...')
+            print('To avoid the slow test, run with option "-ls".')
 
             # Patch the method that tries to open a conneciton to RabbitMQ:
             open_connection_patch = mock.MagicMock()
