@@ -147,16 +147,16 @@ class NodeManager(object):
     def __get_highest_priority_node(self, dict_of_nodes):
 
         # Get highest priority:
-        available_priorities = self.__trusted_nodes.keys()
+        available_priorities = dict_of_nodes.keys()
         available_priorities.sort(key=natural_keys)
         current_priority = available_priorities.pop(0)
-        list_of_priority_nodes = self.__trusted_nodes[current_priority]
+        list_of_priority_nodes = dict_of_nodes[current_priority]
 
         # Select one of them
         if len(list_of_priority_nodes)==1:
             nexthost = list_of_priority_nodes.pop()
             if len(list_of_priority_nodes)==0:
-                self.__trusted_nodes.pop(current_priority)
+                dict_of_nodes.pop(current_priority)
             return nexthost
         else:
             nexthost = self.__select_and_remove_random_url_from_list(list_of_priority_nodes)
