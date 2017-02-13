@@ -159,6 +159,11 @@ if __name__ == '__main__':
 
             if param.asyn:
 
+                from testcases.rabbit_nodemanager_tests import RabbitNodemanagerTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitNodemanagerTestCase)
+                tests_to_run.append(tests)
+                numtests += tests.countTestCases()
+
                 # TODO
                 
                 #from testcases.rabbit_rabbit_asyn_tests import RabbitTestCase
