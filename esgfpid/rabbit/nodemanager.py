@@ -126,8 +126,38 @@ class NodeManager(object):
             return True
         return False
 
+    '''
+    Compute and return the number of trusted
+    RabbitMQ instances.
+
+    :return: Number of trusted instances (integer).
+    '''
+    def get_num_left_trusted(self):
+        n_trusted = 0
+        for list_of_nodes in self.__trusted_nodes.values():
+            n_trusted = n_trusted + len(list_of_nodes)
+        return n_trusted
+
+    '''
+    Compute and return the number of open
+    RabbitMQ instances.
+
+    :return: Number of open instances (integer).
+    '''
+    def get_num_left_open(self):
+        n_open = 0
+        for list_of_nodes in self.__open_nodes.values():
+            n_open = n_open + len(list_of_nodes)
+        return n_open
+
+    '''
+    Compute and return the total number of RabbitMQ
+    instances.
+
+    :return: Number of trusted instances (integer).
+    '''
     def get_num_left_urls(self):
-        return len(self.__trusted_nodes) + len(self.__open_nodes)
+        return self.get_num_left_open() + self.get_num_left_trusted()
 
     def set_next_host(self):
 
@@ -210,6 +240,6 @@ class NodeManager(object):
 
     ''' Only for unit testing! '''
     def _get_num_trusted_and_open_nodes(self):
-        n_open = len(self.__open_nodes_archive)
-        n_trusted = len(self.__trusted_nodes_archive)
+        n_open = self.get_num_left_open()
+        n_trusted = self.get_num_left_trusted
         return (n_trusted,n_open)
