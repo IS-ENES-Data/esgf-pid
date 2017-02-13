@@ -241,5 +241,5 @@ class NodeManager(object):
     ''' Only for unit testing! '''
     def _get_num_trusted_and_open_nodes(self):
         n_open = self.get_num_left_open()
-        n_trusted = self.get_num_left_trusted
+        n_trusted = self.get_num_left_trusted()
         return (n_trusted,n_open)
