@@ -39,7 +39,8 @@ if __name__ == '__main__':
     parser.add_argument('-m','--modules', metavar='mod', nargs='*',
                    help=('Which modules to test. '+
                          'Possible values: "all", "solr", "rabbit", "publish", "unpublish", '+
-                         '"errata", "utils", "api", "check", "messages", "consistency", "data_cart"). '+
+                         '"errata", "utils", "api", "check", "messages", "consistency", "data_cart", '+
+                         '"nodemanager").'
                          'Defaults to "all".'),
                    default=['all'], action='store')
 
@@ -159,14 +160,16 @@ if __name__ == '__main__':
             n = tests.countTestCases()
             numtests += n
 
+        if 'nodemanager' in param.modules or 'all' in param.modules:
+
+            from testcases.rabbit_nodemanager_tests import RabbitNodemanagerTestCase
+            tests = unittest.TestLoader().loadTestsFromTestCase(RabbitNodemanagerTestCase)
+            tests_to_run.append(tests)
+            numtests += tests.countTestCases()
+
         if 'rabbit' in param.modules or 'all' in param.modules:
 
             if param.asyn:
-
-                from testcases.rabbit_nodemanager_tests import RabbitNodemanagerTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitNodemanagerTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
 
                 # TODO
                 
