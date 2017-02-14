@@ -78,6 +78,7 @@ class NodeManager(object):
                      of this instance.
     '''
     def add_trusted_node(self, **kwargs):
+        kwargs['is_open'] = False
         node_info = self.__add_node(self.__trusted_nodes, self.__trusted_nodes_archive, **kwargs)
         self.__has_trusted = True
         logdebug(LOGGER, 'Trusted rabbit: %s', self.__get_node_log_string(node_info))
@@ -98,13 +99,14 @@ class NodeManager(object):
                      of this instance.
     '''
     def add_open_node(self, **kwargs):
+        kwargs['is_open'] = True
         added = node_info = self.__add_node(self.__open_nodes, self.__open_nodes_archive, **kwargs)
         logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
 
     def __add_node(self, store_where, store_archive, **kwargs):
         if self.__has_necessary_info(kwargs):
             node_info = copy.deepcopy(kwargs)
-            self.__complete_info_dict(node_info, False)
+            self.__complete_info_dict(node_info, kwargs['is_open'])
             self.__store_node_info_by_priority(node_info, store_where)
             self.__store_node_info_by_priority(copy.deepcopy(node_info), store_archive)
             #store_where[node_info['priority']].append(node_info)
