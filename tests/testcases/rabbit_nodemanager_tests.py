@@ -341,7 +341,7 @@ class RabbitNodemanagerTestCase(unittest.TestCase):
         self.assertEquals(mynodemanager.get_num_left_open(),2, 'Failing precheck.')
         # A node has to be set currently for this to work:
         mynodemanager.set_next_host()
-        print(str(mynodemanager._NodeManager__current_node))
+        #print(str(mynodemanager._NodeManager__current_node))
 
         # Run code to be tested:
         word = mynodemanager.get_open_word_for_routing_key()
@@ -367,7 +367,7 @@ class RabbitNodemanagerTestCase(unittest.TestCase):
         self.assertEquals(mynodemanager.get_num_left_open(),0, 'Failing precheck.')
         # A node has to be set currently for this to work:
         mynodemanager.set_next_host()
-        print(str(mynodemanager._NodeManager__current_node))
+        #print(str(mynodemanager._NodeManager__current_node))
 
         # Run code to be tested
         word = mynodemanager.get_open_word_for_routing_key()
@@ -396,10 +396,10 @@ class RabbitNodemanagerTestCase(unittest.TestCase):
         # set. The first call to set_next_host() sets the trusted
         # one:
         mynodemanager.set_next_host()
-        print(str(mynodemanager._NodeManager__current_node))
+        #print(str(mynodemanager._NodeManager__current_node))
         # The second call sets the open one, which is what we want:
         mynodemanager.set_next_host()
-        print(str(mynodemanager._NodeManager__current_node))
+        #print(str(mynodemanager._NodeManager__current_node))
 
         # Run code to be tested
         word = mynodemanager.get_open_word_for_routing_key()
