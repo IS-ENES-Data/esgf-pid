@@ -6,13 +6,6 @@ from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-# Helper
-
-def get_handle_string_for_datacart(dict_of_drs_ids_and_pids, prefix):
-    list_of_drs_ids = dict_of_drs_ids_and_pids.keys()
-    hash_basis = esgfpid.utils.make_sorted_lowercase_list_without_hdl(list_of_drs_ids)
-    return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix, addition='datacart')
-    # This sorts the list, removes all "hdl:", and makes a hash
 
 class DataCartAssistant(object):
 
@@ -22,6 +15,13 @@ class DataCartAssistant(object):
         esgfpid.utils.check_noneness_of_mandatory_args(args, mandatory_args)
         self.__prefix = args['prefix']
         self.__coupler = args['coupler']
+
+    @staticmethod
+    def _get_handle_string_for_datacart(dict_of_drs_ids_and_pids, prefix):
+        list_of_drs_ids = dict_of_drs_ids_and_pids.keys()
+        hash_basis = esgfpid.utils.make_sorted_lowercase_list_without_hdl(list_of_drs_ids)
+        return esgfpid.utils.make_handle_from_list_of_strings(hash_basis, prefix, addition='datacart')
+        # This sorts the list, removes all "hdl:", and makes a hash
 
     def make_data_cart_pid(self, dict_of_drs_ids_and_pids):
         logdebug(LOGGER, 'Making a PID for a data cart full of datasets...')
@@ -34,7 +34,10 @@ class DataCartAssistant(object):
                 raise esgfpid.exceptions.ArgumentError('Please provide a dictionary of dataset ids and handles')
 
         # Make a pid (hash on the content):
-        cart_handle = get_handle_string_for_datacart(dict_of_drs_ids_and_pids, self.__prefix)
+        cart_handle = DataCartAssistant._get_handle_string_for_datacart(
+            dict_of_drs_ids_and_pids,
+            self.__prefix
+        )
 
         # Make and send message
         message = self.__make_message(cart_handle, dict_of_drs_ids_and_pids)
