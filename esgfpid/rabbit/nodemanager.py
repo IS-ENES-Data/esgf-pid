@@ -88,10 +88,12 @@ class NodeManager(object):
     the container, for later use.
 
     The parameters that are needed are the same as
-    for trusted nodes, except for the password, which
-    is not required here.
+    for trusted nodes.
+
+    Note that a password is needed!
 
     :param username: The username to connect to RabbitMQ.
+    :param password: The password to connect to RabbitMQ.
     :param host: The host name of the RabbitMQ instance.
     :param exchange_name: The  exchange to which to send the
                           messages.
