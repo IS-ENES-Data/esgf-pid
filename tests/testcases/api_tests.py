@@ -94,9 +94,8 @@ class ApiTestCase(unittest.TestCase):
         # Did the module get the right number of
         # trusted and open rabbit nodes?
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
-        n_trusted, n_open = node_manager._get_num_trusted_and_open_nodes()
-        self.assertEquals(n_trusted, 1)
-        self.assertEquals(n_open,1)
+        self.assertEquals(node_manager.get_num_left_trusted(), 1)
+        self.assertEquals(node_manager.get_num_left_open(),1)
 
 
     '''
@@ -119,9 +118,9 @@ class ApiTestCase(unittest.TestCase):
         # Did the module get the right number of
         # trusted and open rabbit nodes?
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
-        n_trusted, n_open = node_manager._get_num_trusted_and_open_nodes()
-        self.assertEquals(n_trusted, 0)
-        self.assertEquals(n_open,1)
+        self.assertEquals(node_manager.get_num_left_trusted(), 0)
+        self.assertEquals(node_manager.get_num_left_open(),1)
+
 
     def test_passing_consumer_solr_url_ok(self):
 
