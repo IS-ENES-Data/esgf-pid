@@ -147,7 +147,7 @@ class NodeManager(object):
             node_info_dict['password']
         )
         node_info_dict['credentials'] = creds
-        if 'priority' in node_info_dict:
+        if 'priority' in node_info_dict and node_info_dict['priority'] is not None:
             node_info_dict['priority'] = str(node_info_dict['priority'])
         else:
             node_info_dict['priority'] = 'zzzz_last'

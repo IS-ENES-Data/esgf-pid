@@ -82,6 +82,31 @@ class RabbitNodemanagerTestCase(unittest.TestCase):
         self.assertIsInstance(node['params'], pika.ConnectionParameters)
 
     '''
+    Test if I can pass a trusted node with priority=None.
+    '''
+    def test_add_one_trusted_node_prio_none_ok(self):
+
+        # Test variables:
+        mynodemanager = esgfpid.rabbit.nodemanager.NodeManager()
+        args = self.__get_args_dict(priority=None)
+
+        # Run code to be tested:
+        mynodemanager.add_trusted_node(**args)
+
+        # Check whether the correct number of nodes is there:
+        self.assertEquals(mynodemanager.get_num_left_open(),0)
+        self.assertEquals(mynodemanager.get_num_left_trusted(),1)
+        self.assertEquals(mynodemanager.get_num_left_urls(),1)
+
+        # Check whether the correct priorities are set:
+        mynodemanager.set_next_host()
+        node = mynodemanager._NodeManager__current_node
+        self.assertEquals(node['priority'], 'zzzz_last')
+        self.assertFalse(node['is_open'])
+        self.assertIsInstance(node['credentials'], pika.PlainCredentials)
+        self.assertIsInstance(node['params'], pika.ConnectionParameters)
+
+    '''
     Test if I can pass several trusted nodes with no priority.
     '''
     def test_add_trusted_nodes_no_prio_ok(self):

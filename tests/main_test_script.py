@@ -96,12 +96,6 @@ if __name__ == '__main__':
             n = tests.countTestCases()
             numtests += n
 
-            from testcases.handlestring_tests import HandleStringTestCase
-            tests = unittest.TestLoader().loadTestsFromTestCase(HandleStringTestCase)
-            tests_to_run.append(tests)
-            n = tests.countTestCases()
-            numtests += n
-
         if 'messages' in param.modules or 'all' in param.modules:
 
             from testcases.messages_tests import MessageCreationTestcase
