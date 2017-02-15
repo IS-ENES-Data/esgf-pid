@@ -91,13 +91,17 @@ class RabbitMessageSender(object):
         # Add all RabbitMQ nodes:
         for cred in args['credentials']:
 
+            if 'priority' not in cred:
+                cred['priority'] = None
+
             # Open node:
             if cred['password'] == 'jzlnL78ZpExV#_QHz':
                 node_manager.add_open_node(
                     username=cred['user'],
                     password='U6-Lke39mN',
                     host=cred['url'],
-                    exchange_name=args['exchange_name']
+                    exchange_name=args['exchange_name'],
+                    priority=cred['priority']
                 )
 
             # Trusted node:
@@ -106,7 +110,8 @@ class RabbitMessageSender(object):
                     username=cred['user'],
                     password=cred['password'],
                     host=cred['url'],
-                    exchange_name=args['exchange_name']
+                    exchange_name=args['exchange_name'],
+                    priority=cred['priority']
                 )
 
         return node_manager
