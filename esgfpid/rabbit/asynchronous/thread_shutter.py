@@ -176,15 +176,15 @@ class ShutDowner(object):
             logerror(LOGGER, 'Connection was None when trying to wait for pending messages. Synchronization error between threads!')
 
     
-    def __tell_publisher_to_stop_waiting(self):
+    def __tell_publisher_to_stop_waiting_for_gentle_finish(self):
         logdebug(LOGGER, 'Main thread does not need to wait anymore. (%s).', get_now_utc_as_formatted_string())
-        self.thread.tell_publisher_to_stop_waiting()
+        self.thread.tell_publisher_to_stop_waiting_for_gentle_finish()
 
     def __close_because_all_done(self, iteration):
         logdebug(LOGGER, 'Gentle finish (iteration %i): All messages sent and confirmed in %ith try (waited and rechecked %i times).', self.__close_decision_iterations, iteration, iteration-1)
         loginfo(LOGGER, 'All messages sent and confirmed. Closing.')
         self.__normal_finish()
-        self.__tell_publisher_to_stop_waiting()
+        self.__tell_publisher_to_stop_waiting_for_gentle_finish()
 
     def __close_because_no_point_in_waiting(self):
 
@@ -201,12 +201,12 @@ class ShutDowner(object):
 
         # Actual close
         self.__force_finish('Force finish as we are not sending the messages anyway.')
-        self.__tell_publisher_to_stop_waiting()
+        self.__tell_publisher_to_stop_waiting_for_gentle_finish()
 
     def __close_because_waited_long_enough(self):
         logdebug(LOGGER, 'We have waited long enough. Now closing by force.')
         self.__force_finish('Force finish as normal waiting period in normal finish is over.')
-        self.__tell_publisher_to_stop_waiting()
+        self.__tell_publisher_to_stop_waiting_for_gentle_finish()
 
     def __inform_about_pending_messages(self):
         msg = self.__get_string_about_pending_messages()
@@ -251,7 +251,7 @@ class ShutDowner(object):
 
         # Make sure the main thread does not continue blocking
         # as it believes that we're still looking for pending messages:
-        self.__tell_publisher_to_stop_waiting()
+        self.__tell_publisher_to_stop_waiting_for_gentle_finish()
 
         # Change the state of the state machine:
         self.statemachine.set_to_permanently_unavailable()

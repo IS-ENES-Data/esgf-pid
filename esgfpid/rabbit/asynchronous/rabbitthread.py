@@ -322,7 +322,7 @@ class RabbitThread(threading.Thread):
     the main thread, but that causes problems, as it messes
     up the proper and punctual receival of RabbitMQ confirms.
     '''
-    def tell_publisher_to_stop_waiting(self):
+    def tell_publisher_to_stop_waiting_for_gentle_finish(self):
         self.__gently_finish_ready.set()
 
     '''
