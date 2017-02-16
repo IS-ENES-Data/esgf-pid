@@ -178,6 +178,14 @@ class ShutDowner(object):
     
     def __tell_publisher_to_stop_waiting_for_gentle_finish(self):
         logdebug(LOGGER, 'Main thread does not need to wait anymore. (%s).', get_now_utc_as_formatted_string())
+
+        # This avoids that the last iteration is redone
+        # and redone upon reconnection, as after reconnection,
+        # if this is True, the algorithm is entered again.
+        self.__is_in_process_of_gently_closing = False
+
+        # This releases the event that blocks the main thread
+        # until the gentle finish is done.
         self.thread.tell_publisher_to_stop_waiting_for_gentle_finish()
 
     def __close_because_all_done(self, iteration):
