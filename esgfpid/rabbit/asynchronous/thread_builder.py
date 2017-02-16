@@ -87,45 +87,45 @@ class ConnectionBuilder(object):
         safe side, as my experience of threading in Python is limited.
         '''
 
-            # Start ioloop if connection object ready:
-            if self.thread._connection is not None:
-                try:
-                    logdebug(LOGGER, 'Starting ioloop...')
-                    logtrace(LOGGER, 'ioloop is owned by connection %s...', self.thread._connection)
-                    logdebug(LOGGER, 'Starting ioloop, can now fire events...')
+        # Start ioloop if connection object ready:
+        if self.thread._connection is not None:
+            try:
+                logdebug(LOGGER, 'Starting ioloop...')
+                logtrace(LOGGER, 'ioloop is owned by connection %s...', self.thread._connection)
+                logdebug(LOGGER, 'Starting ioloop, can now fire events...')
 
-                    # Tell the main thread that we're now open for events.
-                    # As soon as the thread._connection object is not None anymore, it
-                    # can receive events.
-                    # TODO Or do we need to wait for the ioloop to be started? In that case,
-                    # the "...stop_waiting..." would have to be called after starting the
-                    # ioloop, which does not work, as the ioloop.start() blocks.
-                    self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events() 
-                    self.thread.continue_gently_closing_if_applicable()
-                    self.thread._connection.ioloop.start()
+                # Tell the main thread that we're now open for events.
+                # As soon as the thread._connection object is not None anymore, it
+                # can receive events.
+                # TODO Or do we need to wait for the ioloop to be started? In that case,
+                # the "...stop_waiting..." would have to be called after starting the
+                # ioloop, which does not work, as the ioloop.start() blocks.
+                self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events() 
+                self.thread.continue_gently_closing_if_applicable()
+                self.thread._connection.ioloop.start()
 
-                except pika.exceptions.ProbableAuthenticationError as e:
-                    logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception during startup ("%s")', e.__class__.__name__)
-                    if self.thread.get_num_unpublished() > 0:
-                        logerror(LOGGER, 'The %i messages that are waiting to be published will not be published.', self.thread.get_num_unpublished())
-                    self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
-                    self.statemachine.detail_authentication_exception = True
-                    self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
-                    # TODO: What happens next? Will RabbitMQ send a on_connection_error?
+            except pika.exceptions.ProbableAuthenticationError as e:
+                logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception during startup ("%s")', e.__class__.__name__)
+                if self.thread.get_num_unpublished() > 0:
+                    logerror(LOGGER, 'The %i messages that are waiting to be published will not be published.', self.thread.get_num_unpublished())
+                self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
+                self.statemachine.detail_authentication_exception = True
+                self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
+                # TODO: What happens next? Will RabbitMQ send a on_connection_error?
 
-                except Exception as e:
-                    # This catches any error during connection startup and during the entire
-                    # time the ioloop runs, blocks and waits for events.
-                    logerror(LOGGER, 'Unexpected error during event listener\'s lifetime: %s: %s', e.__class__.__name__, e.message)
-                    self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
-                    self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
-            
-            else:
-                # I'm quite sure that this cannot happen, as the connection object
-                # is created in "trigger_connection_...()" and thus exists, no matter
-                # if the actual connection to RabbitMQ succeeded (yet) or not.
-                logdebug(LOGGER, 'This cannot happen: Connection object is not ready.')
-                logerror(LOGGER, 'Cannot happen. Cannot properly start the thread. Connection object is not ready.')
+            except Exception as e:
+                # This catches any error during connection startup and during the entire
+                # time the ioloop runs, blocks and waits for events.
+                logerror(LOGGER, 'Unexpected error during event listener\'s lifetime: %s: %s', e.__class__.__name__, e.message)
+                self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
+                self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
+        
+        else:
+            # I'm quite sure that this cannot happen, as the connection object
+            # is created in "trigger_connection_...()" and thus exists, no matter
+            # if the actual connection to RabbitMQ succeeded (yet) or not.
+            logdebug(LOGGER, 'This cannot happen: Connection object is not ready.')
+            logerror(LOGGER, 'Cannot happen. Cannot properly start the thread. Connection object is not ready.')
 
     ########################################
     ### Chain of callback functions that ###
