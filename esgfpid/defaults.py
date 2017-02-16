@@ -33,8 +33,8 @@ RABBIT_SYN_MAX_TRIES=3
 RABBIT_SYN_TIMEOUT_MILLISEC=10
 
 # Asynchronous rabbit module:
-RABBIT_ASYN_RECONNECTION_SECONDS=2 # after how much time try to reconnect if connection was closed?
-RABBIT_ASYN_RECONNECTION_MAX_TRIES=60 # how many times should the module try reconnecting? server reboot can take quite a while!
+RABBIT_ASYN_RECONNECTION_SECONDS=0.5 # after how much time try to retry connecting to same hosts if connection was closed?
+RABBIT_ASYN_RECONNECTION_MAX_TRIES=2 # how many times should the module try reconnecting? Not so many times, rather throw exception to publisher.
 RABBIT_ASYN_SOCKET_TIMEOUT=2 # defaults to 0.25 sec
 RABBIT_ASYN_CONNECTION_ATTEMPTS=1 # defaults to 1
 RABBIT_ASYN_CONNECTION_RETRY_DELAY_SECONDS=1 # no default

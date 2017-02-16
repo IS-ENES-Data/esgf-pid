@@ -6,6 +6,7 @@ from esgfpid.utils import get_now_utc_as_formatted_string as get_now_utc_as_form
 import esgfpid.defaults as defaults
 import esgfpid.rabbit.connparams
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
+from .exceptions import PIDServerException
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -310,8 +311,10 @@ class ConnectionBuilder(object):
             else:
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
-                logdebug(LOGGER, 'Connection failure: Tried all hosts %s times. Giving up.', defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
-                logwarn(LOGGER, 'Permanently failed to connect to RabbitMQ. No PID requests will be sent.')
+                max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
+                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % max_tries)
+                logwarn(LOGGER, errormsg)
+                raise PIDServerException(errormsg)
 
 
     #############################
