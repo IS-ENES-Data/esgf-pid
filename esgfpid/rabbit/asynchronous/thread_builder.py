@@ -105,13 +105,25 @@ class ConnectionBuilder(object):
                 self.thread._connection.ioloop.start()
 
             except pika.exceptions.ProbableAuthenticationError as e:
-                logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception during startup ("%s")', e.__class__.__name__)
-                if self.thread.get_num_unpublished() > 0:
-                    logerror(LOGGER, 'The %i messages that are waiting to be published will not be published.', self.thread.get_num_unpublished())
-                self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
-                self.statemachine.detail_authentication_exception = True
-                self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
-                # TODO: What happens next? Will RabbitMQ send a on_connection_error?
+                logerror(LOGGER, 'Caught Authentication Exception during startup ("%s"). Will try to reconnect somewhere else.', e.__class__.__name__)
+
+                # As we will try to reconnect, set state to waiting to connect.
+                # If reconnection fails, it will be set to permanently unavailable.
+                self.statemachine.set_to_waiting_to_be_available()
+                self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
+
+                # It seems that ProbableAuthenticationErrors do not cause
+                # RabbitMQ to call any callback, either on_connection_closed
+                # or on_connection_error - it just silently swallows the
+                # problem.
+                # So we need to manually trigger reconnection to the next
+                # host here, which we do by manually calling the callback.
+                errorname = 'ProbableAuthenticationError issued by pika'
+                self.on_connection_error(self.thread._connection, errorname)
+
+                # We start the ioloop, so it can handle the reconnection events,
+                # or also receive events from the publisher in the meantime.
+                self.thread._connection.ioloop.start()
 
             except Exception as e:
                 # This catches any error during connection startup and during the entire
