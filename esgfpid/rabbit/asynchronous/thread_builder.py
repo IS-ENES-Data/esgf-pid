@@ -146,8 +146,8 @@ class ConnectionBuilder(object):
             parameters=params,
             on_open_callback=self.on_connection_open,
             on_open_error_callback=self.on_connection_error,
-            on_close_callback=None,
-            stop_ioloop_on_close=False
+            on_close_callback=self.on_connection_closed,
+            stop_ioloop_on_close=False # TODO Why not?
         )
 
     ''' Callback, called by RabbitMQ.'''
@@ -165,7 +165,6 @@ class ConnectionBuilder(object):
         # certainly was carried out before this callback. So this call to
         # "...stop_waiting..." is likelily redundant!
         self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events()
-        self.__add_on_connection_close_callback()
         self.__please_open_rabbit_channel()
 
     ''' Asynchronous, waits for answer from RabbitMQ.'''
@@ -296,11 +295,6 @@ class ConnectionBuilder(object):
     route it. '''
     def __add_on_return_callback(self):
         self.thread._channel.add_on_return_callback(self.returnhandler.on_message_not_accepted)
-
-    ''' This tells RabbitMQ what to do if the connection
-    was closed. '''
-    def __add_on_connection_close_callback(self):
-        self.thread._connection.add_on_close_callback(self.on_connection_closed)
 
     '''
     This tells RabbitMQ what to do if the channel
