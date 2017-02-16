@@ -72,7 +72,7 @@ class ConnectionBuilder(object):
         self.__start_waiting_for_events()
         logtrace(LOGGER, 'Had started waiting for events, but stopped.')
     
-    def __start_waiting_for_events(self, max_retries=10, retry_seconds=0.5): # TODO Put these values into config!
+    def __start_waiting_for_events(self):
         '''
         This waits until the whole chain of callback methods triggered by
         "trigger_connection_to_rabbit_etc()" has finished, and then starts 
@@ -86,9 +86,6 @@ class ConnectionBuilder(object):
         might get called before the __init__ has finished? I'd rather stay on the
         safe side, as my experience of threading in Python is limited.
         '''
-        counter_of_tries = 0
-        while True:
-            counter_of_tries += 1         
 
             # Start ioloop if connection object ready:
             if self.thread._connection is not None:
@@ -106,7 +103,6 @@ class ConnectionBuilder(object):
                     self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events() 
                     self.thread.continue_gently_closing_if_applicable()
                     self.thread._connection.ioloop.start()
-                    break
 
                 except pika.exceptions.ProbableAuthenticationError as e:
                     logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception during startup ("%s")', e.__class__.__name__)
@@ -115,7 +111,7 @@ class ConnectionBuilder(object):
                     self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
                     self.statemachine.detail_authentication_exception = True
                     self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
-                    break
+                    # TODO: What happens next? Will RabbitMQ send a on_connection_error?
 
                 except Exception as e:
                     # This catches any error during connection startup and during the entire
@@ -123,21 +119,13 @@ class ConnectionBuilder(object):
                     logerror(LOGGER, 'Unexpected error during event listener\'s lifetime: %s: %s', e.__class__.__name__, e.message)
                     self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
                     self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
-                    break
-
-            # Otherwise, wait and retry
-            elif counter_of_tries < max_retries:
-                logdebug(LOGGER, 'Very unexpected: Connection object is not ready in try %s/%s. Trying again after %s seconds.', counter_of_tries, max_retries, retry_seconds)
-                time.sleep(retry_seconds)
-
-            # If we have reached the max number of retries:
-            # TODO I don't think that this can happen, as the connection object
-            # always exists, no matter if the actual connection to RabbitMQ
-            # succeeds of not.
+            
             else:
-                logdebug(LOGGER, 'Very unexpected: Connection object is not ready in try %s/%s. Giving up.', counter_of_tries, max_retries)
-                logerror(LOGGER, 'Cannot properly start the thread. Connection object is not ready.')
-                break
+                # I'm quite sure that this cannot happen, as the connection object
+                # is created in "trigger_connection_...()" and thus exists, no matter
+                # if the actual connection to RabbitMQ succeeded (yet) or not.
+                logdebug(LOGGER, 'This cannot happen: Connection object is not ready.')
+                logerror(LOGGER, 'Cannot happen. Cannot properly start the thread. Connection object is not ready.')
 
     ########################################
     ### Chain of callback functions that ###
@@ -172,8 +160,10 @@ class ConnectionBuilder(object):
         # Tell the main thread we're open for events now:
         # When the connection is open, the thread is ready to accept events.
         # Note: It was already ready when the connection object was created,
-        # not just now that it's actually open. So this second call to
-        # "...stop_waiting..." should be redundant!
+        # not just now that it's actually open. There was already a call to
+        # "...stop_waiting..." in start_waiting_for_events(), which quite
+        # certainly was carried out before this callback. So this call to
+        # "...stop_waiting..." is likelily redundant!
         self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events()
         self.__add_on_connection_close_callback()
         self.__please_open_rabbit_channel()
@@ -273,7 +263,7 @@ class ConnectionBuilder(object):
             self.__node_manager.set_next_host()
             reopen_seconds = 0
 
-        # If there is no alternative URLs, reset the node manager to
+        # If there is no URLs, reset the node manager to
         # start at the first nodes again...
         else:
             self.__reconnect_counter += 1;
