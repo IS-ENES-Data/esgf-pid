@@ -6,6 +6,7 @@ from esgfpid.utils import get_now_utc_as_formatted_string as get_now_utc_as_form
 import esgfpid.defaults as defaults
 import esgfpid.rabbit.connparams
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
+from .exceptions import PIDServerException
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -72,7 +73,7 @@ class ConnectionBuilder(object):
         self.__start_waiting_for_events()
         logtrace(LOGGER, 'Had started waiting for events, but stopped.')
     
-    def __start_waiting_for_events(self, max_retries=10, retry_seconds=0.5): # TODO Put these values into config!
+    def __start_waiting_for_events(self):
         '''
         This waits until the whole chain of callback methods triggered by
         "trigger_connection_to_rabbit_etc()" has finished, and then starts 
@@ -86,58 +87,75 @@ class ConnectionBuilder(object):
         might get called before the __init__ has finished? I'd rather stay on the
         safe side, as my experience of threading in Python is limited.
         '''
-        counter_of_tries = 0
-        while True:
-            counter_of_tries += 1         
 
-            # Start ioloop if connection object ready:
-            if self.thread._connection is not None:
-                try:
-                    logdebug(LOGGER, 'Starting ioloop...')
-                    logtrace(LOGGER, 'ioloop is owned by connection %s...', self.thread._connection)
-                    logdebug(LOGGER, 'Starting ioloop, can now fire events...')
+        # Start ioloop if connection object ready:
+        if self.thread._connection is not None:
+            try:
+                logdebug(LOGGER, 'Starting ioloop...')
+                logtrace(LOGGER, 'ioloop is owned by connection %s...', self.thread._connection)
 
-                    # Tell the main thread that we're now open for events.
-                    # As soon as the thread._connection object is not None anymore, it
-                    # can receive events.
-                    # TODO Or do we need to wait for the ioloop to be started? In that case,
-                    # the "...stop_waiting..." would have to be called after starting the
-                    # ioloop, which does not work, as the ioloop.start() blocks.
-                    self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events() 
-                    self.thread.continue_gently_closing_if_applicable()
+                # Tell the main thread that we're now open for events.
+                # As soon as the thread._connection object is not None anymore, it
+                # can receive events.
+                self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events() 
+                self.thread.continue_gently_closing_if_applicable()
+                self.thread._connection.ioloop.start()
+
+            except pika.exceptions.ProbableAuthenticationError as e:
+
+                # If the library was stopped by the user in the mean time,
+                # we do not try to reconnect.
+                if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
+                    logerror(LOGGER, 'Caught Authentication Exception during connection ("%s"). Will not reconnect.', e.__class__.__name__)
+                    # We do not do anything anymore, as the shutdown has been
+                    # handled already, otherwise, the state would not be
+                    # permanently unavailable.
+                
+                # In normal cases, we do try to reconnect. As we will try
+                # to reconnect, we set state to waiting to connect.
+                else:
+                    logerror(LOGGER, 'Caught Authentication Exception during connection ("%s"). Will try to reconnect to next host.', e.__class__.__name__)
+                    self.statemachine.set_to_waiting_to_be_available()
+                    self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
+
+                    # It seems that ProbableAuthenticationErrors do not cause
+                    # RabbitMQ to call any callback, either on_connection_closed
+                    # or on_connection_error - it just silently swallows the
+                    # problem.
+                    # So we need to manually trigger reconnection to the next
+                    # host here, which we do by manually calling the callback.
+                    errorname = 'ProbableAuthenticationError issued by pika'
+                    self.on_connection_error(self.thread._connection, errorname)
+
+                    # We start the ioloop, so it can handle the reconnection events,
+                    # or also receive events from the publisher in the meantime.
                     self.thread._connection.ioloop.start()
-                    break
 
-                except pika.exceptions.ProbableAuthenticationError as e:
-                    logerror(LOGGER, 'Cannot properly start the thread. Caught Authentication Exception during startup ("%s")', e.__class__.__name__)
-                    if self.thread.get_num_unpublished() > 0:
-                        logerror(LOGGER, 'The %i messages that are waiting to be published will not be published.', self.thread.get_num_unpublished())
-                    self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
-                    self.statemachine.detail_authentication_exception = True
-                    self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
-                    break
+            except Exception as e:
+                # This catches any error during connection startup and during the entire
+                # time the ioloop runs, blocks and waits for events.
+                logerror(LOGGER, 'Unexpected error during event listener\'s lifetime: %s: %s', e.__class__.__name__, e.message)
 
-                except Exception as e:
-                    # This catches any error during connection startup and during the entire
-                    # time the ioloop runs, blocks and waits for events.
-                    logerror(LOGGER, 'Unexpected error during event listener\'s lifetime: %s: %s', e.__class__.__name__, e.message)
-                    self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
-                    self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
-                    break
+                # As we will try to reconnect, set state to waiting to connect.
+                # If reconnection fails, it will be set to permanently unavailable.
+                self.statemachine.set_to_waiting_to_be_available()
 
-            # Otherwise, wait and retry
-            elif counter_of_tries < max_retries:
-                logdebug(LOGGER, 'Very unexpected: Connection object is not ready in try %s/%s. Trying again after %s seconds.', counter_of_tries, max_retries, retry_seconds)
-                time.sleep(retry_seconds)
+                # In case this error is reached, it seems that no callback
+                # was called that handles the problem. Let's try to reconnect
+                # somewhere else.
+                errorname = 'Unexpected error ('+str(e.__class__.__name__)+': '+str(e.message)+')'
+                self.on_connection_error(self.thread._connection, errorname)
 
-            # If we have reached the max number of retries:
-            # TODO I don't think that this can happen, as the connection object
-            # always exists, no matter if the actual connection to RabbitMQ
-            # succeeds of not.
-            else:
-                logdebug(LOGGER, 'Very unexpected: Connection object is not ready in try %s/%s. Giving up.', counter_of_tries, max_retries)
-                logerror(LOGGER, 'Cannot properly start the thread. Connection object is not ready.')
-                break
+                # We start the ioloop, so it can handle the reconnection events,
+                # or also receive events from the publisher in the meantime.
+                self.thread._connection.ioloop.start()
+        
+        else:
+            # I'm quite sure that this cannot happen, as the connection object
+            # is created in "trigger_connection_...()" and thus exists, no matter
+            # if the actual connection to RabbitMQ succeeded (yet) or not.
+            logdebug(LOGGER, 'This cannot happen: Connection object is not ready.')
+            logerror(LOGGER, 'Cannot happen. Cannot properly start the thread. Connection object is not ready.')
 
     ########################################
     ### Chain of callback functions that ###
@@ -158,8 +176,8 @@ class ConnectionBuilder(object):
             parameters=params,
             on_open_callback=self.on_connection_open,
             on_open_error_callback=self.on_connection_error,
-            on_close_callback=None,
-            stop_ioloop_on_close=False
+            on_close_callback=self.on_connection_closed,
+            stop_ioloop_on_close=False # TODO Why not?
         )
 
     ''' Callback, called by RabbitMQ.'''
@@ -172,10 +190,11 @@ class ConnectionBuilder(object):
         # Tell the main thread we're open for events now:
         # When the connection is open, the thread is ready to accept events.
         # Note: It was already ready when the connection object was created,
-        # not just now that it's actually open. So this second call to
-        # "...stop_waiting..." should be redundant!
+        # not just now that it's actually open. There was already a call to
+        # "...stop_waiting..." in start_waiting_for_events(), which quite
+        # certainly was carried out before this callback. So this call to
+        # "...stop_waiting..." is likelily redundant!
         self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events()
-        self.__add_on_connection_close_callback()
         self.__please_open_rabbit_channel()
 
     ''' Asynchronous, waits for answer from RabbitMQ.'''
@@ -265,15 +284,18 @@ class ConnectionBuilder(object):
         oldhost = self.__node_manager.get_connection_parameters().host
         loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s.', oldhost, msg)
 
-        reopen_seconds = None
         
         # If there is alternative URLs, try one of them:
         if self.__node_manager.has_more_urls():
             logdebug(LOGGER, 'Connection failure: %s fallback URLs left to try.', self.__node_manager.get_num_left_urls())
             self.__node_manager.set_next_host()
+            newhost = self.__node_manager.get_connection_parameters().host
+            loginfo(LOGGER, 'Connection failure: Trying to connect (now) to %s.', newhost)
             reopen_seconds = 0
+            self.__wait_and_trigger_reconnection(connection, reopen_seconds)
 
-        # If there is no alternative URLs, reset the node manager to
+
+        # If there is no URLs, reset the node manager to
         # start at the first nodes again...
         else:
             self.__reconnect_counter += 1;
@@ -281,22 +303,19 @@ class ConnectionBuilder(object):
                 reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
                 logdebug(LOGGER, 'Connection failure: Failed connecting to all hosts. Waiting %s seconds and starting over.', reopen_seconds)
                 self.__node_manager.reset_nodes()
+                newhost = self.__node_manager.get_connection_parameters().host
+                loginfo(LOGGER, 'Connection failure: Trying to connect (in %s seconds) to %s.', reopen_seconds, newhost)
+                self.__wait_and_trigger_reconnection(connection, reopen_seconds)
 
             # Give up after so many tries...
             else:
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
-                logdebug(LOGGER, 'Connection failure: Tried all hosts %s times. Giving up.', defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES)
-                logwarn(LOGGER, 'Permanently failed to connect to RabbitMQ. No PID requests will be sent.')
-                return None # to avoid reconnection
+                max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
+                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % max_tries)
+                logwarn(LOGGER, errormsg)
+                raise PIDServerException(errormsg)
 
-        # The actual reconnection is triggered here:
-        newhost = self.__node_manager.get_connection_parameters().host
-        if reopen_seconds == 0:
-            loginfo(LOGGER, 'Connection failure: Trying to connect (now) to %s.', newhost)
-        else:
-            loginfo(LOGGER, 'Connection failure: Trying to connect (in %s seconds) to %s.', reopen_seconds, newhost)
-        self.__wait_and_trigger_reconnection(connection, reopen_seconds)
 
     #############################
     ### React to channel and  ###
@@ -308,11 +327,6 @@ class ConnectionBuilder(object):
     route it. '''
     def __add_on_return_callback(self):
         self.thread._channel.add_on_return_callback(self.returnhandler.on_message_not_accepted)
-
-    ''' This tells RabbitMQ what to do if the connection
-    was closed. '''
-    def __add_on_connection_close_callback(self):
-        self.thread._connection.add_on_close_callback(self.on_connection_closed)
 
     '''
     This tells RabbitMQ what to do if the channel
@@ -485,10 +499,20 @@ class ConnectionBuilder(object):
     in waiting.
     '''
     def __wait_and_trigger_reconnection(self, connection, wait_seconds):
-        self.statemachine.set_to_waiting_to_be_available()
-        loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
-        connection.add_timeout(wait_seconds, self.reconnect)
-        logtrace(LOGGER, 'Reconnect event added to connection %s (not to %s)', connection, self.thread._connection)
+
+        # Do not reconnect if the library was permanently closed.
+        if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
+            logdebug(LOGGER, 'No more reconnection, as the library was permanently closed.')
+            # No need to do anything else. Whoever set the state
+            # to permanently unavailable also handled the necessary
+            # close down steps.
+
+        # Otherwise, do reconnect.
+        else:
+            self.statemachine.set_to_waiting_to_be_available()
+            loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
+            connection.add_timeout(wait_seconds, self.reconnect)
+            logtrace(LOGGER, 'Reconnect event added to connection %s (not to %s)', connection, self.thread._connection)
 
     ###########################
     ### Reconnect after     ###
