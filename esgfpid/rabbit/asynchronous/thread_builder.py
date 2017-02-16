@@ -129,8 +129,20 @@ class ConnectionBuilder(object):
                 # This catches any error during connection startup and during the entire
                 # time the ioloop runs, blocks and waits for events.
                 logerror(LOGGER, 'Unexpected error during event listener\'s lifetime: %s: %s', e.__class__.__name__, e.message)
-                self.statemachine.set_to_permanently_unavailable() # to make sure no more messages are accepted, and gentle-finish won't wait...
-                self.thread._connection.ioloop.start() # to be able to listen to finish events from main thread!
+
+                # As we will try to reconnect, set state to waiting to connect.
+                # If reconnection fails, it will be set to permanently unavailable.
+                self.statemachine.set_to_waiting_to_be_available()
+
+                # In case this error is reached, it seems that no callback
+                # was called that handles the problem. Let's try to reconnect
+                # somewhere else.
+                errorname = 'Unexpected error ('+str(e.__class__.__name__)+': '+str(e.message)+')'
+                self.on_connection_error(self.thread._connection, errorname)
+
+                # We start the ioloop, so it can handle the reconnection events,
+                # or also receive events from the publisher in the meantime.
+                self.thread._connection.ioloop.start()
         
         else:
             # I'm quite sure that this cannot happen, as the connection object
