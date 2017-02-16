@@ -92,14 +92,10 @@ class ConnectionBuilder(object):
             try:
                 logdebug(LOGGER, 'Starting ioloop...')
                 logtrace(LOGGER, 'ioloop is owned by connection %s...', self.thread._connection)
-                logdebug(LOGGER, 'Starting ioloop, can now fire events...')
 
                 # Tell the main thread that we're now open for events.
                 # As soon as the thread._connection object is not None anymore, it
                 # can receive events.
-                # TODO Or do we need to wait for the ioloop to be started? In that case,
-                # the "...stop_waiting..." would have to be called after starting the
-                # ioloop, which does not work, as the ioloop.start() blocks.
                 self.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events() 
                 self.thread.continue_gently_closing_if_applicable()
                 self.thread._connection.ioloop.start()
