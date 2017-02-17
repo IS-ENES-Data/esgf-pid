@@ -1,12 +1,6 @@
 import logging
-import datetime
-import json
-import pika
-import time
-import random
 import esgfpid.utils
-import esgfpid.rabbit.asynchronous
-import esgfpid.rabbit.rabbitutils
+from esgfpid.rabbit.asynchronous import AsynchronousRabbitConnector
 import esgfpid.rabbit.nodemanager
 from esgfpid.utils import logwarn
 
@@ -14,48 +8,45 @@ from esgfpid.utils import logwarn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+'''
+This is the main module for communications between
+the library and the RabbitMQ. All the communication
+with the RabbitMQ servers are done by this module
+and its submodules.
+
+The methods of this module are called by the coupling
+module:
+  - start()
+  - finish()
+  - force_finish()
+  - send_message_to_queue()
+'''
 class RabbitMessageSender(object):
 
     def __init__(self, **args):
         LOGGER.debug('Initializing RabbitMessageSender.')
-
-        mandatory_args = [
-            'exchange_name',
-            'credentials',
-            'test_publication'
-        ]
+        mandatory_args = ['exchange_name', 'credentials', 'test_publication']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
+
+        '''
+        The node manager holds and manages all the
+        RabbitMQ server instances, their URLs, their
+        credentials, etc.
+        '''
         self.__node_manager = self.__make_rabbit_settings(args)
+
+        '''
+        TODO
+        '''
         self.__test_publication = args['test_publication']
-        self.__server_connector = self.__init_server_connector(args, self.__node_manager)
 
+        '''
+        This creates the object that does
+        the actual communications.
+        '''
+        self.__server_connector = AsynchronousRabbitConnector(__node_manager)
 
-    def __init_server_connector(self, args, node_manager):
-        return esgfpid.rabbit.asynchronous.AsynchronousRabbitConnector(node_manager)
-
-    def finish(self):
-        self.__server_connector.finish_rabbit_thread()
-
-    def is_finished(self):
-        return self.__server_connector.is_finished()
-
-    def start(self):
-        self.__server_connector.start_rabbit_thread()
-
-    def force_finish(self):
-        self.__server_connector.force_finish_rabbit_thread()
-
-    def any_leftovers(self):
-        return self.__server_connector.any_leftovers()
-
-    def get_leftovers(self):
-        return self.__server_connector.get_leftovers()
-
-    def send_message_to_queue(self, message):
-        if self.__test_publication == True:
-            message['test_publication'] = True
-        return self.__server_connector.send_message_to_queue(message)
 
     def __make_rabbit_settings(self, args):
 
@@ -88,3 +79,25 @@ class RabbitMessageSender(object):
                 )
 
         return node_manager
+
+    ###########################################
+    ### API towards the library             ###
+    ### (methods called by coupling module) ###
+    ###########################################
+
+    def start(self):
+        self.__server_connector.start_rabbit_thread()
+
+    def finish(self):
+        self.__server_connector.finish_rabbit_thread()
+
+    def force_finish(self):
+        self.__server_connector.force_finish_rabbit_thread()
+
+    def send_message_to_queue(self, message):
+        if self.__test_publication == True:
+            message['test_publication'] = True
+        return self.__server_connector.send_message_to_queue(message)
+
+
+    
