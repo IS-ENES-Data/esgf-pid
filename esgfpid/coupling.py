@@ -54,23 +54,6 @@ class Coupler(object):
         success = self.__rabbit_message_sender.send_message_to_queue(message)
         return success
 
-    ### For synchronous
-
-    def start_rabbit_business(self):
-        '''
-        Open a connection. If not called, the first sent message automatically
-        opens a connection.
-        This is called for example by the publish assistant.
-        '''
-        self.__rabbit_message_sender.open_rabbit_connection()
-
-    def done_with_rabbit_business(self):
-        '''
-        Optional.
-        This is called for example by the publish assistant.
-        '''
-        self.__rabbit_message_sender.close_rabbit_connection()
-
     ### For asynchronous
 
     def start_rabbit_connection(self):
