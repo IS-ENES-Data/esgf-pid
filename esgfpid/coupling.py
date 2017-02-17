@@ -54,8 +54,6 @@ class Coupler(object):
         success = self.__rabbit_message_sender.send_message_to_queue(message)
         return success
 
-    ### For asynchronous
-
     def start_rabbit_connection(self):
         self.__rabbit_message_sender.start()
 

@@ -24,14 +24,8 @@ thread by calling "finish_rabbit_thread()" or "force_finish_rabbit_thread()".
 '''
 
 import Queue
-import threading
-import pika
 import time
-import json
-import copy
-import datetime
 import logging
-import esgfpid.utils
 from .rabbitthread import RabbitThread
 from .thread_statemachine import StateMachine
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
@@ -237,43 +231,6 @@ class AsynchronousRabbitConnector(object):
                 logdebug(LOGGER, 'Rescued %i rejected (NACKed) messages.', num)
             else:
                 logdebug(LOGGER, 'No rejected (NACKed) messages to rescue.')
-
-    '''
-    This code is not currently used, as the library does not provide
-    any possibility to reconnect manually.
-    The republication of unpublished/unconfirmed messages after a
-    connection interruption is handled by the RabbitThread itself.
-
-    def __publish_leftovers(self):
-        self.__publish_leftovers_unpublished()
-        self.__publish_leftovers_unconfirmed()
-        self.__publish_leftovers_nacked()
-
-    def __publish_leftovers_unpublished(self):
-        if len(self.__leftovers_unpublished) > 0:
-            self.__thread.send_many_messages(self.__leftovers_unpublished)
-            self.__leftovers_unpublished = []
-
-    def __publish_leftovers_unconfirmed(self):
-        if len(self.__leftovers_unconfirmed) > 0:
-            self.__thread.send_many_messages(self.__leftovers_unconfirmed)
-            self.__leftovers_unconfirmed = []
-
-    def __publish_leftovers_nacked(self):
-        if len(self.__leftovers_nacked) > 0:
-            self.__thread.send_many_messages(self.__leftovers_nacked)
-            self.__leftovers_nacked = []
-    '''
-
-    #def any_leftovers(self):
-    #    if (len(self.__leftovers_unpublished)+
-    #        len(self.__leftovers_unconfirmed)+
-    #        len(self.__leftovers_nacked))>0:
-    #        return True
-    #    return False
-
-    #def get_leftovers(self):
-    #    return self.__leftovers_unpublished + self.__leftovers_unconfirmed + self.__leftovers_nacked
 
 
     ####################
