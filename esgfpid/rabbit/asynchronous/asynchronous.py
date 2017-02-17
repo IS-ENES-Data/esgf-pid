@@ -60,7 +60,7 @@ class AsynchronousRabbitConnector(object):
         If not, the methods of this module will raise an error, to
         make sure that the library caller will start the thread.
         '''
-        self.__not_started_yet = True
+        self.__thread_not_started_yet = True
 
         # To be filled after join:
         self.__leftovers_unpublished = [] # will be filled after join
@@ -101,7 +101,7 @@ class AsynchronousRabbitConnector(object):
 
     '''
     def start_rabbit_thread(self):
-        self.__not_started_yet = False
+        self.__thread_not_started_yet = False
         self.__statemachine.set_to_waiting_to_be_available()
         self.__thread.start()
 
@@ -288,7 +288,7 @@ class AsynchronousRabbitConnector(object):
     or stopped again.
     '''
     def send_message_to_queue(self, message):
-        if self.__not_started_yet:
+        if self.__thread_not_started_yet:
             msg = ('Cannot publish message. The message sending module was not initalized yet. '+
                    '(Please call the PID connector\'s "start_messaging_thread()" before trying '+
                    'to send messages, and do not forget to "finish_messaging_thread()" afterwards.')
@@ -306,7 +306,7 @@ class AsynchronousRabbitConnector(object):
     or stopped again.
     '''
     def send_many_messages_to_queue(self, list_of_messages):
-        if self.__not_started_yet:
+        if self.__thread_not_started_yet:
             msg = ('Cannot publish message. The message sending module was not initalized yet. '+
                    '(Please call the PID connector\'s "start_messaging_thread()" before trying '+
                    'to send messages, and do not forget to "finish_messaging_thread()" afterwards.')
@@ -337,7 +337,7 @@ class AsynchronousRabbitConnector(object):
             errormsg('Cannot send a message, the messaging thread was not started yet!')
             logwarn(LOGGER, errormsg+' (dropping %s).', message)
             raise OperationNotAllowed(errormsg)
-            # This is almost the same as the one raised if self.__not_started_yet is True.
+            # This is almost the same as the one raised if self.__thread_not_started_yet is True.
 
 
     def __send_many_messages(self, messages):
