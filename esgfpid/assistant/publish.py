@@ -310,9 +310,8 @@ class DatasetPublicationAssistant(object):
         
     def __try_to_send_one_file_message(self, list_index):
         msg = self.__list_of_file_messages[list_index]
-        success = self.__send_message_to_queue(msg)
+        self.__send_message_to_queue(msg)
         logdebug(LOGGER, 'File publication message handed to rabbit thread: %s (%s)', msg['handle'], msg['file_name'])
-        return success
 
     def __set_machine_state_to_finished(self):
         self.__machine_state = self.__machine_states['publication_finished']
@@ -349,5 +348,4 @@ class DatasetPublicationAssistant(object):
         return message
 
     def __send_message_to_queue(self, message):
-        success = self.__coupler.send_message_to_queue(message)
-        return success
+        self.__coupler.send_message_to_queue(message)
