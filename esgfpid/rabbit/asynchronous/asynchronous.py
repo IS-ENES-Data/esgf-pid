@@ -62,7 +62,6 @@ class AsynchronousRabbitConnector(object):
         self.__leftovers_nacked      = [] # will be filled after join
 
         # Shared objects
-        self.__statemachine = StateMachine()
         self.__unpublished_messages_queue = Queue.Queue()
 
         # Log flags
@@ -71,7 +70,7 @@ class AsynchronousRabbitConnector(object):
         self.__LOGFREQUENCY = 10
 
         # Actually created the thread:
-        self.__thread = RabbitThread(self.__statemachine, self.__unpublished_messages_queue, self, node_manager)
+        self.__thread = RabbitThread(self.__unpublished_messages_queue, self, node_manager)
 
         logdebug(LOGGER, 'Initializing rabbit connector... done.')
 
@@ -96,7 +95,6 @@ class AsynchronousRabbitConnector(object):
     '''
     def start_rabbit_thread(self):
         self.__thread_not_started_yet = False
-        self.__statemachine.set_to_waiting_to_be_available()
         self.__thread.start()
 
     #################
@@ -120,9 +118,9 @@ class AsynchronousRabbitConnector(object):
 
         # Make sure no more messages are accepted from publisher
         # while publishes/confirms are still accepted:
-        if self.__statemachine.is_AVAILABLE():
-            self.__statemachine.set_to_wanting_to_stop()
-        self.__statemachine.detail_asked_to_closed_by_publisher = True
+        ###if self.__statemachine.is_AVAILABLE():
+        ###  self.__statemachine.set_to_wanting_to_stop()
+        ###self.__statemachine.detail_asked_to_closed_by_publisher = True
 
         # Asking the thread to finish:
         self.__thread.add_event_gently_finish() # (this blocks!)
@@ -142,8 +140,8 @@ class AsynchronousRabbitConnector(object):
 
         # Make sure no more messages are accepted from publisher
         # while confirms are still accepted:
-        self.__statemachine.detail_asked_to_closed_by_publisher = True
-        self.__statemachine.set_to_wanting_to_stop()
+        ###self.__statemachine.detail_asked_to_closed_by_publisher = True
+        ###self.__statemachine.set_to_wanting_to_stop()
 
         # Asking the thread to finish:
         logwarn(LOGGER, 'Forced close down of message sending module. Will not wait for pending messages, if any.')
@@ -298,6 +296,8 @@ class AsynchronousRabbitConnector(object):
 
 
     def __send_many_messages(self, messages):
+
+        # TODO HOW TO DIFFERENCIATE HERE?
         if self.__statemachine.is_WAITING_TO_BE_AVAILABLE():
             self.__log_receival_many_messages(messages)
             self.__put_all_messages_into_queue_of_unsent_messages(messages)
@@ -312,10 +312,6 @@ class AsynchronousRabbitConnector(object):
             logwarn(LOGGER, errormsg+' (dropping %i messages).', len(messages))
             raise OperationNotAllowed(errormsg)
 
-        elif self.__statemachine.is_NOT_STARTED_YET():
-            errormsg('Cannot send any messages, the messaging thread was not started yet!')
-            logwarn(LOGGER, errormsg+' (dropping %i messages).', len(messages))
-            raise OperationNotAllowed(errormsg)
 
     def __put_one_message_into_queue_of_unsent_messages(self, message):
         logtrace(LOGGER, 'Putting a message into stack that waits to be published...')

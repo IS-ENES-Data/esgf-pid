@@ -67,7 +67,7 @@ without needed references to each other.
 '''
 class RabbitThread(threading.Thread):
 
-    def __init__(self, statemachine, queue, facade, node_manager):
+    def __init__(self, queue, facade, node_manager):
         threading.Thread.__init__(self)
 
         '''
@@ -84,7 +84,7 @@ class RabbitThread(threading.Thread):
         Not thread-safe.
         TODO Make sure read and write are coherent!
         '''
-        self.__statemachine = statemachine
+        self.__statemachine = StateMachine()
 
         '''
         Synchronization event which makes sure the main thread
