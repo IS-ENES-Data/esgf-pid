@@ -167,7 +167,8 @@ class ConnectionBuilder(object):
                 # was called that handles the problem. Let's try to reconnect
                 # somewhere else.
                 errorname = 'Unexpected error ('+str(e.__class__.__name__)+': '+str(e.message)+')'
-                self.on_connection_error(self.__thread._connection, errorname)
+                ###TODOself.__connection_doctor.on_connection_error(self.__thread._connection, errorname)
+                raise e
 
                 # We start the ioloop, so it can handle the reconnection events,
                 # or also receive events from the publisher in the meantime.
