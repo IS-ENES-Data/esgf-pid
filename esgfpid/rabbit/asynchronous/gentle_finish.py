@@ -23,8 +23,8 @@ connection.
 class GentleFinish(object):
 
     def __init__(self, shutter, statemachine):
-        self.shutter = shutter
-        self.statemachine = statemachine
+        self.__shutter = shutter
+        self.__statemachine = statemachine
 
         '''
         To count how many times we've iterated during
@@ -44,12 +44,12 @@ class GentleFinish(object):
     This method is only called from the shutter module.
     '''
     def execute(self):
-        #self.statemachine.asked_to_closed_by_publisher = True # TODO
+        #self.__statemachine.asked_to_closed_by_publisher = True # TODO
 
         # Make sure no more messages are accepted from publisher # TODO
         # while publishes/confirms are still accepted:
-        #if self.statemachine.is_available_for_client_publishes():
-        #    self.statemachine.set_to_wanting_to_stop()
+        #if self.__statemachine.is_available_for_client_publishes():
+        #    self.__statemachine.set_to_wanting_to_stop()
 
         # Inform user
         if self.__are_any_messages_pending():
@@ -77,8 +77,12 @@ class GentleFinish(object):
             else:
                 logerror(LOGGER, 'Connection was None when trying to wait for pending messages (after reconnect). Synchronization error between threads!')
 
+    # One entry point to the algorithm:
 
-
+    '''
+    This needs to be public, as it is added to the ioloop           This has to be public, ... TODO
+    as an event.
+    '''
     def recursive_decision_about_closing(self):
         logdebug(LOGGER, 'Gentle finish (iteration %i): Deciding about whether we can close the thread or not...', self.__close_decision_iterations)
         iteration = self.__close_decision_iterations
@@ -97,6 +101,10 @@ class GentleFinish(object):
         else:
             self.__wait_some_more_and_redecide(iteration)
 
+    def __inform_about_pending_messages(self):
+        msg = self.__get_string_about_pending_messages()
+        if msg is not None:
+            logdebug(LOGGER, 'Pending messages: %s.', msg)
 
     # Decision rules:
 
@@ -148,7 +156,7 @@ class GentleFinish(object):
 
 
     def __module_is_not_progressing_anymore(self):
-        if self.statemachine.is_PERMANENTLY_UNAVAILABLE(): # TODO Do I have to check anything else?
+        if self.__statemachine.is_PERMANENTLY_UNAVAILABLE(): # TODO Do I have to check anything else?
             logdebug(LOGGER, 'Gentle finish (iteration %i): The rabbit thread is not active anymore, so we might as well close it.', self.__close_decision_iterations)
             return True
         return False
@@ -173,40 +181,41 @@ class GentleFinish(object):
             logerror(LOGGER, 'Connection was None when trying to wait for pending messages. Synchronization error between threads!')
 
 
+    #
+    # Three possible exits from the algorithm
+    #
+
     def __close_because_all_done(self, iteration):
         logdebug(LOGGER, 'Gentle finish (iteration %i): All messages sent and confirmed in %ith try (waited and rechecked %i times).', self.__close_decision_iterations, iteration, iteration-1)
         loginfo(LOGGER, 'All messages sent and confirmed. Closing.')
-        self.__normal_finish()
+        self.__shutter.normal_close_down()
         self.__tell_publisher_to_stop_waiting_for_gentle_finish()
 
     def __close_because_no_point_in_waiting(self):
 
         # Logging, depending on why we closed...
         logdebug(LOGGER, 'Gentle finish (iteration %i): Closing, as there is no point in waiting any longer.', self.__close_decision_iterations)
-        if self.statemachine.get_detail_closed_by_publisher():
+        if self.__statemachine.get_detail_closed_by_publisher():
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (previously closed by user).')
-        elif self.statemachine.detail_could_not_connect:
+        elif self.__statemachine.detail_could_not_connect:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (unable to connect).')
-        elif self.statemachine.detail_authentication_exception:
+        elif self.__statemachine.detail_authentication_exception:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (authentication exception).')
         else:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (unsure why).')
 
         # Actual close
-        self.__force_finish('Force finish as we are not sending the messages anyway.')
+        self.__shutter.abrupt_close_down('Force finish as we are not sending the messages anyway.')
         self.__tell_publisher_to_stop_waiting_for_gentle_finish()
 
     def __close_because_waited_long_enough(self):
         logdebug(LOGGER, 'We have waited long enough. Now closing by force.')
-        self.__force_finish('Force finish as normal waiting period in normal finish is over.')
+        self.__shutter.abrupt_close_down('Force finish as normal waiting period in normal finish is over.')
         self.__tell_publisher_to_stop_waiting_for_gentle_finish()
 
-    def __inform_about_pending_messages(self):
-        msg = self.__get_string_about_pending_messages()
-        if msg is not None:
-            logdebug(LOGGER, 'Pending messages: %s.', msg)
-
-
+    #
+    # Helpers
+    #
 
     def __tell_publisher_to_stop_waiting_for_gentle_finish(self):
         logdebug(LOGGER, 'Main thread does not need to wait anymore. (%s).', get_now_utc_as_formatted_string())
@@ -219,7 +228,6 @@ class GentleFinish(object):
         # This releases the event that blocks the main thread
         # until the gentle finish is done.
         self.thread.tell_publisher_to_stop_waiting_for_gentle_finish()
-
 
     def __get_string_about_pending_messages(self):
         unsent = self.thread.get_num_unpublished()
