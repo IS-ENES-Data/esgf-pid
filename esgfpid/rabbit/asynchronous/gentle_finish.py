@@ -22,9 +22,10 @@ connection.
 '''
 class GentleFinish(object):
 
-    def __init__(self, shutter, statemachine):
+    def __init__(self, shutter, statemachine, thread):
         self.__shutter = shutter
         self.__statemachine = statemachine
+        self.thread = thread
 
         '''
         To count how many times we've iterated during

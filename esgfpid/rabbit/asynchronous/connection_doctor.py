@@ -1,6 +1,7 @@
 import logging
 import esgfpid.defaults as defaults
 import esgfpid.rabbit.connparams
+from .exceptions import PIDServerException
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 
 LOGGER = logging.getLogger(__name__)

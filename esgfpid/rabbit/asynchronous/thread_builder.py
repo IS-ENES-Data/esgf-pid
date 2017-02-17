@@ -6,7 +6,6 @@ from esgfpid.utils import get_now_utc_as_formatted_string as get_now_utc_as_form
 import esgfpid.defaults as defaults
 import esgfpid.rabbit.connparams
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
-from .exceptions import PIDServerException
 from esgfpid.rabbit.asynchronous.connection_doctor import ConnectionDoctor
 
 LOGGER = logging.getLogger(__name__)
@@ -219,7 +218,7 @@ class ConnectionBuilder(object):
         # certainly was carried out before this callback. So this call to
         # "...stop_waiting..." is likelily redundant!
         self.__thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events()
-        self.__please_open_rabbit_channel()
+        self.please_open_rabbit_channel()
 
     '''
     Asynchronous, waits for answer from RabbitMQ.

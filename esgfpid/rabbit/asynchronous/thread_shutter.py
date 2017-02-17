@@ -11,10 +11,21 @@ LOGGER.addHandler(logging.NullHandler())
 class ShutDowner(object):
 
     def __init__(self, thread, statemachine):
-        self.thread = thread
-        self.statemachine = statemachine
 
-        self.__gentle_finish = GentleFinish(self, self.statemachine)
+        '''
+        TODO
+        '''
+        self.__thread = thread
+
+        '''
+        TODO
+        '''
+        self.__statemachine = statemachine
+
+        '''
+        TODO
+        '''
+        self.__gentle_finish = GentleFinish(self, self.__statemachine, self.__thread)
 
     ###########
     ### API ###
@@ -41,13 +52,13 @@ class ShutDowner(object):
 
     def finish_gently(self):
         try:
-            return self.__finish_gently.execute()
+            return self.__gentle_finish.execute()
         except Exception as e:
             logwarn(LOGGER, 'Error in shutter.finish_gently(): %s: %s', e.__class__.__name__, e.message)
             raise e
 
     def continue_gently_closing_if_applicable(self):        
-        self.__finish_gently.continue_gently_closing_if_applicable()
+        self.__gentle_finish.continue_gently_closing_if_applicable()
 
     def safety_finish(self):
         self.__safety_close_down()
@@ -60,16 +71,16 @@ class ShutDowner(object):
     Only to be called from inside here and from the
     gently-closing algorithm.
     '''
-    def __normal_close_down(self, msg='Normal finish.'):
-        reply_code = self.thread.ERROR_CODE_CONNECTION_CLOSED_BY_USER
-        reply_text = msg+' '+self.thread.ERROR_TEXT_CONNECTION_NORMAL_SHUTDOWN
+    def normal_close_down(self, msg='Normal finish.'):
+        reply_code = self.__thread.ERROR_CODE_CONNECTION_CLOSED_BY_USER
+        reply_text = msg+' '+self.__thread.ERROR_TEXT_CONNECTION_NORMAL_SHUTDOWN
         self.__close_down(reply_code, reply_text)
         self.__inform_about_state_at_shutdown()
 
 
     def __safety_close_down(self, msg='Safety finish'):
-        reply_code = self.thread.ERROR_CODE_CONNECTION_CLOSED_BY_USER
-        reply_text = msg+' '+self.thread.ERROR_TEXT_CONNECTION_NORMAL_SHUTDOWN
+        reply_code = self.__thread.ERROR_CODE_CONNECTION_CLOSED_BY_USER
+        reply_text = msg+' '+self.__thread.ERROR_TEXT_CONNECTION_NORMAL_SHUTDOWN
         self.__close_down(reply_code, reply_text)
 
     '''
@@ -78,8 +89,8 @@ class ShutDowner(object):
     '''
     def __abrupt_close_down(self, msg):
         logdebug(LOGGER, 'Force finishing, reason: %s.', msg)
-        reply_code = self.thread.ERROR_CODE_CONNECTION_CLOSED_BY_USER
-        reply_text = msg+' '+self.thread.ERROR_TEXT_CONNECTION_FORCE_CLOSED
+        reply_code = self.__thread.ERROR_CODE_CONNECTION_CLOSED_BY_USER
+        reply_text = msg+' '+self.__thread.ERROR_TEXT_CONNECTION_FORCE_CLOSED
         self.__close_down(reply_code, reply_text)
         self.__inform_about_state_at_shutdown()
 
@@ -107,40 +118,35 @@ class ShutDowner(object):
         # the on_connection_closed callback.
         # This should only be called by one of the finish methods.
 
-        # Make sure the main thread does not continue blocking
-        # as it believes that we're still looking for pending messages:
-        self.__tell_publisher_to_stop_waiting_for_gentle_finish()
-        # TODO This should be called by the gentle-method.
-
         # Change the state of the state machine:
-        self.statemachine.set_to_permanently_unavailable()
-        self.statemachine.set_detail_closed_by_publisher() # todo might be error too
+        self.__statemachine.set_to_permanently_unavailable()
+        self.__statemachine.set_detail_closed_by_publisher() # todo might be error too
 
         # Close connection
         try:
-            if self.thread._connection is None:
+            if self.__thread._connection is None:
                 # This should never happen. How could a close-down happen before we even started?
                 logerror(LOGGER, 'Connection was None when trying to close. Synchronization error between threads!')
 
             else:
-                if self.thread._connection.is_closed or self.thread._connection.is_closing:
+                if self.__thread._connection.is_closed or self.__thread._connection.is_closing:
                     logdebug(LOGGER, 'Connection is closed or closing.')
                     # If connection is already closed, the on_connection_close is not
                     # called, so the ioloop continues, possibly waiting for reconnect.
                     # So we need to prevent reconnects or other events. As long
                     # as ioloop runs, thread cannot be finished/joined.
-                    self.thread.make_permanently_closed_by_user()
-                elif self.thread._connection.is_open:
+                    self.__thread.make_permanently_closed_by_user()
+                elif self.__thread._connection.is_open:
                     logdebug(LOGGER, 'Connection is open. Closing now. This will trigger the RabbitMQ callbacks.')
-                    self.thread._connection.close(reply_code=reply_code, reply_text=reply_text)
+                    self.__thread._connection.close(reply_code=reply_code, reply_text=reply_text)
                     # "If there are any open channels, it will attempt to close them prior to fully disconnecting." (pika docs)
                     # (pika docs) - so we don't need to manually close the channel.
         except AttributeError as e:
             logdebug(LOGGER, 'AttributeError from pika during connection closedown (%s: %s)', e.__class__.__name__, e.message)
 
     def __inform_about_state_at_shutdown(self):
-        unsent = self.thread.get_num_unpublished()
-        unconfirmed = self.thread.get_num_unconfirmed()
+        unsent = self.__thread.get_num_unpublished()
+        unconfirmed = self.__thread.get_num_unconfirmed()
         if unsent + unconfirmed > 0:
             logwarn(LOGGER, 
                 'At close down: %i pending messages (%i unpublished messages, %i unconfirmed messages).',
