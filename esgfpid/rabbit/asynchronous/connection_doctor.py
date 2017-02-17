@@ -122,8 +122,8 @@ class ConnectionDoctor(object):
         # start at the first nodes again...
         else:
             self.__reconnect_counter += 1;
-            if self.__reconnect_counter <= defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES:
-                reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+            if self.__reconnect_counter <= defaults.RABBIT_RECONNECTION_MAX_TRIES:
+                reopen_seconds = defaults.RABBIT_RECONNECTION_SECONDS
                 logdebug(LOGGER, 'Connection failure: Failed connecting to all hosts. Waiting %s seconds and starting over.', reopen_seconds)
                 self.__nodemanager.reset_nodes()
                 newhost = self.__nodemanager.get_connection_parameters().host
@@ -134,7 +134,7 @@ class ConnectionDoctor(object):
             else:
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
-                max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
+                max_tries = defaults.RABBIT_RECONNECTION_MAX_TRIES
                 errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % max_tries)
                 logwarn(LOGGER, errormsg)
                 raise PIDServerException(errormsg)
