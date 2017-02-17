@@ -27,7 +27,7 @@ Normal shutdowns are handles in the shutter module.
 '''
 class ConnectionDoctor(object):
     
-    def __init__(self, thread, statemachine, shutter, nodemanager):
+    def __init__(self, builder, thread, statemachine, shutter, nodemanager):
 
         '''
         We need to add the reconnect-event to the ioloop.
@@ -103,15 +103,15 @@ class ConnectionDoctor(object):
     '''
     def on_connection_error(self, connection, msg):
 
-        oldhost = self.__node_manager.get_connection_parameters().host
+        oldhost = self.__nodemanager.get_connection_parameters().host
         loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s.', oldhost, msg)
 
         
         # If there is alternative URLs, try one of them:
-        if self.__node_manager.has_more_urls():
-            logdebug(LOGGER, 'Connection failure: %s fallback URLs left to try.', self.__node_manager.get_num_left_urls())
-            self.__node_manager.set_next_host()
-            newhost = self.__node_manager.get_connection_parameters().host
+        if self.__nodemanager.has_more_urls():
+            logdebug(LOGGER, 'Connection failure: %s fallback URLs left to try.', self.__nodemanager.get_num_left_urls())
+            self.__nodemanager.set_next_host()
+            newhost = self.__nodemanager.get_connection_parameters().host
             loginfo(LOGGER, 'Connection failure: Trying to connect (now) to %s.', newhost)
             reopen_seconds = 0
             self.__wait_and_trigger_reconnection(connection, reopen_seconds)
@@ -124,8 +124,8 @@ class ConnectionDoctor(object):
             if self.__reconnect_counter <= defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES:
                 reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
                 logdebug(LOGGER, 'Connection failure: Failed connecting to all hosts. Waiting %s seconds and starting over.', reopen_seconds)
-                self.__node_manager.reset_nodes()
-                newhost = self.__node_manager.get_connection_parameters().host
+                self.__nodemanager.reset_nodes()
+                newhost = self.__nodemanager.get_connection_parameters().host
                 loginfo(LOGGER, 'Connection failure: Trying to connect (in %s seconds) to %s.', reopen_seconds, newhost)
                 self.__wait_and_trigger_reconnection(connection, reopen_seconds)
 
@@ -141,7 +141,7 @@ class ConnectionDoctor(object):
 
     '''
     This triggers a reconnection to whatever host is stored in
-    self.__node_manager.get_connection_parameters().host at the moment of reconnection.
+    self.__nodemanager.get_connection_parameters().host at the moment of reconnection.
 
     If it is called to reconnect to the same host, it is better
     to wait some seconds.
@@ -166,7 +166,7 @@ class ConnectionDoctor(object):
             logtrace(LOGGER, 'Reconnect event added to connection %s (not to %s)', connection, self.thread._connection)
             # TODO DIFFERENCE BETWEEN TWO CONNECTION OBJECTS?!?!
 
-'''
+    '''
     Reconnecting creates a completely new connection.
     If we reconnect, we need to reset message number,
     delivery tag etc.
@@ -195,7 +195,7 @@ class ConnectionDoctor(object):
 
         # Now we trigger the actual reconnection, which
         # works just like the first connection to RabbitMQ.
-        self.first_connection()
+        self.builder.first_connection()
 
 
 
@@ -264,22 +264,40 @@ class ConnectionDoctor(object):
         if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
             if self.statemachine.get_detail_closed_by_publisher():
                 logdebug(LOGGER,'Channel close event due to close command by user. This is expected.')
+            else:
+                pass
+                # TODO What to do here?
 
         # Channel closed because even fallback exchange did not exist:
         elif reply_code == 404 and "NOT_FOUND - no exchange 'FALLBACK'" in reply_text:
-            logerror(LOGGER,'Channel closed because FALLBACK exchange does not exist. Need to close connection to trigger all the necessary close down steps.')
-            self.thread._connection.close() # This will reconnect!
+            self.__channel_was_closed_no_fallback()
 
         # Channel closed because exchange did not exist:
         elif reply_code == 404:
-            logdebug(LOGGER, 'Channel closed because the exchange "%s" did not exist.', self.__node_manager.get_exchange_name())
             self.__use_different_exchange_and_reopen_channel()
 
         # Other unexpected channel close:
         else:
-            logerror(LOGGER,'Unexpected channel shutdown. Need to close connection to trigger all the necessary close down steps.')
-            self.thread._connection.close() # This will reconnect!
+            self.__channel_was_closed_unexpectedly()
 
+
+    '''
+    Define the behaviour if there was no FALLBACK exchange:
+    We just try on with the next host.
+    '''
+    def __channel_was_closed_no_fallback(self):
+        logerror(LOGGER,'Channel closed because FALLBACK exchange does not exist. Need to close connection to trigger all the necessary close down steps.')
+        self.shutter.close_with_reconnection()
+
+    '''
+    Define the behaviour in case of a completely
+    unexpected server-side channel close-down.
+    As we don't know what goes on, let's just try to reconnect
+    somewhere else.
+    '''
+    def __channel_was_closed_unexpectedly(self):
+        logerror(LOGGER,'Unexpected channel shutdown. Need to close connection to trigger all the necessary close down steps.')
+        self.shutter.close_with_reconnection()
 
     '''
     An attempt to publish to a nonexistent exchange will close
@@ -288,6 +306,7 @@ class ConnectionDoctor(object):
     open.
     '''
     def __use_different_exchange_and_reopen_channel(self):
+        logdebug(LOGGER, 'Channel closed because the exchange "%s" did not exist.', self.__nodemanager.get_exchange_name())
 
         # Set to waiting to be available, so that incoming
         # messages are stored:
@@ -295,7 +314,7 @@ class ConnectionDoctor(object):
 
         # New exchange name
         logdebug(LOGGER, 'Setting exchange name to fallback exchange "%s"', defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
-        self.thread.set_exchange_name(defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
+        self.builder.set_exchange_name(defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
 
         # If this happened while sending message to the wrong exchange, we
         # have to trigger their resending...
@@ -305,4 +324,4 @@ class ConnectionDoctor(object):
         # TODO Reihenfolge richtigen? Erst prepare, dann open?
         logdebug(LOGGER, 'Reopening channel...')
         self.statemachine.set_to_waiting_to_be_available()
-        self.__please_open_rabbit_channel()
+        self.builder.please_open_rabbit_channel()
