@@ -54,7 +54,6 @@ class StateMachine(object):
             self.__state = self.__PERMANENTLY_UNAVAILABLE
 
     def set_to_force_finished(self):
-        logging.debug('FORCE FINISH STATE!')
         self.__state = self.__FORCE_FINISHED
 
     #
