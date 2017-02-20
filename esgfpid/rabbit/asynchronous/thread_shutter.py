@@ -236,6 +236,7 @@ class ShutDowner(object):
 
     def __force_finish(self, msg):
         logdebug(LOGGER, 'Force finishing, reason: %s.', msg)
+        self.statemachine.set_to_force_finished()
         reply_code = self.thread.ERROR_CODE_CONNECTION_CLOSED_BY_USER
         reply_text = msg+' '+self.thread.ERROR_TEXT_CONNECTION_FORCE_CLOSED
         self.__close_down(reply_code, reply_text)
