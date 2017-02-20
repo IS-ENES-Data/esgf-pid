@@ -201,7 +201,8 @@ class RabbitThread(threading.Thread):
     def add_event_publish_message(self):
         logdebug(LOGGER, 'Asking rabbit thread to publish a message...')
         self.__add_event(self.__feeder.publish_message)
-        logtrace(LOGGER, '(Trigger sent.)')
+        self.__add_event(self.__feeder.publish_message) # Send two...
+        logdebug(LOGGER, '(Trigger sent.)')
 
     def add_event_force_finish(self):
         logdebug(LOGGER, 'Asking rabbit thread to finish quickly...')

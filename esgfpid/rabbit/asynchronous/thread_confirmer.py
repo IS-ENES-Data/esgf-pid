@@ -118,8 +118,8 @@ class Confirmer(object):
 
     def __react_on_multiple_delivery_ack(self, deliv_tag):
         self.__remove_delivery_tag_and_message_several(deliv_tag)
-        logdebug(LOGGER, 'Received "ACK" for delivery tag %i and all below. Waiting for %i confirms.', deliv_tag, len(self.__unconfirmed_delivery_tags))
-        logtrace(LOGGER, 'Received "ACK" for delivery tag %i and all below.', deliv_tag)
+        logdebug(LOGGER, 'Received ack for delivery tag %i and all below. Waiting for %i confirms.', deliv_tag, len(self.__unconfirmed_delivery_tags))
+        logtrace(LOGGER, 'Received ack for delivery tag %i and all below.', deliv_tag)
         logtrace(LOGGER, 'Now left in queue to be confirmed: %i messages.', len(self.__unconfirmed_delivery_tags))
 
     def __remove_delivery_tag_and_message_single(self, deliv_tag):

@@ -10,6 +10,7 @@ class StateMachine(object):
         self.__IS_AVAILABLE = 2
         self.__IS_AVAILABLE_BUT_WANTS_TO_STOP = 3
         self.__PERMANENTLY_UNAVAILABLE = 4 # roughly corresponds to _stopping and _closing in pika usage example.
+        self.__FORCE_FINISHED = 5
 
         # Init state machine:
         self.__state = self.__NOT_STARTED_YET
@@ -26,19 +27,34 @@ class StateMachine(object):
 
     ''' Called by the rabbit thread.'''
     def set_to_available(self):
-        self.__state = self.__IS_AVAILABLE
+        if self.is_PERMANENTLY_UNAVAILABLE() or self.is_FORCE_FINISHED():
+            pass
+        else:
+            self.__state = self.__IS_AVAILABLE
 
     ''' Called by the main thread.'''
     def set_to_wanting_to_stop(self):
-        self.__state = self.__IS_AVAILABLE_BUT_WANTS_TO_STOP
+        if self.is_PERMANENTLY_UNAVAILABLE() or self.is_FORCE_FINISHED():
+            pass
+        else:
+            self.__state = self.__IS_AVAILABLE_BUT_WANTS_TO_STOP
 
     ''' Called by the main thread.'''
     def set_to_waiting_to_be_available(self):
-        self.__state = self.__WAITING_TO_BE_AVAILABLE
+        if self.is_PERMANENTLY_UNAVAILABLE() or self.is_FORCE_FINISHED():
+            pass
+        else:
+            self.__state = self.__WAITING_TO_BE_AVAILABLE
 
     ''' Called by the rabbit thread.'''
     def set_to_permanently_unavailable(self):
-        self.__state = self.__PERMANENTLY_UNAVAILABLE
+        if self.is_FORCE_FINISHED():
+            pass
+        else:
+            self.__state = self.__PERMANENTLY_UNAVAILABLE
+
+    def set_to_force_finished(self):
+        self.__state = self.__FORCE_FINISHED
 
     #
     # Getters for states
@@ -65,7 +81,16 @@ class StateMachine(object):
         return False
 
     def is_PERMANENTLY_UNAVAILABLE(self):
-        if self.__state == self.__PERMANENTLY_UNAVAILABLE:
+        if self.__state == self.__PERMANENTLY_UNAVAILABLE or self.__state == self.__FORCE_FINISHED:
+            # Including FORCE_FINISHED is kind of a dirty hack here,
+            # but otherwise I might break to many things...
+            # TODO: Update wherever this function is used, and verify which state
+            # is really interesting there...
+            return True
+        return False
+
+    def is_FORCE_FINISHED(self):
+        if self.__state == self.__FORCE_FINISHED:
             return True
         return False
 

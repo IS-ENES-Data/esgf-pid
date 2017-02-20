@@ -100,6 +100,13 @@ class ShutDowner(object):
         elif self.__module_is_not_progressing_anymore():
             self.__close_because_no_point_in_waiting()
         else:
+            # Make sure the messages can be sent, in case some events
+            # were lost during reconnecting or something...
+            num_unpub = self.thread.get_num_unpublished()
+            logdebug(LOGGER, 'Triggering %i publish events...' % num_unpub)
+            for i in xrange(int(1.1*num_unpub)):
+                self.thread.add_event_publish_message()
+            # Now wait some more...
             self.__wait_some_more_and_redecide(iteration)
 
     # Decision rules:
@@ -151,7 +158,7 @@ class ShutDowner(object):
             return False
 
     def __module_is_not_progressing_anymore(self):
-        if self.statemachine.is_PERMANENTLY_UNAVAILABLE(): # TODO Do I have to check anything else?
+        if self.statemachine.is_PERMANENTLY_UNAVAILABLE() or self.statemachine.is_FORCE_FINISHED(): # TODO Do I have to check anything else?
             logdebug(LOGGER, 'Gentle finish (iteration %i): The rabbit thread is not active anymore, so we might as well close it.', self.__close_decision_iterations)
             return True
         return False
@@ -236,6 +243,7 @@ class ShutDowner(object):
 
     def __force_finish(self, msg):
         logdebug(LOGGER, 'Force finishing, reason: %s.', msg)
+        self.statemachine.set_to_force_finished()
         reply_code = self.thread.ERROR_CODE_CONNECTION_CLOSED_BY_USER
         reply_text = msg+' '+self.thread.ERROR_TEXT_CONNECTION_FORCE_CLOSED
         self.__close_down(reply_code, reply_text)

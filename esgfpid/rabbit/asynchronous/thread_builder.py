@@ -102,34 +102,22 @@ class ConnectionBuilder(object):
                 self.thread._connection.ioloop.start()
 
             except pika.exceptions.ProbableAuthenticationError as e:
+                logerror(LOGGER, 'Caught Authentication Exception during connection ("%s").', e.__class__.__name__)
+                self.statemachine.set_to_waiting_to_be_available()
+                self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
 
-                # If the library was stopped by the user in the mean time,
-                # we do not try to reconnect.
-                if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
-                    logerror(LOGGER, 'Caught Authentication Exception during connection ("%s"). Will not reconnect.', e.__class__.__name__)
-                    # We do not do anything anymore, as the shutdown has been
-                    # handled already, otherwise, the state would not be
-                    # permanently unavailable.
-                
-                # In normal cases, we do try to reconnect. As we will try
-                # to reconnect, we set state to waiting to connect.
-                else:
-                    logerror(LOGGER, 'Caught Authentication Exception during connection ("%s"). Will try to reconnect to next host.', e.__class__.__name__)
-                    self.statemachine.set_to_waiting_to_be_available()
-                    self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
+                # It seems that ProbableAuthenticationErrors do not cause
+                # RabbitMQ to call any callback, either on_connection_closed
+                # or on_connection_error - it just silently swallows the
+                # problem.
+                # So we need to manually trigger reconnection to the next
+                # host here, which we do by manually calling the callback.
+                errorname = 'ProbableAuthenticationError issued by pika'
+                self.on_connection_error(self.thread._connection, errorname)
 
-                    # It seems that ProbableAuthenticationErrors do not cause
-                    # RabbitMQ to call any callback, either on_connection_closed
-                    # or on_connection_error - it just silently swallows the
-                    # problem.
-                    # So we need to manually trigger reconnection to the next
-                    # host here, which we do by manually calling the callback.
-                    errorname = 'ProbableAuthenticationError issued by pika'
-                    self.on_connection_error(self.thread._connection, errorname)
-
-                    # We start the ioloop, so it can handle the reconnection events,
-                    # or also receive events from the publisher in the meantime.
-                    self.thread._connection.ioloop.start()
+                # We start the ioloop, so it can handle the reconnection events,
+                # or also receive events from the publisher in the meantime.
+                self.thread._connection.ioloop.start()
 
             except Exception as e:
                 # This catches any error during connection startup and during the entire
@@ -258,7 +246,7 @@ class ConnectionBuilder(object):
         num = self.thread.get_num_unpublished()
         if num > 0:
             loginfo(LOGGER, 'Ready to publish messages to RabbitMQ. %s messages are already waiting to be published.', num)
-            for i in xrange(num):
+            for i in xrange(int(num*1.1)):
                 self.thread.add_event_publish_message()
         else:
             loginfo(LOGGER, 'Ready to publish messages to RabbitMQ.')
@@ -284,6 +272,18 @@ class ConnectionBuilder(object):
         oldhost = self.__node_manager.get_connection_parameters().host
         loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s.', oldhost, msg)
 
+<<<<<<< HEAD
+=======
+        # If there was a force-finish, we do not reconnect.
+        if self.statemachine.is_FORCE_FINISHED():
+            # TODO This is the same code as above. Make a give_up function from it?
+            #self.statemachine.set_to_permanently_unavailable()
+            #self.statemachine.detail_could_not_connect = True
+            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.')
+            logerror(LOGGER, errormsg)
+            raise PIDServerException(errormsg)
+
+>>>>>>> devel
         
         # If there is alternative URLs, try one of them:
         if self.__node_manager.has_more_urls():
@@ -293,6 +293,10 @@ class ConnectionBuilder(object):
             loginfo(LOGGER, 'Connection failure: Trying to connect (now) to %s.', newhost)
             reopen_seconds = 0
             self.__wait_and_trigger_reconnection(connection, reopen_seconds)
+<<<<<<< HEAD
+=======
+
+>>>>>>> devel
 
         # If there is no URLs, reset the node manager to
         # start at the first nodes again...
@@ -312,7 +316,11 @@ class ConnectionBuilder(object):
                 self.statemachine.detail_could_not_connect = True
                 max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
                 errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % max_tries)
+<<<<<<< HEAD
                 logwarn(LOGGER, errormsg)
+=======
+                logerror(LOGGER, errormsg)
+>>>>>>> devel
                 raise PIDServerException(errormsg)
 
 
@@ -498,6 +506,7 @@ class ConnectionBuilder(object):
     in waiting.
     '''
     def __wait_and_trigger_reconnection(self, connection, wait_seconds):
+<<<<<<< HEAD
 
         # Do not reconnect if the library was permanently closed.
         if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
@@ -507,6 +516,16 @@ class ConnectionBuilder(object):
             # close down steps.
 
         # Otherwise, do reconnect.
+=======
+        if self.statemachine.is_FORCE_FINISHED():
+            # TODO This is the same code as above. Make a give_up function from it?
+            #self.statemachine.set_to_permanently_unavailable()
+            #self.statemachine.detail_could_not_connect = True
+            #max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
+            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.')
+            logerror(LOGGER, errormsg)
+            raise PIDServerException(errormsg)
+>>>>>>> devel
         else:
             self.statemachine.set_to_waiting_to_be_available()
             loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
