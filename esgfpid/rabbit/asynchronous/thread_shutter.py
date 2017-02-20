@@ -100,6 +100,13 @@ class ShutDowner(object):
         elif self.__module_is_not_progressing_anymore():
             self.__close_because_no_point_in_waiting()
         else:
+            # Make sure the messages can be sent, in case some events
+            # were lost during reconnecting or something...
+            num_unpub = self.thread.get_num_unpublished()
+            logdebug(LOGGER, 'Triggering %i publish events...' % num_unpub)
+            for i in xrange(int(1.1*num_unpub)):
+                self.thread.add_event_publish_message()
+            # Now wait some more...
             self.__wait_some_more_and_redecide(iteration)
 
     # Decision rules:

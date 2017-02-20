@@ -180,7 +180,7 @@ class RabbitFeeder(object):
     :return: A message from the stack of unpublished messages.
     :raises: Queue.Empty.
     '''
-    def __get_message_from_stack(self, seconds=2):
+    def __get_message_from_stack(self, seconds=0):
         message = self.thread.get_message_from_unpublished_stack(seconds)
         logtrace(LOGGER, 'Found message to be published. Now left in queue to be published: %i messages.', self.thread.get_num_unpublished())
         return message
