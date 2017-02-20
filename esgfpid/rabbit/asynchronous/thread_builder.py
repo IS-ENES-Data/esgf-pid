@@ -103,33 +103,22 @@ class ConnectionBuilder(object):
 
             except pika.exceptions.ProbableAuthenticationError as e:
 
-                # If the library was stopped by the user in the mean time,
-                # we do not try to reconnect.
-                if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
-                    logerror(LOGGER, 'Caught Authentication Exception during connection ("%s"). Will not reconnect.', e.__class__.__name__)
-                    # We do not do anything anymore, as the shutdown has been
-                    # handled already, otherwise, the state would not be
-                    # permanently unavailable.
-                
-                # In normal cases, we do try to reconnect. As we will try
-                # to reconnect, we set state to waiting to connect.
-                else:
-                    logerror(LOGGER, 'Caught Authentication Exception during connection ("%s"). Will try to reconnect to next host.', e.__class__.__name__)
-                    self.statemachine.set_to_waiting_to_be_available()
-                    self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
+                logerror(LOGGER, 'Caught Authentication Exception during connection ("%s"). Will try to reconnect to next host.', e.__class__.__name__)
+                self.statemachine.set_to_waiting_to_be_available()
+                self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
 
-                    # It seems that ProbableAuthenticationErrors do not cause
-                    # RabbitMQ to call any callback, either on_connection_closed
-                    # or on_connection_error - it just silently swallows the
-                    # problem.
-                    # So we need to manually trigger reconnection to the next
-                    # host here, which we do by manually calling the callback.
-                    errorname = 'ProbableAuthenticationError issued by pika'
-                    self.on_connection_error(self.thread._connection, errorname)
+                # It seems that ProbableAuthenticationErrors do not cause
+                # RabbitMQ to call any callback, either on_connection_closed
+                # or on_connection_error - it just silently swallows the
+                # problem.
+                # So we need to manually trigger reconnection to the next
+                # host here, which we do by manually calling the callback.
+                errorname = 'ProbableAuthenticationError issued by pika'
+                self.on_connection_error(self.thread._connection, errorname)
 
-                    # We start the ioloop, so it can handle the reconnection events,
-                    # or also receive events from the publisher in the meantime.
-                    self.thread._connection.ioloop.start()
+                # We start the ioloop, so it can handle the reconnection events,
+                # or also receive events from the publisher in the meantime.
+                self.thread._connection.ioloop.start()
 
             except Exception as e:
                 # This catches any error during connection startup and during the entire
@@ -499,20 +488,10 @@ class ConnectionBuilder(object):
     in waiting.
     '''
     def __wait_and_trigger_reconnection(self, connection, wait_seconds):
-
-        # Do not reconnect if the library was permanently closed.
-        if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
-            logdebug(LOGGER, 'No more reconnection, as the library was permanently closed.')
-            # No need to do anything else. Whoever set the state
-            # to permanently unavailable also handled the necessary
-            # close down steps.
-
-        # Otherwise, do reconnect.
-        else:
-            self.statemachine.set_to_waiting_to_be_available()
-            loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
-            connection.add_timeout(wait_seconds, self.reconnect)
-            logtrace(LOGGER, 'Reconnect event added to connection %s (not to %s)', connection, self.thread._connection)
+        self.statemachine.set_to_waiting_to_be_available()
+        loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
+        connection.add_timeout(wait_seconds, self.reconnect)
+        logtrace(LOGGER, 'Reconnect event added to connection %s (not to %s)', connection, self.thread._connection)
 
     ###########################
     ### Reconnect after     ###
