@@ -294,7 +294,6 @@ class ConnectionBuilder(object):
             reopen_seconds = 0
             self.__wait_and_trigger_reconnection(connection, reopen_seconds)
 
-
         # If there is no URLs, reset the node manager to
         # start at the first nodes again...
         else:
@@ -369,7 +368,7 @@ class ConnectionBuilder(object):
         # Channel closed because even fallback exchange did not exist:
         elif reply_code == 404 and "NOT_FOUND - no exchange 'FALLBACK'" in reply_text:
             logerror(LOGGER,'Channel closed because FALLBACK exchange does not exist. Need to close connection to trigger all the necessary close down steps.')
-            self.thread._connection.close(999, self.thread.ERROR_TEXT_CONNECTION_PERMANENT_ERROR)
+            self.thread._connection.close() # This will reconnect!
 
         # Channel closed because exchange did not exist:
         elif reply_code == 404:
