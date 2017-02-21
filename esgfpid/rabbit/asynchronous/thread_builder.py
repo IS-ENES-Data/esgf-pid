@@ -102,6 +102,7 @@ class ConnectionBuilder(object):
                 self.thread._connection.ioloop.start()
 
             except pika.exceptions.ProbableAuthenticationError as e:
+
                 logerror(LOGGER, 'Caught Authentication Exception during connection ("%s").', e.__class__.__name__)
                 self.statemachine.set_to_waiting_to_be_available()
                 self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
@@ -272,8 +273,6 @@ class ConnectionBuilder(object):
         oldhost = self.__node_manager.get_connection_parameters().host
         loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s.', oldhost, msg)
 
-<<<<<<< HEAD
-=======
         # If there was a force-finish, we do not reconnect.
         if self.statemachine.is_FORCE_FINISHED():
             # TODO This is the same code as above. Make a give_up function from it?
@@ -283,7 +282,6 @@ class ConnectionBuilder(object):
             logerror(LOGGER, errormsg)
             raise PIDServerException(errormsg)
 
->>>>>>> devel
         
         # If there is alternative URLs, try one of them:
         if self.__node_manager.has_more_urls():
@@ -293,10 +291,7 @@ class ConnectionBuilder(object):
             loginfo(LOGGER, 'Connection failure: Trying to connect (now) to %s.', newhost)
             reopen_seconds = 0
             self.__wait_and_trigger_reconnection(connection, reopen_seconds)
-<<<<<<< HEAD
-=======
 
->>>>>>> devel
 
         # If there is no URLs, reset the node manager to
         # start at the first nodes again...
@@ -316,11 +311,7 @@ class ConnectionBuilder(object):
                 self.statemachine.detail_could_not_connect = True
                 max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
                 errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % max_tries)
-<<<<<<< HEAD
-                logwarn(LOGGER, errormsg)
-=======
                 logerror(LOGGER, errormsg)
->>>>>>> devel
                 raise PIDServerException(errormsg)
 
 
@@ -506,17 +497,6 @@ class ConnectionBuilder(object):
     in waiting.
     '''
     def __wait_and_trigger_reconnection(self, connection, wait_seconds):
-<<<<<<< HEAD
-
-        # Do not reconnect if the library was permanently closed.
-        if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
-            logdebug(LOGGER, 'No more reconnection, as the library was permanently closed.')
-            # No need to do anything else. Whoever set the state
-            # to permanently unavailable also handled the necessary
-            # close down steps.
-
-        # Otherwise, do reconnect.
-=======
         if self.statemachine.is_FORCE_FINISHED():
             # TODO This is the same code as above. Make a give_up function from it?
             #self.statemachine.set_to_permanently_unavailable()
@@ -525,7 +505,6 @@ class ConnectionBuilder(object):
             errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.')
             logerror(LOGGER, errormsg)
             raise PIDServerException(errormsg)
->>>>>>> devel
         else:
             self.statemachine.set_to_waiting_to_be_available()
             loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
