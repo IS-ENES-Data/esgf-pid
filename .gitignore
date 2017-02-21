@@ -20,6 +20,8 @@ htmlcov/
 # Individual files:
 /OLD/*
 IGNORE
+*SECRET*
+*handles_created_during_tests*
 
 # Ignore built docs
 /docs/build
