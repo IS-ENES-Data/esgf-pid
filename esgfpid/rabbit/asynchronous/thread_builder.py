@@ -59,6 +59,11 @@ class ConnectionBuilder(object):
         self.__reconnect_counter = 0
 
         '''
+        Set of all tried hosts, for logging.
+        '''
+        self.__all_hosts_that_were_tried = set()
+
+        '''
         To see how much time it takes to connect.
         '''
         self.__start_connect_time = None
@@ -168,6 +173,7 @@ class ConnectionBuilder(object):
         self.__start_connect_time = datetime.datetime.now()
         logdebug(LOGGER, 'Connecting to RabbitMQ at %s... (%s)',
             params.host, get_now_utc_as_formatted_string())
+        self.__all_hosts_that_were_tried.add(params.host)
         loginfo(LOGGER, 'Opening connection to RabbitMQ...')
         self.thread._connection = pika.SelectConnection(
             parameters=params,
@@ -288,7 +294,7 @@ class ConnectionBuilder(object):
             # TODO This is the same code as above. Make a give_up function from it?
             #self.statemachine.set_to_permanently_unavailable()
             #self.statemachine.detail_could_not_connect = True
-            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.')
+            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s until received a force-finish. Giving up. No PID requests will be sent.' % list(self.__all_hosts_that_were_tried))
             logerror(LOGGER, errormsg)
             raise PIDServerException(errormsg)
 
@@ -320,7 +326,7 @@ class ConnectionBuilder(object):
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
                 max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
-                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % max_tries)
+                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s %s times. Giving up. No PID requests will be sent.' % (list(self.__all_hosts_that_were_tried), max_tries))
                 logerror(LOGGER, errormsg)
                 raise PIDServerException(errormsg)
 
@@ -512,7 +518,7 @@ class ConnectionBuilder(object):
             #self.statemachine.set_to_permanently_unavailable()
             #self.statemachine.detail_could_not_connect = True
             #max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
-            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.')
+            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s until received a force-finish. Giving up. No PID requests will be sent.' % list(self.__all_hosts_that_were_tried))
             logerror(LOGGER, errormsg)
             raise PIDServerException(errormsg)
         else:
