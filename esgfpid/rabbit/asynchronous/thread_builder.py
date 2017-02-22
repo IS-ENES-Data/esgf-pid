@@ -2,6 +2,7 @@ import logging
 import pika
 import time
 import copy
+import datetime
 from esgfpid.utils import get_now_utc_as_formatted_string as get_now_utc_as_formatted_string
 import esgfpid.defaults as defaults
 import esgfpid.rabbit.connparams
@@ -57,6 +58,11 @@ class ConnectionBuilder(object):
         ''' To count how many times we have tried to reconnect to the same RabbitMQ URL.'''
         self.__reconnect_counter = 0
 
+        '''
+        To see how much time it takes to connect.
+        '''
+        self.__start_connect_time = None
+
     ####################
     ### Start ioloop ###
     ####################
@@ -103,7 +109,8 @@ class ConnectionBuilder(object):
 
             except pika.exceptions.ProbableAuthenticationError as e:
 
-                logerror(LOGGER, 'Caught Authentication Exception during connection ("%s").', e.__class__.__name__)
+                time_passed = datetime.datetime.now() - self.__start_connect_time
+                logerror(LOGGER, 'Caught Authentication Exception after %s seconds during connection ("%s").', time_passed.total_seconds(), e.__class__.__name__)
                 self.statemachine.set_to_waiting_to_be_available()
                 self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
 
@@ -158,6 +165,7 @@ class ConnectionBuilder(object):
     ''' Asynchronous, waits for answer from RabbitMQ.'''
     def __please_open_connection(self):
         params = self.__node_manager.get_connection_parameters()
+        self.__start_connect_time = datetime.datetime.now()
         logdebug(LOGGER, 'Connecting to RabbitMQ at %s... (%s)',
             params.host, get_now_utc_as_formatted_string())
         loginfo(LOGGER, 'Opening connection to RabbitMQ...')
@@ -193,7 +201,8 @@ class ConnectionBuilder(object):
 
     ''' Callback, called by RabbitMQ. '''
     def on_channel_open(self, channel):
-        logdebug(LOGGER, 'Opening channel... done.')
+        time_passed = datetime.datetime.now() - self.__start_connect_time
+        logdebug(LOGGER, 'Opening channel... done. Took %s seconds.' % time_passed.total_seconds())
         logtrace(LOGGER, 'Channel has number: %s.', channel.channel_number)
         self.thread._channel = channel
         self.__reconnect_counter = 0
@@ -271,7 +280,8 @@ class ConnectionBuilder(object):
     def on_connection_error(self, connection, msg):
 
         oldhost = self.__node_manager.get_connection_parameters().host
-        loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s.', oldhost, msg)
+        time_passed = datetime.datetime.now() - self.__start_connect_time
+        loginfo(LOGGER, 'Failed connection to RabbitMQ at %s after %s seconds. Reason: %s.', oldhost, time_passed.total_seconds(), msg)
 
         # If there was a force-finish, we do not reconnect.
         if self.statemachine.is_FORCE_FINISHED():
