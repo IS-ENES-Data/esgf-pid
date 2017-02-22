@@ -55,8 +55,25 @@ class ConnectionBuilder(object):
         '''
         self.__node_manager = nodemanager
 
-        ''' To count how many times we have tried to reconnect to the same RabbitMQ URL.'''
+        '''
+        To count how many times we have tried to reconnect the set of
+        RabbitMQ hosts.
+        '''
         self.__reconnect_counter = 0
+
+        '''
+        To see how many times we should try reconnecting to the set 
+        of RabbitMQ hosts. Note that if there is 3 hosts, and we try 2
+        times, this means 6 connection tries in total.
+        '''
+        self.__max_reconnection_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
+
+        '''
+        How many seconds to wait before reconnecting after having tried
+        all hosts. (There is no waiting time trying to connect to a different
+        host after one fails).
+        '''
+        self.__wait_seconds_before_reconnect = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
 
         '''
         Set of all tried hosts, for logging.
@@ -64,9 +81,16 @@ class ConnectionBuilder(object):
         self.__all_hosts_that_were_tried = set()
 
         '''
-        To see how much time it takes to connect.
+        To see how much time it takes to connect. Once a connection is
+        established or failed, we print the time delta to logs.
         '''
         self.__start_connect_time = None
+
+        '''
+        Name of the fallback exchange to try if the normal exchange
+        is not found.
+        '''
+        self.__fallback_exchange_name = defaults.RABBIT_FALLBACK_EXCHANGE_NAME
 
     ####################
     ### Start ioloop ###
@@ -313,8 +337,8 @@ class ConnectionBuilder(object):
         # start at the first nodes again...
         else:
             self.__reconnect_counter += 1;
-            if self.__reconnect_counter <= defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES:
-                reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+            if self.__reconnect_counter <= self.__max_reconnection_tries
+                reopen_seconds = self.__wait_seconds_before_reconnect
                 logdebug(LOGGER, 'Connection failure: Failed connecting to all hosts. Waiting %s seconds and starting over.', reopen_seconds)
                 self.__node_manager.reset_nodes()
                 newhost = self.__node_manager.get_connection_parameters().host
@@ -325,8 +349,7 @@ class ConnectionBuilder(object):
             else:
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
-                max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
-                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s %s times. Giving up. No PID requests will be sent.' % (list(self.__all_hosts_that_were_tried), max_tries))
+                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s %s times. Giving up. No PID requests will be sent.' % (list(self.__all_hosts_that_were_tried) ,self.__max_reconnection_tries))
                 logerror(LOGGER, errormsg)
                 raise PIDServerException(errormsg)
 
@@ -408,8 +431,8 @@ class ConnectionBuilder(object):
         self.statemachine.set_to_waiting_to_be_available()
 
         # New exchange name
-        logdebug(LOGGER, 'Setting exchange name to fallback exchange "%s"', defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
-        self.thread.set_exchange_name(defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
+        logdebug(LOGGER, 'Setting exchange name to fallback exchange "%s"', self.__fallback_exchange_name)
+        self.thread.set_exchange_name(self.__fallback_exchange_name)
 
         # If this happened while sending message to the wrong exchange, we
         # have to trigger their resending...
