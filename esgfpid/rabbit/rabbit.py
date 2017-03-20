@@ -18,8 +18,24 @@ LOGGER.addHandler(logging.NullHandler())
 
 ASYNCHRONOUS = esgfpid.defaults.RABBIT_IS_ASYNCHRONOUS
 
+'''
+Created in the Coupler class.
+'''
 class RabbitMessageSender(object):
 
+    '''
+    Create a RabbitMessageSender that takes care of managing
+    connections to RabbitMQ instances and sending messages 
+    to them.
+
+    :param exchange_name: Mandatory. The name of the exchange
+        to send messages to (string).
+    :param credentials: Mandatory. List of dictionaries containing
+        the information about the RabbitMQ nodes.
+    :param test_publication: Mandatory. Boolean to tell whether
+        a test flag should be added to all messages.
+
+    '''
     def __init__(self, **args):
         LOGGER.debug('Initializing RabbitMessageSender.')
 
