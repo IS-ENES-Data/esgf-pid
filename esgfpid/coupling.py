@@ -32,7 +32,8 @@ class Coupler(object):
         self.__rabbit_message_sender = esgfpid.rabbit.rabbit.RabbitMessageSender(
             exchange_name=args['messaging_service_exchange_name'],       # mandatory
             credentials=args['messaging_service_credentials'],
-            test_publication=test_publication
+            test_publication=test_publication,
+            is_synchronous_mode=args['message_service_synchronous']
         )
 
     def __create_solr_sender(self, args):

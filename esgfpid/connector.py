@@ -61,7 +61,12 @@ class Connector(object):
             them.
             Dictionaries for 'open nodes' do not need a password
             to be provided. Open nodes are only used if no more
-            other nodes are available. 
+            other nodes are available.
+
+        :param message_service_synchronous: Optional. Boolean to
+            define if the connection to RabbitMQ and the message
+            sending should work in synchronous mode. Defaults to
+            the value defined in defaults.py.
 
         :param data_node: Mandatory/Optional.
 
@@ -142,7 +147,8 @@ class Connector(object):
             'solr_https_verify',
             'disable_insecure_request_warning',
             'solr_switched_off',
-            'consumer_solr_url'
+            'consumer_solr_url',
+            'message_service_synchronous'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
