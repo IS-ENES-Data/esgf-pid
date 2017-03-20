@@ -101,9 +101,10 @@ class NodeManager(object):
                      of this instance.
     '''
     def add_open_node(self, **kwargs):
-        kwargs['is_open'] = True
-        added = node_info = self.__add_node(self.__open_nodes, self.__open_nodes_archive, **kwargs)
-        logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
+        raise ArgumentError('Open nodes no longer supported! (Messaging service "'+credentials['url']+'")')
+        #kwargs['is_open'] = True
+        #added = node_info = self.__add_node(self.__open_nodes, self.__open_nodes_archive, **kwargs)
+        #logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
 
     def __add_node(self, store_where, store_archive, **kwargs):
         if self.__has_necessary_info(kwargs):
@@ -189,6 +190,8 @@ class NodeManager(object):
     def get_connection_parameters(self):
         if self.__current_node is None:
             self.set_next_host()
+        if self.__current_node['is_open']:
+            raise ArgumentError('Open nodes no longer supported! (Messaging service "'+credentials['url']+'")')
         return self.__current_node['params']
 
     '''

@@ -154,9 +154,8 @@ class Connector(object):
             if 'user' not in credentials:
                 raise ArgumentError('Missing user for messaging service "'+credentials['url']+'"!')
             if 'password' not in credentials:
-                pass   
-                # No exception, to enable use of open node!
-                #raise ArgumentError('Missing password for messaging service "'+credentials['url']+'"!')
+                # Remove exception to enable use of open node!
+                raise ArgumentError('Missing password for messaging service "'+credentials['url']+'"!')
 
 
     def __store_some_args(self, args):
