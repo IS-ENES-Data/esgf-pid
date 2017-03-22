@@ -170,7 +170,7 @@ class Connector(object):
             args['test_publication'] = False
 
         if 'solr_url' not in args or args['solr_url'] is None:
-            args['solr_url']
+            args['solr_url'] = None
             args['solr_switched_off'] = True
 
         if 'solr_switched_off' not in args or args['solr_switched_off'] is None:

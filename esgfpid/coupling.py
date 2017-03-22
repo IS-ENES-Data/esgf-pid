@@ -73,7 +73,6 @@ class Coupler(object):
     '''
     def send_message_to_queue(self, message):
         self.__rabbit_message_sender.send_message_to_queue(message)
-        return success
 
     ### For synchronous
 
