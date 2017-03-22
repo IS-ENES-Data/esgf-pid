@@ -30,10 +30,9 @@ class RabbitMessageSender(object):
         to send messages to (string).
     :param credentials: Mandatory. List of dictionaries containing
         the information about the RabbitMQ nodes.
-    :param is_synchronous_mode: Optional. Boolean to define if
+    :param is_synchronous_mode: Mandatory. Boolean to define if
         the connection to RabbitMQ and the message sending
-        should work in synchronous mode. Defaults to the value 
-        defined in defaults.py.
+        should work in synchronous mode.
     :param test_publication: Mandatory. Boolean to tell whether
         a test flag should be added to all messages.
 
@@ -44,24 +43,15 @@ class RabbitMessageSender(object):
         mandatory_args = [
             'exchange_name',
             'credentials',
-            'test_publication'
+            'test_publication',
+            'is_synchronous_mode'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
-        self.__node_manager = self.__make_rabbit_settings(args)
+        self.__ASYNCHRONOUS = args['is_synchronous_mode']
         self.__test_publication = args['test_publication']
-        self.__ASYNCHRONOUS = self.__check_asynchronous_mode(args)
+        self.__node_manager = self.__make_rabbit_settings(args)
         self.__server_connector = self.__init_server_connector(args, self.__node_manager)
-
-    def __check_asynchronous_mode(self, args):
-        asy = esgfpid.defaults.RABBIT_IS_ASYNCHRONOUS
-        if 'is_synchronous_mode' in args:
-            if args['is_synchronous_mode'] is None:
-                pass
-            else:
-                asy = args['is_synchronous_mode']:
-        return asy
-
 
     def __init_server_connector(self, args, node_manager):
         if self.__ASYNCHRONOUS:

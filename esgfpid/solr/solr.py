@@ -42,9 +42,9 @@ class SolrInteractor(object):
     '''
     def __init__(self, **args):
 
-        if self.__should_be_switched_off(args):
+        if args['switched_off'] == True:
             logdebug(LOGGER, 'Initializing solr module without access..')
-            self.__init_without_access(args)
+            self.__init_without_access()
             logdebug(LOGGER, 'Initializing solr module without access.. done')
 
         else:
@@ -52,16 +52,7 @@ class SolrInteractor(object):
             self.__init_with_access(args)
             logdebug(LOGGER, 'Initializing solr module.. done')
 
-    def __should_be_switched_off(self, args):
-        if 'switched_off' in args.keys() and args['switched_off'] == True:
-            return True
-        else:
-            return False
-
-    def is_switched_off(self):
-        return not self.__switched_on
-
-    def __init_without_access(self, args):
+    def __init_without_access(self):
         self.__switched_on = False
         self.__prefix = None
         self.__solr_server_connector = None
@@ -73,11 +64,10 @@ class SolrInteractor(object):
         self.__make_server_connector(args)
 
     def __check_presence_of_args(self, args):
-        mandatory_args = ['solr_url', 'prefix']
-        optional_args = ['https_verify', 'disable_insecure_request_warning', 'switched_off']
+        mandatory_args = ['solr_url', 'prefix', 'https_verify',
+            'disable_insecure_request_warning', 'switched_off']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.check_noneness_of_mandatory_args(args, mandatory_args)
-        esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
 
     def __make_server_connector(self, args):
         self.__solr_server_connector = esgfpid.solr.serverconnector.SolrServerConnector(

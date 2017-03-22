@@ -34,15 +34,13 @@ class SolrServerConnector(object):
         self.__disable_warning_if_desired(args)
 
     def __check_presence_of_args(self, args):
-        mandatory_args = ['solr_url']
-        optional_args = ['https_verify', 'disable_insecure_request_warning']
+        mandatory_args = ['solr_url', 'https_verify', 'disable_insecure_request_warning']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.check_noneness_of_mandatory_args(args, mandatory_args)
-        esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
 
     def __set_attributes(self, args):
         self.__solr_url = args['solr_url'].strip('/')
-        self.__https_verify = args['https_verify'] or esgfpid.defaults.SOLR_HTTPS_VERIFY_DEFAULT
+        self.__https_verify = args['https_verify']
         self.__solr_headers = {'Accept': 'application/json,text/json', 'Content-Type': 'application/json'}
 
     def __disable_warning_if_desired(self, args):

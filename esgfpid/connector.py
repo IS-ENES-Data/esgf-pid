@@ -128,6 +128,8 @@ class Connector(object):
         LOGGER.debug(40*'-')
         LOGGER.debug('Creating PID connector object ..')
         self.__check_presence_of_args(args)
+        self.__check_rabbit_credentials_completeness(args)
+        self.__define_defaults_for_optional_args(args)
         self.__store_some_args(args)
         self.__throw_error_if_prefix_not_in_list()
         self.__coupler = esgfpid.coupling.Coupler(**args)
@@ -151,9 +153,42 @@ class Connector(object):
             'message_service_synchronous'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-        esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
+
+    def __define_defaults_for_optional_args(self, args):
         
-        # Check RabbitMQ credentials:
+        if 'data_node' not in args or args['data_node'] is None:
+            ''' May be None, only needed for some operations.
+                If it is needed, its presence is checked later. '''
+            args['data_node'] = None
+
+        if 'thredds_service_path' not in args or args['thredds_service_path'] is None:
+            ''' May be None, only needed for some operations.
+                If it is needed, its presence is checked later. '''
+            args['thredds_service_path'] = None
+
+        if 'test_publication' not in args or args['test_publication'] is None:
+            args['test_publication'] = False
+
+        if 'solr_url' not in args or args['solr_url'] is None:
+            args['solr_url']
+            args['solr_switched_off'] = True
+
+        if 'solr_switched_off' not in args or args['solr_switched_off'] is None:
+            args['solr_switched_off'] = False
+
+        if 'solr_https_verify' not in args or args['solr_https_verify'] is None:
+            args['solr_https_verify'] = esgfpid.defaults.SOLR_HTTPS_VERIFY_DEFAULT
+
+        if 'disable_insecure_request_warning' not in args or args['disable_insecure_request_warning'] is None:
+            args['disable_insecure_request_warning'] = False
+
+        if 'message_service_synchronous' not in args or args['message_service_synchronous'] is None:
+            args['message_service_synchronous'] = esgfpid.defaults.RABBIT_IS_ASYNCHRONOUS
+
+        if 'consumer_solr_url' not in args or args['consumer_solr_url'] is None:
+            args['consumer_solr_url'] = None
+
+    def __check_rabbit_credentials_completeness(self, args):
         for credentials in args['messaging_service_credentials']:
             if 'url' not in credentials:
                 raise ArgumentError('Missing URL for messaging service!')

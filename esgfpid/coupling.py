@@ -9,44 +9,31 @@ LOGGER.addHandler(logging.NullHandler())
 class Coupler(object):
 
     def __init__(self, **args):
-        self.__create_all_attributes()
         self.__create_message_sender(args)
-        self.__create_solr_sender(args)
-
-    def __create_all_attributes(self):
-        self.__rabbit_message_sender = None
-        self.__solr_sender = None
+        self.__create_solr_sender(args)     
 
     def __create_message_sender(self, args):
+        self.__complete_credentials_for_open_nodes(args)
+        self.__rabbit_message_sender = esgfpid.rabbit.rabbit.RabbitMessageSender(
+            exchange_name=args['messaging_service_exchange_name'],
+            credentials=args['messaging_service_credentials'],
+            test_publication=args['test_publication'],
+            is_synchronous_mode=args['message_service_synchronous']
+        )
 
+    def __complete_credentials_for_open_nodes(self, args):
         credentials = args['messaging_service_credentials']
         for cred in credentials:
             if 'password' not in cred:
                 cred['password'] = 'jzlnL78ZpExV#_QHz'
 
-        if 'test_publication' in args:
-            test_publication = args['test_publication']
-        else:
-            test_publication = False
-
-        self.__rabbit_message_sender = esgfpid.rabbit.rabbit.RabbitMessageSender(
-            exchange_name=args['messaging_service_exchange_name'],       # mandatory
-            credentials=args['messaging_service_credentials'],
-            test_publication=test_publication,
-            is_synchronous_mode=args['message_service_synchronous']
-        )
-
     def __create_solr_sender(self, args):
-
-        # Some use cases need no solr, so solr url is optional:
-        if args['solr_url'] is None:
-            args['solr_switched_off']=True
-
         self.__solr_sender = esgfpid.solr.solr.SolrInteractor(
             solr_url=args['solr_url'],
             prefix=args['handle_prefix'],
             https_verify=args['solr_https_verify'],
-            switched_off=args['solr_switched_off']
+            switched_off=args['solr_switched_off'],
+            disable_insecure_request_warning = ['disable_insecure_request_warning']
         )
 
     ### Communications with rabbit
@@ -86,7 +73,6 @@ class Coupler(object):
     ### Communications with solr
 
     def retrieve_datasethandles_or_versionnumbers_of_allversions(self, **args):
-        
         mandatory_args = ['drs_id']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.check_noneness_of_mandatory_args(args, mandatory_args)
