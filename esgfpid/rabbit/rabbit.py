@@ -133,20 +133,3 @@ class RabbitMessageSender(object):
                 )
 
         return node_manager
-
-
-    def __get_urls_as_list(self, urls_open):
-
-        if isinstance(urls_open, basestring):
-            return [urls_open]
-
-        elif urls_open is None:
-            logwarn(LOGGER, 'No fallback RabbitMQ URLs specified!')
-            return []
-
-        elif not isinstance(urls_open, (list, tuple)):
-            msg = ('RabbitMQ URLs are neither list nor string, but %s: %s' %
-               (type(args['urls_fallback']), args['urls_fallback']))
-            raise ValueError(msg)
-        else:
-            return urls_open
