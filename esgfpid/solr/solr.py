@@ -1,13 +1,3 @@
-'''
-This module provides the solr facade for the rest of the library.
-
-All requests to solr are addressed to this class.
-It redirects the queries for the various tasks to the various submodules, and
-redirects the actual interaction with the solr server to another specific
-submodule.
-
-'''
-
 import logging
 import requests
 import json
@@ -22,8 +12,34 @@ from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+'''
+This class provides the solr facade for the rest of
+the library.
+
+All requests to solr are addressed to an instance of
+this class.
+
+It redirects the calls for the various tasks to the
+responsible submodules, which create solr queries and
+can parse results (:py:mod:`~esgfpid.solr.tasks`)
+
+The actual interaction with solr server (sending of
+a ready-made query, receiving the response) is handled 
+by another class
+(:py:class:`~esgfpid.solr.serverconnector.SolrServerConnector`).
+
+'''
 class SolrInteractor(object):
 
+    # Constructor:
+
+    '''
+    :param switched_off: Mandatory. Boolean.
+    :param prefix: Mandatory if not switched off.
+    :param solr_url: Mandatory if not switched off.
+    :param https_verify: Mandatory if not switched off.
+    :param disable_insecure_request_warning: Mandatory if not switched off.
+    '''
     def __init__(self, **args):
 
         if self.__should_be_switched_off(args):
@@ -70,6 +86,20 @@ class SolrInteractor(object):
             disable_insecure_request_warning = args['disable_insecure_request_warning']
         )
 
+    # Getter
+
+    '''
+    State getter.
+
+    :returns: True if the solr module is switched off, i.e.
+        it either received a switch-off flag from the library
+        or had no solr URL passed. False if not switched off.
+    '''
+    def is_switched_off(self):
+        return not self.__switched_on
+
+    # Methods called by tasks:
+
     def send_query(self, query):
         ''' This method is called by the tasks. It is redirected to the submodule.'''
         if self.__switched_on:
@@ -89,6 +119,8 @@ class SolrInteractor(object):
     #####################
     ### Various tasks ###
     #####################
+
+    # Task 1
 
     def retrieve_file_handles_of_same_dataset(self, **args):
         '''
@@ -113,6 +145,8 @@ class SolrInteractor(object):
         args['prefix'] = self.__prefix
         file_handles = finder.retrieve_file_handles_of_same_dataset(**args)
         return file_handles
+
+    # Task 2
 
     def retrieve_datasethandles_or_versionnumbers_of_allversions(self, drs_id):
         LOGGER.debug('Looking for dataset handles or version numbers of '+

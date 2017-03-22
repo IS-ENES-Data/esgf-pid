@@ -10,18 +10,24 @@ from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+'''
+This class is only responsible for sending queries
+(that were assembled elsewhere) to a solr instance,
+validate and parse the result and return it.
+
+It basically only provides one method,
+:func:`~solr.SolrServerConnector.send_query`.
+
+'''
 class SolrServerConnector(object):
+
     '''
-    The SolrServerConnector only provides one method, send_query(query).
+    Create an instance.
 
-    It raises SolrError exceptions in various situations:
-     - Connection problems
-     - Response is empty, None, or invalid JSON
-     - Response returns 404 or any other HTTP code other than 200
-
-    It returns a JSON response. It never returns None.
+    :param solr_url: Mandatory.
+    :param https_verify: Mandatory. Boolean.
+    :param disable_insecure_request_warning: Mandatory. Boolean.
     '''
-
     def __init__(self, **args):
         self.__check_presence_of_args(args)
         self.__set_attributes(args)
@@ -49,6 +55,17 @@ class SolrServerConnector(object):
         from requests.packages.urllib3.exceptions import InsecureRequestWarning
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+    '''
+    Send a message to a solr instance.
+
+    This raises SolrError exceptions in various situations:
+     - Connection problems
+     - Response is empty, None, or invalid JSON
+     - Response returns 404 or any other HTTP code other than 200
+
+     :raises: esgfpid.exceptions.SolrError
+     :return: A JSON response. It never returns None.
+    '''
     def send_query(self, query):
         response = self.__get_request_to_solr(query)
         self.__check_response_for_error_codes(response)
