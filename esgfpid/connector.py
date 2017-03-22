@@ -191,13 +191,12 @@ class Connector(object):
     def __check_rabbit_credentials_completeness(self, args):
         for credentials in args['messaging_service_credentials']:
             if 'url' not in credentials:
-                raise ArgumentError('Missing URL for messaging service!')
+                raise esgfpid.exceptions.ArgumentError('Missing URL for messaging service!')
             if 'user' not in credentials:
-                raise ArgumentError('Missing user for messaging service "'+credentials['url']+'"!')
+                raise esgfpid.exceptions.ArgumentError('Missing user for messaging service "'+credentials['url']+'"!')
             if 'password' not in credentials:
                 # Remove exception to enable use of open node!
-                raise ArgumentError('Missing password for messaging service "'+credentials['url']+'"!')
-
+                raise esgfpid.exceptions.ArgumentError('Missing password for messaging service "'+credentials['url']+'"!')
 
     def __store_some_args(self, args):
         self.prefix = args['handle_prefix']

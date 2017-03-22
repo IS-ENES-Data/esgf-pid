@@ -101,7 +101,7 @@ class NodeManager(object):
                      of this instance.
     '''
     def add_open_node(self, **kwargs):
-        raise ArgumentError('Open nodes no longer supported! (Messaging service "'+credentials['url']+'")')
+        raise esgfpid.exceptions.ArgumentError('Open nodes no longer supported! (Messaging service "'+credentials['url']+'")')
         #kwargs['is_open'] = True
         #added = node_info = self.__add_node(self.__open_nodes, self.__open_nodes_archive, **kwargs)
         #logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
