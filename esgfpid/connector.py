@@ -198,6 +198,10 @@ class Connector(object):
                 # Remove exception to enable use of open node!
                 raise esgfpid.exceptions.ArgumentError('Missing password for messaging service "'+credentials['url']+'"!')
 
+    '''
+    These are not (only) needed during initialisation, but
+    (also) later on.
+    '''
     def __store_some_args(self, args):
         self.prefix = args['handle_prefix']
         self.__thredds_service_path = args['thredds_service_path']

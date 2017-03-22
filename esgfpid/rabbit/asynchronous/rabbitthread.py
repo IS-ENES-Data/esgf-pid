@@ -378,7 +378,7 @@ class RabbitThread(threading.Thread):
     def reset_delivery_number(self):
         return self.__feeder.reset_delivery_number()
 
-    ''' Called by builder, only for logging. '''
+    ''' Called by feeder. Called by builder, only for logging. '''
     def get_exchange_name(self):
         if self.__fallback_exchange is not None:
             return self.__fallback_exchange

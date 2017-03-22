@@ -17,7 +17,15 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 '''
-Created in the Coupler class.
+This class provides the library with a facade to
+a module that handles connections to RabbitMQ in
+a synchronous or asynchronous way.
+
+It is basically a facade/wrapper for either a
+:py:class:`~esgfpid.rabbit.synchronous.SynchronousServerConnector`
+or a 
+:py:class:`~esgfpid.rabbit.asynchronous.asynchronous.AsynchronousServerConnector`
+
 '''
 class RabbitMessageSender(object):
 
@@ -63,14 +71,68 @@ class RabbitMessageSender(object):
             # and this was not modified in the synchronous module.
             #return esgfpid.rabbit.synchronous.SynchronousServerConnector(**args)
 
+
+    '''
+    Open a synchronous connection to RabbitMQ.
+
+    This only has an effect if the RabbitMessageSender is in
+    synchronous mode.
+
+    Please see: :func:`~rabbit.synchronous.SynchronousServerConnector.open_rabbit_connection`.
+
+    If this is not called before the first message is sent,
+    the first sent message automatically opens a connection.
+
+    Opening and closing the connection is provided as
+    separate methods because clients that know that they
+    want to send many messages one after the other should
+    preferably open and close the synchronous connection
+    themselves, to avoid opening and reclosing all the time.
+
+    This is called for example by the publish assistant,
+    which opens a connection, sends all the messages that
+    belong to one dataset, and closes it again.
+    '''
     def open_rabbit_connection(self):
         if not self.__ASYNCHRONOUS:
             return self.__server_connector.open_rabbit_connection()
 
+    '''
+    Close a synchronous connection to RabbitMQ.
+
+    This only has an effect if the RabbitMessageSender is in
+    synchronous mode.
+
+    Synchronous connections are never closed automatically.
+    However, if the client forgets to close, it does not
+    block the library. It is still preferred that the client
+    closes the connection as soon as he knows he won't send
+    any more messages (for a while).
+    Otherwise, the connection is kept open and will send
+    heartbeats from time to time.
+
+    This is called for example by the publish assistant,
+    which opens a connection, sends all the messages that
+    belong to one dataset, and closes it again.
+    '''
     def close_rabbit_connection(self):
         if not self.__ASYNCHRONOUS:
             return self.__server_connector.close_rabbit_connection()
 
+
+    '''
+
+    Close a thread that communicates with RabbitMQ asynchronously,
+    in a gentle way. This means that the thread does try to send
+    the last pending messages and receive the last pending
+    delivery confirmations, up to a maximum waiting time.
+
+    This only has an effect if the RabbitMessageSender is in
+    asynchronous mode.
+
+    Please see documentation of asynchronous rabbit module
+    (:func:`~rabbit.asynchronous.asynchronous.AsynchronousRabbitConnector.force_finish_rabbit_thread`).
+    '''
     def finish(self):
         if self.__ASYNCHRONOUS:
             self.__server_connector.finish_rabbit_thread()
@@ -81,10 +143,27 @@ class RabbitMessageSender(object):
         else:
             return None
 
+    '''
+    Start a thread that communicates with RabbitMQ asynchronously.
+
+    This only has an effect if the RabbitMessageSender is in
+    asynchronous mode.
+
+    Please see documentation of asynchronous rabbit module
+    (:func:`~rabbit.asynchronous.asynchronous.AsynchronousRabbitConnector.start_rabbit_thread`).
+    '''
     def start(self):
         if self.__ASYNCHRONOUS:
             self.__server_connector.start_rabbit_thread()
 
+    '''
+    Force-close a thread that communicates with RabbitMQ asynchronously.
+
+    This only has an effect if the RabbitMessageSender is in
+    asynchronous mode.
+    Please see documentation of asynchronous rabbit module
+    (:func:`~rabbit.asynchronous.asynchronous.AsynchronousRabbitConnector.force_finish_rabbit_thread`).
+    '''
     def force_finish(self):
         if self.__ASYNCHRONOUS:
             self.__server_connector.force_finish_rabbit_thread()
@@ -97,13 +176,30 @@ class RabbitMessageSender(object):
         if self.__ASYNCHRONOUS:
             return self.__server_connector.get_leftovers()
 
+    '''
+    Send a message to RabbitMQ.
+
+    In asynchronous mode, we cannot tell whether the
+    delivery as successful, as the delivery confirmation
+    will arrive later.
+
+    In synchronous mode, if the delivery was not successful,
+    an exception is raised.
+
+    :param: JSON message as string or dictionary. It should
+        include its routing key as a dictionary entry with
+        key "ROUTING_KEY", Otherwise a default routing key
+        will be used to send the message.
+    :raises: esgfpid.exceptions.MessageNotDeliveredException:
+        In case the message was not delivered. Only in
+        synchronous mode.
+    '''
     def send_message_to_queue(self, message):
         if self.__test_publication == True:
             message['test_publication'] = True
         self.__server_connector.send_message_to_queue(message)
 
     def __make_rabbit_settings(self, args):
-
         node_manager = esgfpid.rabbit.nodemanager.NodeManager()
 
         # Add all RabbitMQ nodes:

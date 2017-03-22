@@ -46,10 +46,11 @@ class AsynchronousRabbitConnector(object):
     '''
     Constructor for the asychronous rabbit connection module.
 
-    :param exchange_name: Name of the RabbitMQ to publish to.
-    :param url_preferred: URL of the RabbitMQ host to first try to connect to.
-    :param urls_fallback: List of RabbitMQ URLs that are tried of the first one failed.
-    :param credentials: RabbitMQ credentials of type TODO.
+    This does not open a connection or start a thread yet.
+
+    :param node_manager: NodeManager object that contains 
+        the info about all the available RabbitMQ instances,
+        their credentials, their priorities.
 
     '''
     def __init__(self, node_manager):

@@ -7,6 +7,21 @@ from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+'''
+Retrieves the routing key from the message, checks
+the message's validity and returns
+the string message and the routing key string.
+
+If message is string, convert to JSON (dictionary).
+If message is dictionary, check if it's valid JSON.
+Retrieve the routing key, which should be included
+with the key "ROUTING_KEY". Otherwise, a default
+routing key is added.
+
+:param msg: Message to be sent to RabbitMQ as JSON
+    string or dictionary.
+:return: Routing key string and string message as tuple.
+'''
 def get_routing_key_and_string_message_from_message_if_possible(msg):
 
     # Try to convert message to json:
