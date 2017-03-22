@@ -100,7 +100,7 @@ class RabbitMessageSender(object):
     def send_message_to_queue(self, message):
         if self.__test_publication == True:
             message['test_publication'] = True
-        return self.__server_connector.send_message_to_queue(message)
+        self.__server_connector.send_message_to_queue(message)
 
     def __make_rabbit_settings(self, args):
 

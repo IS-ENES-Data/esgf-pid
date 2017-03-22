@@ -39,7 +39,7 @@ class Coupler(object):
     ### Communications with rabbit
 
     def send_message_to_queue(self, message):
-        success = self.__rabbit_message_sender.send_message_to_queue(message)
+        self.__rabbit_message_sender.send_message_to_queue(message)
         return success
 
     ### For synchronous
