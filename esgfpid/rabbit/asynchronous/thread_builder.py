@@ -337,7 +337,7 @@ class ConnectionBuilder(object):
         # start at the first nodes again...
         else:
             self.__reconnect_counter += 1;
-            if self.__reconnect_counter <= self.__max_reconnection_tries
+            if self.__reconnect_counter <= self.__max_reconnection_tries:
                 reopen_seconds = self.__wait_seconds_before_reconnect
                 logdebug(LOGGER, 'Connection failure: Failed connecting to all hosts. Waiting %s seconds and starting over.', reopen_seconds)
                 self.__node_manager.reset_nodes()
