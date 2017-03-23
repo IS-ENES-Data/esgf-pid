@@ -250,8 +250,8 @@ if __name__ == '__main__':
 
         if 'api' in param.modules or 'all' in param.modules:
 
-            from testcases.api_tests import ApiTestCase
-            tests = unittest.TestLoader().loadTestsFromTestCase(ApiTestCase)
+            from testcases.connector_tests import ConnectorTestCase
+            tests = unittest.TestLoader().loadTestsFromTestCase(ConnectorTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n

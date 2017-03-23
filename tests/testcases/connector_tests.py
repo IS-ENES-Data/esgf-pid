@@ -27,7 +27,7 @@ from resources.TESTVALUES import CONNECTOR_ARGS_MIN
 # every time:
 OPEN_ALLOWED = False
 
-class ApiTestCase(unittest.TestCase):
+class ConnectorTestCase(unittest.TestCase):
 
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
