@@ -39,6 +39,7 @@ class Coupler(object):
 
     '''
     def __init__(self, **args):
+        self.args = args # only for unit testing
         self.__create_message_sender(args)
         self.__create_solr_sender(args)     
 

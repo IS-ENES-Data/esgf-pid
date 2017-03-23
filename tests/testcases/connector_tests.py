@@ -280,6 +280,111 @@ class ConnectorTestCase(unittest.TestCase):
         self.assertIsNotNone(testconnector._Connector__consumer_solr_url)
         self.assertIsNotNone(wizard._DatasetPublicationAssistant__consumer_solr_url)
 
+
+    '''
+    Test whether the correct defaults are set
+    if the connector is initialized with the minimum
+    arguments.
+
+    '''
+    def test_init_default_args_to_coupler(self):
+
+        # Preparations: Minimum args for connector
+        args = self.get_connector_args()
+
+        # Run code to be tested: Connector constructor
+        testconnector = esgfpid.Connector(**args)
+
+        # Check results: Check if the correct defaults
+        # were set (i.e. passed to coupler.)
+        coupler_args = testconnector._Connector__coupler.args
+        self.assertEquals(coupler_args['data_node'],None)
+        self.assertEquals(coupler_args['thredds_service_path'],None)
+        self.assertEquals(coupler_args['test_publication'],False)
+        self.assertEquals(coupler_args['solr_url'],None)
+        self.assertEquals(coupler_args['solr_switched_off'],True)
+        self.assertEquals(coupler_args['solr_https_verify'],False)
+        self.assertEquals(coupler_args['disable_insecure_request_warning'],False)
+        self.assertEquals(coupler_args['message_service_synchronous'],False)
+        self.assertEquals(coupler_args['consumer_solr_url'],None)
+
+    '''
+    Check if solr is not switched off if an URL given.
+    '''
+    def test_init_solr_not_off(self):
+
+        # Preparations: Minimum args for connector
+        args = self.get_connector_args(
+            solr_url='foo'
+        )
+
+        # Run code to be tested: Connector constructor
+        testconnector = esgfpid.Connector(**args)
+
+        # Check results: Check if the correct defaults
+        # were set (i.e. passed to coupler.)
+        coupler_args = testconnector._Connector__coupler.args
+        self.assertEquals(coupler_args['solr_url'],'foo')
+        self.assertEquals(coupler_args['solr_switched_off'],False)
+
+    '''
+    Check if solr is not switched off if an URL given.
+    '''
+    def test_init_solr_off(self):
+
+        # Preparations: Minimum args for connector
+        args = self.get_connector_args()
+
+        # Run code to be tested: Connector constructor
+        testconnector = esgfpid.Connector(**args)
+
+        # Check results: Check if the correct defaults
+        # were set (i.e. passed to coupler.)
+        coupler_args = testconnector._Connector__coupler.args
+        self.assertEquals(coupler_args['solr_url'],None)
+        self.assertEquals(coupler_args['solr_switched_off'],True)
+
+    '''
+    Test whether the correct defaults are set
+    if the connector is initialized with the minimum
+    arguments.
+    '''
+    def test_init_not_default_args_to_coupler(self):
+
+        # Test variables
+        data_node = TESTVALUES['data_node']
+        thredds_service_path = TESTVALUES['thredds_service_path']
+        library_solr_url = TESTVALUES['solr_url']
+        consumer_solr_url = 'fake_solr_whatever'
+
+        # Preparations: Minimum args for connector
+        args = self.get_connector_args(
+            data_node=data_node,
+            thredds_service_path=thredds_service_path,
+            test_publication=True,
+            solr_url=library_solr_url,
+            solr_https_verify=True,
+            disable_insecure_request_warning=True,
+            message_service_synchronous=True,
+            consumer_solr_url=consumer_solr_url
+        )
+
+        # Run code to be tested: Connector constructor
+        testconnector = esgfpid.Connector(**args)
+
+        # Check results: Check if the correct defaults
+        # were set (i.e. passed to coupler.)
+        coupler_args = testconnector._Connector__coupler.args
+        self.assertEquals(coupler_args['data_node'],data_node)
+        self.assertEquals(coupler_args['thredds_service_path'],thredds_service_path)
+        self.assertEquals(coupler_args['test_publication'],True)
+        self.assertEquals(coupler_args['solr_url'],library_solr_url)
+        self.assertEquals(coupler_args['solr_switched_off'],False)
+        self.assertEquals(coupler_args['solr_https_verify'],True)
+        self.assertEquals(coupler_args['disable_insecure_request_warning'],True)
+        self.assertEquals(coupler_args['message_service_synchronous'],True)
+        self.assertEquals(coupler_args['consumer_solr_url'],consumer_solr_url)
+
     #
     # Publication
     #
