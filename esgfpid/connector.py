@@ -183,7 +183,7 @@ class Connector(object):
             args['disable_insecure_request_warning'] = False
 
         if 'message_service_synchronous' not in args or args['message_service_synchronous'] is None:
-            args['message_service_synchronous'] = esgfpid.defaults.RABBIT_IS_ASYNCHRONOUS
+            args['message_service_synchronous'] = not esgfpid.defaults.RABBIT_IS_ASYNCHRONOUS
 
         if 'consumer_solr_url' not in args or args['consumer_solr_url'] is None:
             args['consumer_solr_url'] = None

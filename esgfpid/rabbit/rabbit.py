@@ -56,7 +56,7 @@ class RabbitMessageSender(object):
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
-        self.__ASYNCHRONOUS = args['is_synchronous_mode']
+        self.__ASYNCHRONOUS = not args['is_synchronous_mode']
         self.__test_publication = args['test_publication']
         self.__node_manager = self.__make_rabbit_settings(args)
         self.__server_connector = self.__init_server_connector(args, self.__node_manager)
