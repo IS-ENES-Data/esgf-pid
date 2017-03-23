@@ -306,7 +306,7 @@ class Connector(object):
 
         # Check if data node is given
         if self.__data_node is None:
-            msg = 'No data_node given (but it is mandatory for publication)'
+            msg = 'No data_node given (but it is mandatory for unpublication)'
             logwarn(LOGGER, msg)
             raise esgfpid.exceptions.ArgumentError(msg)
 
@@ -353,7 +353,8 @@ class Connector(object):
 
         # Check if solr has access:
         if self.__coupler.is_solr_switched_off():
-            pass
+            msg = 'Unpublication of all versions. Without solr access, we cannot identify the versions, so the consumer will have to take care of this.'
+            logdebug(LOGGER, msg)
             #raise esgfpid.exceptions.ArgumentError('No solr access. Solr access is needed for publication. Please provide access to a solr index when initializing the library')
 
         # Unpublish
