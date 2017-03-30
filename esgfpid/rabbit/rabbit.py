@@ -1,16 +1,11 @@
 import logging
-import datetime
-import json
 import pika
-import time
-import random
 import esgfpid.utils
-import esgfpid.defaults
-import esgfpid.rabbit.synchronous
-import esgfpid.rabbit.asynchronous
-import esgfpid.rabbit.rabbitutils
-import esgfpid.rabbit.nodemanager
 from esgfpid.utils import logwarn
+from .nodemanager import NodeManager
+from .asynchronous import AsynchronousRabbitConnector
+from .synchronous import SynchronousRabbitConnector
+
 
 # Normal logger:
 LOGGER = logging.getLogger(__name__)
