@@ -154,9 +154,9 @@ class NodeManager(object):
             node_info_dict['priority'] = 'zzzz_last'
 
         # Get some defaults:
-        socket_timeout = esgfpid.defaults.RABBIT_ASYN_SOCKET_TIMEOUT
-        connection_attempts = esgfpid.defaults.RABBIT_ASYN_CONNECTION_ATTEMPTS
-        retry_delay = esgfpid.defaults.RABBIT_ASYN_CONNECTION_RETRY_DELAY_SECONDS
+        socket_timeout = esgfpid.defaults.RABBIT_PIKA_SOCKET_TIMEOUT
+        connection_attempts = esgfpid.defaults.RABBIT_PIKA_CONNECTION_ATTEMPTS
+        retry_delay = esgfpid.defaults.RABBIT_PIKA_CONNECTION_RETRY_DELAY_SECONDS
         
         # Make pika connection params
         # https://pika.readthedocs.org/en/0.9.6/connecting.html

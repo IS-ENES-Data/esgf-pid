@@ -54,14 +54,14 @@ class SynchronousRabbitConnector(object):
         of RabbitMQ hosts. Note that if there is 3 hosts, and we try 2
         times, this means 6 connection tries in total.
         '''
-        self.__max_reconnection_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
+        self.__max_reconnection_tries = defaults.RABBIT_RECONNECTION_MAX_TRIES
 
         '''
         How many seconds to wait before reconnecting after having tried
         all hosts. (There is no waiting time trying to connect to a different
         host after one fails).
         '''
-        self.__wait_seconds_before_reconnect = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+        self.__wait_seconds_before_reconnect = defaults.RABBIT_RECONNECTION_SECONDS
 
         '''
         To see how much time it takes to connect. Once a connection is
@@ -83,8 +83,8 @@ class SynchronousRabbitConnector(object):
 
         # Defaults:
         self.__mandatory_flag = esgfpid.defaults.RABBIT_MANDATORY_DELIVERY
-        self.__max_tries = esgfpid.defaults.RABBIT_SYN_MAX_TRIES
-        self.__timeout_milliseconds = esgfpid.defaults.RABBIT_SYN_TIMEOUT_MILLISEC
+        self.__max_tries = esgfpid.defaults.RABBIT_SYN_MESSAGE_MAX_TRIES
+        self.__timeout_milliseconds = esgfpid.defaults.RABBIT_SYN_MESSAGE_TIMEOUT_MILLISEC
         self.__candidate_fallback_exchange_name = defaults.RABBIT_FALLBACK_EXCHANGE_NAME
 
         # Other settings:

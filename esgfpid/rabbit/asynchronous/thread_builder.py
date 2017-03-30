@@ -65,14 +65,14 @@ class ConnectionBuilder(object):
         of RabbitMQ hosts. Note that if there is 3 hosts, and we try 2
         times, this means 6 connection tries in total.
         '''
-        self.__max_reconnection_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
+        self.__max_reconnection_tries = defaults.RABBIT_RECONNECTION_MAX_TRIES
 
         '''
         How many seconds to wait before reconnecting after having tried
         all hosts. (There is no waiting time trying to connect to a different
         host after one fails).
         '''
-        self.__wait_seconds_before_reconnect = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+        self.__wait_seconds_before_reconnect = defaults.RABBIT_RECONNECTION_SECONDS
 
         '''
         Set of all tried hosts, for logging.
@@ -463,7 +463,7 @@ class ConnectionBuilder(object):
             loginfo(LOGGER, 'Connection to %s closed.', self.__node_manager.get_connection_parameters().host)
             self.make_permanently_closed_by_error(connection, reply_text)
         else:
-            #reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+            #reopen_seconds = defaults.RABBIT_RECONNECTION_SECONDS
             #self.__wait_and_trigger_reconnection(connection, reopen_seconds)
             self.on_connection_error(connection, reply_text)
 
@@ -539,7 +539,7 @@ class ConnectionBuilder(object):
             # TODO This is the same code as above. Make a give_up function from it?
             #self.statemachine.set_to_permanently_unavailable()
             #self.statemachine.detail_could_not_connect = True
-            #max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
+            #max_tries = defaults.RABBIT_RECONNECTION_MAX_TRIES
             errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s until received a force-finish. Giving up. No PID requests will be sent.' % list(self.__all_hosts_that_were_tried))
             logerror(LOGGER, errormsg)
             raise PIDServerException(errormsg)
