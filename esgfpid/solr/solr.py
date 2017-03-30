@@ -3,6 +3,7 @@ import requests
 import json
 import esgfpid.utils
 import esgfpid.solr.tasks.filehandles_same_dataset
+import esgfpid.solr.tasks.all_versions_of_dataset
 import esgfpid.solr.serverconnector
 import esgfpid.defaults
 import esgfpid.exceptions
@@ -42,12 +43,22 @@ class SolrInteractor(object):
     '''
     def __init__(self, **args):
 
+        mandatory_args = [
+            'switched_off',
+            'prefix',
+            'solr_url',
+            'https_verify',
+            'disable_insecure_request_warning'
+        ]
+        esgfpid.utils.check_presence_of_mandatory_args(args, ['switched_off'])
+
         if args['switched_off'] == True:
             logdebug(LOGGER, 'Initializing solr module without access..')
             self.__init_without_access()
             logdebug(LOGGER, 'Initializing solr module without access.. done')
 
         else:
+            esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
             logdebug(LOGGER, 'Initializing solr module..')
             self.__init_with_access(args)
             logdebug(LOGGER, 'Initializing solr module.. done')
