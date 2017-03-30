@@ -5,7 +5,6 @@ import copy
 import datetime
 from esgfpid.utils import get_now_utc_as_formatted_string as get_now_utc_as_formatted_string
 import esgfpid.defaults as defaults
-import esgfpid.rabbit.connparams
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .exceptions import PIDServerException
 
