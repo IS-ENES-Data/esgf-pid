@@ -6,7 +6,7 @@ import datetime
 from esgfpid.utils import get_now_utc_as_formatted_string as get_now_utc_as_formatted_string
 import esgfpid.defaults as defaults
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
-from .exceptions import PIDServerException
+from ..exceptions import PIDServerException
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
