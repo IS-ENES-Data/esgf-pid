@@ -191,11 +191,11 @@ class RabbitMessageSender(object):
         self.__server_connector.send_message_to_queue(message)
 
     def __make_rabbit_settings(self, args):
-        node_manager = esgfpid.rabbit.nodemanager.NodeManager()
+        node_manager = NodeManager()
 
         # Add all RabbitMQ nodes:
         for cred in args['credentials']:
-
+            
             if 'priority' not in cred:
                 cred['priority'] = None
 
