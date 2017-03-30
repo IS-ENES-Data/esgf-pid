@@ -1,7 +1,7 @@
 import logging
 import pika
 import Queue
-import esgfpid.rabbit.rabbitutils as rabbitutils
+from .. import rabbitutils
 import esgfpid.defaults as defaults
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 
