@@ -65,7 +65,7 @@ class RabbitMessageSender(object):
         if self.__ASYNCHRONOUS:
             return esgfpid.rabbit.asynchronous.AsynchronousRabbitConnector(node_manager)
         else:
-            return esgfpid.rabbit.synchronous.SynchronousServerConnector(node_manager)
+            return esgfpid.rabbit.synchronous.SynchronousRabbitConnector(node_manager)
 
 
     '''

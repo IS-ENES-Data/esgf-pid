@@ -4,18 +4,18 @@ import json
 import pika
 import time
 import esgfpid.utils
-import esgfpid.defaults
-from . import rabbitutils
+import esgfpid.defaults as defaults
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 from esgfpid.exceptions import MessageNotDeliveredException
-
-
-# TODO fallback exchange name
+from esgfpid.utils import get_now_utc_as_formatted_string as get_now_utc_as_formatted_string
+from .. import rabbitutils as rabbitutils
+from ..exceptions import PIDServerException
 
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-class SynchronousServerConnector(object):
+class SynchronousRabbitConnector(object):
 
     '''
     Constructor for the sychronous rabbit connection module.
@@ -28,6 +28,8 @@ class SynchronousServerConnector(object):
 
     '''
     def __init__(self, nodemanager):
+
+        loginfo(LOGGER, 'Init of SynchronousRabbitConnector!!! Bla')
 
         '''
         NodeManager provices info about all
@@ -73,6 +75,10 @@ class SynchronousServerConnector(object):
         solution, this will be set:
         '''
         self.__fallback_exchange = None
+
+        ''' Set of all tried hosts, for logging. '''
+        self.__all_hosts_that_were_tried = set()
+
 
 
         # Defaults:
@@ -122,14 +128,14 @@ class SynchronousServerConnector(object):
                 # Log failure:
                 oldhost = self.__nodemanager.get_connection_parameters().host
                 time_passed = datetime.datetime.now() - self.__start_connect_time
-                loginfo(LOGGER, 'Failed connection to RabbitMQ at %s after %s seconds. Reason: %s.', oldhost, time_passed.total_seconds(), msg)
+                loginfo(LOGGER, 'Failed connection to RabbitMQ at %s after %s seconds.', oldhost, time_passed.total_seconds())
 
                 # If there is alternative URLs, try one of them:
                 if self.__nodemanager.has_more_urls():
                     logdebug(LOGGER, 'Connection failure: %s fallback URLs left to try.', self.__nodemanager.get_num_left_urls())
                     self.__nodemanager.set_next_host()
                     newhost = self.__nodemanager.get_connection_parameters().host
-                    loginfo(LOGGER, 'Connection failure: Trying to connect (now) to %s.', newhost)
+                    loginfo(LOGGER, 'Next connection attempt (now) %s.', newhost)
 
                 # If there is no URLs, reset the node manager to
                 # start at the first nodes again...
@@ -140,7 +146,7 @@ class SynchronousServerConnector(object):
                         logdebug(LOGGER, 'Connection failure: Failed connecting to all hosts. Waiting %s seconds and starting over.', reopen_seconds)
                         self.__nodemanager.reset_nodes()
                         newhost = self.__nodemanager.get_connection_parameters().host
-                        loginfo(LOGGER, 'Connection failure: Trying to connect (in %s seconds) to %s.', reopen_seconds, newhost)
+                        loginfo(LOGGER, 'Next connection attempt (in %s seconds) to %s.', reopen_seconds, newhost)
                         time.sleep(reopen_seconds)
 
                     # Give up after so many tries...
@@ -149,7 +155,7 @@ class SynchronousServerConnector(object):
                         errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s %s times. Giving up. No PID requests will be sent.' % (list(self.__all_hosts_that_were_tried) ,self.__max_reconnection_tries))
                         logerror(LOGGER, errormsg)
                         collected_errors = ' - '.join(self.__error_messages_during_init)
-                        LOGGER.warning('No connection possible. Errors: %s' % collected_errors)
+                        logwarn(LOGGER, 'No connection possible. Errors: %s' % collected_errors)
                         raise PIDServerException(errormsg)
 
     '''
@@ -162,9 +168,6 @@ class SynchronousServerConnector(object):
     def __try_connecting_to_next(self):
         success = False
 
-        # Select first/next host:
-        self.__nodemanager.set_next_host()
-
         # Open connection
         params = self.__nodemanager.get_connection_parameters()
         connection = self.__setup_rabbit_connection(params)
@@ -172,7 +175,7 @@ class SynchronousServerConnector(object):
         # If connection is ok, open channel
         if connection is not None and connection.is_open:
             self.__connection = connection
-            LOGGER.debug('Succeeded opening connection to '+str(params-host))
+            LOGGER.debug('Succeeded opening connection to '+str(params.host))
             channel = self.__setup_rabbit_channel()
 
             # If channel ok, success, yeah!
@@ -200,6 +203,7 @@ class SynchronousServerConnector(object):
     def __setup_rabbit_connection(self, params):
         LOGGER.debug('Setting up the connection with the RabbitMQ.')
         self.__start_connect_time = datetime.datetime.now()
+        self.__all_hosts_that_were_tried.add(params.host)
         
         try:
             time_now = get_now_utc_as_formatted_string()
@@ -228,9 +232,10 @@ class SynchronousServerConnector(object):
             self.__error_messages_during_init.append(msg)
             return None
 
-        except pika.exceptions.AMQPConnectionError:
+        except pika.exceptions.AMQPConnectionError as e:
             time_passed = datetime.datetime.now() - self.__start_connect_time
             time_seconds = time_passed.total_seconds()
+            error_name = e.__class__.__name__
             logerror(LOGGER, 'Caught AMQPConnectionError Exception after %s seconds during connection ("%s").', time_seconds, error_name)
             msg = ('Problem setting up the rabbit connection to %s.' % params.host)
             self.__error_messages_during_init.append(msg)
@@ -241,7 +246,7 @@ class SynchronousServerConnector(object):
             time_seconds = time_passed.total_seconds()
             error_name = e.__class__.__name__
             logerror(LOGGER, 'Error ("%s") during connection to %s, after %s seconds.',
-                params.host, error_name, time_seconds)
+                error_name, params.host, time_seconds)
             msg = ('Unexpected problem setting up the rabbit connection to %s (%s)' % (params.host, error_name))
             self.__error_messages_during_init.append(msg)
             raise e
@@ -301,9 +306,28 @@ class SynchronousServerConnector(object):
     def send_message_to_queue(self, message):
         self.__open_connection_if_not_open()
         routing_key, msg_string = rabbitutils.get_routing_key_and_string_message_from_message_if_possible(message)
-        success = self.__try_sending_message_several_times(routing_key, msg_string)
+        success = False
+        error_msg = None
+
+        try:
+            success = self.__try_sending_message_several_times(routing_key, msg_string)
+
+        except pika.exceptions.UnroutableError:
+            logerror(LOGGER, 'Refused message with routing key "%s".' % routing_key)
+            body_json = json.loads(msg_string)
+            body_json, new_routing_key = rabbitutils.add_emergency_routing_key(body_json)
+            logerror(LOGGER, 'Refused message with routing key "%s". Resending with "%s".' % (routing_key, new_routing_key))
+            routing_key = new_routing_key
+            try:
+                success = self.__try_sending_message_several_times(routing_key, msg_string)
+            except pika.exceptions.UnroutableError:
+                error_msg = 'The RabbitMQ node refused a message a second time'
+                error_msg += ' with the original routing key "%s" and the emergency routing key "%s").' % (body_json['original_routing_key'], routing_key)
+                error_msg += ' Dropping the message.'
+                logerror(LOGGER, error_msg)
+
         if not success:
-            raise MessageNotDeliveredException(message)
+            raise MessageNotDeliveredException(error_msg, msg_string)
 
     def __open_connection_if_not_open(self):
         if not self.__communication_established:
@@ -329,17 +353,17 @@ class SynchronousServerConnector(object):
 
             # Check if it was delivered:
             if delivered_now:
-                LOGGER.debug('Successful delivery of message with routing key "'+str(routing_key)+'"!')
-                LOGGER.debug("Delivered after "+str(counter)+" times!")
+                logdebug(LOGGER, 'Successful delivery of message with routing key "%s"!', routing_key)
+                logdebug(LOGGER, 'Delivered after %i times!', counter)
                 message_delivered = True
             else:
-                LOGGER.debug("Not delivered, waiting "+str(self.__timeout_milliseconds)+" milliseconds before delivering it again!")
+                logdebug(LOGGER, 'Not delivered, waiting %i milliseconds before delivering it again!', self.__timeout_milliseconds)
                 time.sleep(self.__timeout_milliseconds/1000)
 
             # Increment counter, check if we have reached the max:
             if counter == self.__max_tries:
                 max_tries_reached = True
-                LOGGER.debug("Tried "+str(self.__max_tries)+" times, giving up!")
+                logdebug(LOGGER, 'Tried %i times, giving up!', self.__max_tries)
             counter += 1
 
         # Return with or without success:
@@ -352,8 +376,8 @@ class SynchronousServerConnector(object):
             self.__avoid_connection_shutdown()
             
         except pika.exceptions.UnroutableError:
-            LOGGER.error('Message could not be routed to any queue, maybe none was declared yet.')
-            # TODO
+            logerror(LOGGER, 'Message could not be routed to any queue, maybe none was declared yet.')
+            raise
 
         return delivered
 
