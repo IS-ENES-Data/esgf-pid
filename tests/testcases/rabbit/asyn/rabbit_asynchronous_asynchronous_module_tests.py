@@ -15,9 +15,13 @@ import os
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+import globalvar
+if globalvar.QUICK_ONLY:
+    print('Skipping slow tests in module "%s".' % __name__)
+
 class RabbitAsynModuleTestCase(unittest.TestCase):
 
-    SLOW = True
+    slow_message = '\nRunning a slow test (avoid by using -ls flag).'
 
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
@@ -26,11 +30,6 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
 
     def tearDown(self):
         LOGGER.info('#############################')
-
-    @staticmethod
-    def setNotSlow():
-        print('\nNo slow tests please!!!')
-        RabbitAsynModuleTestCase.SLOW = False
 
     def make_nodemanager(self):
         # Make a node manager with three nodes:
@@ -107,38 +106,36 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
         with self.assertRaises(OperationNotAllowed):
                 self.rabbit.send_many_messages_to_queue(['a','b','c'])
 
+    @unittest.skipIf(globalvar.QUICK_ONLY, '(this test is slow)')
     @mock.patch('esgfpid.rabbit.asynchronous.thread_builder.ConnectionBuilder._ConnectionBuilder__please_open_connection')
     def test_send_message_ok_no_confirm(self, open_connection_patch):
 
-        if not RabbitAsynModuleTestCase.SLOW:
-            print('\n\nSKIPPING A SLOW TEST...')
-        else:
-            print('\nThis test may take some seconds, as it waits for confirms that can not come...')
-            print('To avoid the slow test, run with option "-ls".')
+        print('\nThis test may take some seconds, as it waits for confirms that can not come...')
+        print(self.slow_message)
 
-            # Patch the method that tries to open a conneciton to RabbitMQ:
-            open_connection_patch = mock.MagicMock()
+        # Patch the method that tries to open a conneciton to RabbitMQ:
+        open_connection_patch = mock.MagicMock()
 
-            # Make a test object:
-            self.make_testrabbit()
+        # Make a test object:
+        self.make_testrabbit()
 
-            # Start the thread. This would normally trigger
-            # the connection, but we patched that part, and
-            # have to  it manually:
-            self.rabbit.start_rabbit_thread()
-            # This would usually be done by Rabbit via callback,
-            # when start_rabbit_thread is called:
-            self.thread._connection = self.connection
-            self.builder.on_connection_open(None)
-            self.builder.on_channel_open(self.channel)
+        # Start the thread. This would normally trigger
+        # the connection, but we patched that part, and
+        # have to  it manually:
+        self.rabbit.start_rabbit_thread()
+        # This would usually be done by Rabbit via callback,
+        # when start_rabbit_thread is called:
+        self.thread._connection = self.connection
+        self.builder.on_connection_open(None)
+        self.builder.on_channel_open(self.channel)
 
-            # Now run the code to be tested and close the rabbit:
-            self.rabbit.send_message_to_queue({"bla":"bla"})
-            self.rabbit.send_many_messages_to_queue([{"bla":"bla"},{"bla":"bla"},{"bla":"bla"}])
-            self.rabbit.finish_rabbit_thread()
+        # Now run the code to be tested and close the rabbit:
+        self.rabbit.send_message_to_queue({"bla":"bla"})
+        self.rabbit.send_many_messages_to_queue([{"bla":"bla"},{"bla":"bla"},{"bla":"bla"}])
+        self.rabbit.finish_rabbit_thread()
 
-            # Check result: Are 4 messages published?
-            self.assertEquals(self.channel.publish_counter, 4)
+        # Check result: Are 4 messages published?
+        self.assertEquals(self.channel.publish_counter, 4)
 
     @mock.patch('esgfpid.rabbit.asynchronous.thread_builder.ConnectionBuilder._ConnectionBuilder__please_open_connection')
     def test_finish_ok(self, open_connection_patch):

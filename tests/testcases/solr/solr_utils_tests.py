@@ -10,10 +10,17 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 # Load some data that is needed for testing
-PATH_RES = tests.utils.get_neighbour_directory(__file__, 'resources')
+PATH_RES = tests.utils.get_super_neighbour_directory(__file__, 'resources')
+print(PATH_RES)
 SOLR_RESPONSE = json.load(open(PATH_RES+'/solr_response.json'))
 
 class SolrUtilsTestCase(unittest.TestCase):
+
+    def setUp(self):
+        LOGGER.info('######## Next test (%s) ##########', __name__)
+
+    def tearDown(self):
+        LOGGER.info('#############################')
 
     def test_extract_handles_from_response_json_ok(self):
         

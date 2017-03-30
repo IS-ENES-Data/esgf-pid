@@ -1,93 +1,37 @@
 import unittest
 import mock
 import logging
-import json
-import sys
+import tests.utils as utils
+from tests.utils import compare_json_return_errormessage as error_message
+
+# Import of code to be tested:
 import esgfpid.assistant.publish
 from esgfpid.exceptions import ArgumentError
-import tests.utils
-from tests.utils import compare_json_return_errormessage as error_message
-import tests.mocks.rabbitmock
-import tests.mocks.solrmock
 from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
-import esgfpid.utils
 
 # Logging
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 # Test resources:
-from resources.TESTVALUES import TESTVALUES
+from resources.TESTVALUES import *
+import resources.TESTVALUES as TESTHELPERS
 from resources.TESTVALUES import TEST_RABBIT_CREDS_OPEN
 from resources.TESTVALUES import TEST_RABBIT_CREDS_TRUSTED
-from resources.TESTVALUES import CONNECTOR_ARGS_MIN
 
-# When we allow open nodes, the expected behaviour changes.
-# So here is a flag, so we don't have to rewrite the tests
-# every time:
-OPEN_ALLOWED = False
+# Some tests rely on open nodes
+import tests.globalvar
+import globalvar
+if globalvar.RABBIT_OPEN_NOT_ALLOWED:
+    print('Skipping tests that need open RabbitMQ nodes in module "%s".' % __name__)
 
 class ConnectorTestCase(unittest.TestCase):
 
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
-        self.make_mocks()
 
     def tearDown(self):
         LOGGER.info('#############################')
-
-    '''
-    Mocks to avoid connection attempts.
-    '''
-    def make_mocks(self):
-        self.default_solrmock = mock.MagicMock()
-        self.default_solrmock.is_switched_off.return_value = False
-        self.default_rabbitmock = mock.MagicMock()
-
-    '''
-    Get the minimum arguments a connector needs, add your own (as kwargs),
-    so we don't have to repeat them all the time, or change every test
-    case when the mandatory args change.
-    '''
-    def get_connector_args(self, **kwargs):
-        connector_args = dict()
-        connector_args.update(CONNECTOR_ARGS_MIN)
-        for k,v in kwargs.iteritems():
-            connector_args[k] = v
-        return connector_args
-
-    '''
-    Get a connector object with the minimal arguments,
-    plus your own (as kwargs).
-    '''
-    def get_connector(self, **kwargs):
-        connector_args = self.get_connector_args(**kwargs)
-        return esgfpid.Connector(**connector_args)
-
-    '''
-    Get a connector object with the minimal arguments,
-    plus your own (as kwargs),
-    and patched to avoid conenction attempts.
-    '''
-    def get_connector_patched(self, **kwargs):
-        testconnector = self.get_connector(**kwargs)
-
-        # Replace objects that interact with servers with mocks
-        self.__patch_connector_with_solr_mock(testconnector)
-        self.__patch_connector_with_rabbit_mock(testconnector)
-        return testconnector
-
-    def __patch_connector_with_solr_mock(self, connector, solrmock=None):
-        if solrmock is None:
-            solrmock = self.default_solrmock
-        connector._Connector__coupler._Coupler__solr_sender = solrmock
-
-    def __patch_connector_with_rabbit_mock(self, connector, rabbitmock=None):
-        if rabbitmock is None:
-            rabbitmock = self.default_rabbitmock
-        connector._Connector__coupler._Coupler__rabbit_message_sender = rabbitmock
-
-    # Actual tests:
 
     #
     # Init
@@ -99,41 +43,55 @@ class ConnectorTestCase(unittest.TestCase):
     If open nodes are allowed, this should work fine.
     Otherwise, we expect an exception.
     '''
+    @unittest.skipIf(not(globalvar.RABBIT_OPEN_NOT_ALLOWED), '(this test cannot open rabbit nodes)')
     def test_init_trusted_and_open_ok(self):
 
         # Preparations: Connector args.
         # Use trusted and open node:
         rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED, TEST_RABBIT_CREDS_OPEN]
-        args = self.get_connector_args(
+        args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds
         )
 
-        if OPEN_ALLOWED:
-
-            # Run code to be tested: Connector constructior
+        # Run code to be tested and check exception:
+        with self.assertRaises(ArgumentError):
             testconnector = esgfpid.Connector(**args)
 
-            # Check result: Did init work?
-            self.assertIsInstance(testconnector, esgfpid.Connector)
+    '''
+    Test the constructor, with trusted (and open) node.
 
-            # Check result:  Did the module get the right number of
-            # trusted and open rabbit nodes?
-            node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
-            self.assertEquals(node_manager.get_num_left_trusted(), 1)
-            self.assertEquals(node_manager.get_num_left_open(),1)
+    If open nodes are allowed, this should work fine.
+    Otherwise, we expect an exception.
+    '''
+    @unittest.skipIf(globalvar.RABBIT_OPEN_NOT_ALLOWED, '(this test uses open rabbit nodes)')
+    def test_init_trusted_and_open_ok(self):
 
-        else:
+        # Preparations: Connector args.
+        # Use trusted and open node:
+        rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED, TEST_RABBIT_CREDS_OPEN]
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = rabbit_creds
+        )
 
-            # Run code to be tested and check exception:
-            with self.assertRaises(ArgumentError):
-                testconnector = esgfpid.Connector(**args)
+        # Run code to be tested: Connector constructior
+        testconnector = esgfpid.Connector(**args)
+
+        # Check result: Did init work?
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+
+        # Check result: Did the module get the right number of
+        # trusted and open rabbit nodes?
+        node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
+        self.assertEquals(node_manager.get_num_left_trusted(), 1)
+        self.assertEquals(node_manager.get_num_left_open(),1)
+
 
     def test_init_no_prefix(self):
 
         # Preparations: Connector args.
         # Use trusted and open node:
         rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED]
-        args = self.get_connector_args(
+        args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds,
             handle_prefix = None
         )
@@ -147,7 +105,7 @@ class ConnectorTestCase(unittest.TestCase):
         # Preparations: Connector args.
         # Use trusted and open node:
         rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED]
-        args = self.get_connector_args(
+        args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds,
             handle_prefix = '987654321'
         )
@@ -162,10 +120,10 @@ class ConnectorTestCase(unittest.TestCase):
         # Preparations: Connector args.
         # Use trusted and open node:
         rabbit_creds = dict(
-            user = TESTVALUES['rabbit_username_trusted'],
-            password = TESTVALUES['rabbit_password']
+            user = RABBIT_USER_TRUSTED,
+            password = RABBIT_PASSWORD
         )
-        args = self.get_connector_args(
+        args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = [rabbit_creds]
         )
 
@@ -178,10 +136,10 @@ class ConnectorTestCase(unittest.TestCase):
         # Preparations: Connector args.
         # Use trusted and open node:
         rabbit_creds = dict(
-            url = TESTVALUES['rabbit_url_trusted'],
-            password = TESTVALUES['rabbit_password']
+            url = RABBIT_URL_TRUSTED,
+            password = RABBIT_PASSWORD
         )
-        args = self.get_connector_args(
+        args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = [rabbit_creds]
         )
 
@@ -197,7 +155,7 @@ class ConnectorTestCase(unittest.TestCase):
         # Preparation: Connector args.
         # Use trusted node:
         rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED]
-        args = self.get_connector_args(
+        args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds
         )
 
@@ -216,34 +174,46 @@ class ConnectorTestCase(unittest.TestCase):
     '''
     Test the constructor, with only open nodes.
     '''
+    @unittest.skipIf(not(globalvar.RABBIT_OPEN_NOT_ALLOWED), '(this test cannot deal with open rabbit nodes)')
     def test_init_open_ok(self):
 
         # Preparation: Connector args.
         # Use open node:
         rabbit_creds = [TEST_RABBIT_CREDS_OPEN]
-        args = self.get_connector_args(
+        args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds
         )
 
-        if OPEN_ALLOWED:
-
-            # Run code to be tested: Connector constructor
+        # Run code to be tested and check exception:
+        with self.assertRaises(ArgumentError):
             testconnector = esgfpid.Connector(**args)
 
-            # Check results: Did init work?
-            self.assertIsInstance(testconnector, esgfpid.Connector)
 
-            # Check results: Did the module get the right number of
-            # trusted and open rabbit nodes?
-            node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
-            self.assertEquals(node_manager.get_num_left_trusted(), 0)
-            self.assertEquals(node_manager.get_num_left_open(),1)
+    '''
+    Test the constructor, with only open nodes.
+    '''
+    @unittest.skipIf(globalvar.RABBIT_OPEN_NOT_ALLOWED, '(this test uses open rabbit nodes)')
+    def test_init_open_ok(self):
 
-        else:
+        # Preparation: Connector args.
+        # Use open node:
+        rabbit_creds = [TEST_RABBIT_CREDS_OPEN]
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = rabbit_creds
+        )
 
-            # Run code to be tested and check exception:
-            with self.assertRaises(ArgumentError):
-                testconnector = esgfpid.Connector(**args)
+        # Run code to be tested: Connector constructor
+        testconnector = esgfpid.Connector(**args)
+
+        # Check results: Did init work?
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+
+        # Check results: Did the module get the right number of
+        # trusted and open rabbit nodes?
+        node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
+        self.assertEquals(node_manager.get_num_left_trusted(), 0)
+        self.assertEquals(node_manager.get_num_left_open(),1)
+
 
     '''
     Test if the solr URL is passed to the consumer in the
@@ -258,7 +228,7 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Run code to be tested: Create connector with consumer solr url:
         # (And with the two necessary args for dataset publication)
-        args = self.get_connector_args(
+        args = TESTHELPERS.get_connector_args(
             consumer_solr_url='fake_solr_whatever',
             thredds_service_path='foo',
             data_node='bar'
@@ -290,7 +260,7 @@ class ConnectorTestCase(unittest.TestCase):
     def test_init_default_args_to_coupler(self):
 
         # Preparations: Minimum args for connector
-        args = self.get_connector_args()
+        args = TESTHELPERS.get_connector_args()
 
         # Run code to be tested: Connector constructor
         testconnector = esgfpid.Connector(**args)
@@ -307,18 +277,48 @@ class ConnectorTestCase(unittest.TestCase):
         self.assertEquals(coupler_args['disable_insecure_request_warning'],False)
         self.assertEquals(coupler_args['message_service_synchronous'],False)
         self.assertEquals(coupler_args['consumer_solr_url'],None)
+        
+    '''
+    Test whether the correct defaults are set
+    if the connector is initialized with the minimum
+    arguments.
+    '''
+    def test_init_not_default_args_to_coupler(self):
+
+        # Run code to be tested: Make a connector
+        # with many non-default args:
+        args = TESTHELPERS.get_connector_args(
+            data_node=DATA_NODE,
+            thredds_service_path=THREDDS,
+            test_publication=True,
+            solr_url=SOLR_URL_LIBRARY,
+            solr_https_verify=True,
+            disable_insecure_request_warning=True,
+            message_service_synchronous=True,
+            consumer_solr_url=SOLR_URL_CONSUMER
+        )
+        testconnector = esgfpid.Connector(**args)
+
+        # Check results: Check if the correct defaults
+        # were set (i.e. passed to coupler.)
+        coupler_args = testconnector._Connector__coupler.args
+        self.assertEquals(coupler_args['data_node'],DATA_NODE)
+        self.assertEquals(coupler_args['thredds_service_path'],THREDDS)
+        self.assertEquals(coupler_args['test_publication'],True)
+        self.assertEquals(coupler_args['solr_url'],SOLR_URL_LIBRARY)
+        self.assertEquals(coupler_args['solr_switched_off'],False)
+        self.assertEquals(coupler_args['solr_https_verify'],True)
+        self.assertEquals(coupler_args['disable_insecure_request_warning'],True)
+        self.assertEquals(coupler_args['message_service_synchronous'],True)
+        self.assertEquals(coupler_args['consumer_solr_url'],SOLR_URL_CONSUMER)
 
     '''
     Check if solr is not switched off if an URL given.
     '''
     def test_init_solr_not_off(self):
 
-        # Preparations: Minimum args for connector
-        args = self.get_connector_args(
-            solr_url='foo'
-        )
-
-        # Run code to be tested: Connector constructor
+        # Run code to be tested: Make connector with solr url
+        args = TESTHELPERS.get_connector_args(solr_url='foo')
         testconnector = esgfpid.Connector(**args)
 
         # Check results: Check if the correct defaults
@@ -333,7 +333,7 @@ class ConnectorTestCase(unittest.TestCase):
     def test_init_solr_off(self):
 
         # Preparations: Minimum args for connector
-        args = self.get_connector_args()
+        args = TESTHELPERS.get_connector_args()
 
         # Run code to be tested: Connector constructor
         testconnector = esgfpid.Connector(**args)
@@ -344,46 +344,6 @@ class ConnectorTestCase(unittest.TestCase):
         self.assertEquals(coupler_args['solr_url'],None)
         self.assertEquals(coupler_args['solr_switched_off'],True)
 
-    '''
-    Test whether the correct defaults are set
-    if the connector is initialized with the minimum
-    arguments.
-    '''
-    def test_init_not_default_args_to_coupler(self):
-
-        # Test variables
-        data_node = TESTVALUES['data_node']
-        thredds_service_path = TESTVALUES['thredds_service_path']
-        library_solr_url = TESTVALUES['solr_url']
-        consumer_solr_url = 'fake_solr_whatever'
-
-        # Preparations: Minimum args for connector
-        args = self.get_connector_args(
-            data_node=data_node,
-            thredds_service_path=thredds_service_path,
-            test_publication=True,
-            solr_url=library_solr_url,
-            solr_https_verify=True,
-            disable_insecure_request_warning=True,
-            message_service_synchronous=True,
-            consumer_solr_url=consumer_solr_url
-        )
-
-        # Run code to be tested: Connector constructor
-        testconnector = esgfpid.Connector(**args)
-
-        # Check results: Check if the correct defaults
-        # were set (i.e. passed to coupler.)
-        coupler_args = testconnector._Connector__coupler.args
-        self.assertEquals(coupler_args['data_node'],data_node)
-        self.assertEquals(coupler_args['thredds_service_path'],thredds_service_path)
-        self.assertEquals(coupler_args['test_publication'],True)
-        self.assertEquals(coupler_args['solr_url'],library_solr_url)
-        self.assertEquals(coupler_args['solr_switched_off'],False)
-        self.assertEquals(coupler_args['solr_https_verify'],True)
-        self.assertEquals(coupler_args['disable_insecure_request_warning'],True)
-        self.assertEquals(coupler_args['message_service_synchronous'],True)
-        self.assertEquals(coupler_args['consumer_solr_url'],consumer_solr_url)
 
     #
     # Publication
@@ -395,7 +355,7 @@ class ConnectorTestCase(unittest.TestCase):
     def test_create_publication_assistant_ok(self):
 
         # Preparations: Create connector with data node and thredds:
-        args = self.get_connector_args(
+        args = TESTHELPERS.get_connector_args(
             thredds_service_path='foo',
             data_node='bar'
         )
@@ -419,7 +379,7 @@ class ConnectorTestCase(unittest.TestCase):
     def test_create_publication_assistant_missing_thredds(self):
 
         # Preparations: Make connector without thredds:
-        args = self.get_connector_args(data_node = 'foo')
+        args = TESTHELPERS.get_connector_args(data_node = 'foo')
         testconnector = esgfpid.Connector(**args)
 
         # Run code to be tested and check exception: Init dataset wizard
@@ -437,7 +397,7 @@ class ConnectorTestCase(unittest.TestCase):
     def test_create_publication_assistant_missing_datanode(self):
 
         # Preparations: Make connector without thredds:
-        args = self.get_connector_args(thredds_service_path = 'foo')
+        args = TESTHELPERS.get_connector_args(thredds_service_path = 'foo')
         testconnector = esgfpid.Connector(**args)
 
         # Run code to be tested and check exception: Init dataset wizard
@@ -456,76 +416,46 @@ class ConnectorTestCase(unittest.TestCase):
     If we want to unpublish a dataset, "data_node" has to
     be specified in the beginning!
     '''
-    def test_unpublish_one_version_missing_data_node(self):
-
-        # Test variables
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        data_node = TESTVALUES['data_node']
-
-        # Preparations: Make patched connector without the
-        # necessary data node (needed for unpublish)
-        default_testconnector = self.get_connector_patched()
-  
-        # Run code to be tested: Unpublish
-        with self.assertRaises(esgfpid.exceptions.ArgumentError):
-            default_testconnector.unpublish_one_version(
-                drs_id=drs_id,
-                version_number=version_number
-            )
-
-    '''
-    If we want to unpublish a dataset, "data_node" has to
-    be specified in the beginning!
-    '''
     def test_unpublish_all_versions_missing_data_node(self):
 
-        # Test variables
-        drs_id = TESTVALUES['drs_id1']
-        data_node = TESTVALUES['data_node']
-
         # Preparations: Make patched connector without the
         # necessary data node (needed for unpublish)
-        default_testconnector = self.get_connector_patched()
-  
+        testconnector = TESTHELPERS.get_connector()
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
+
         # Run code to be tested: Unpublish
         with self.assertRaises(esgfpid.exceptions.ArgumentError):
-            default_testconnector.unpublish_all_versions(drs_id=drs_id)
+            testconnector.unpublish_all_versions(drs_id=DRS_ID)
 
     '''
     This passes the correct args.
     '''
     def test_unpublish_one_version_ok(self):
 
-        # Test variables
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        data_node = TESTVALUES['data_node']
-
         # Preparations: Make patched connector with data node (needed for unpublish)
-        default_testconnector = self.get_connector_patched(data_node=data_node)
+        testconnector = TESTHELPERS.get_connector(data_node=DATA_NODE)
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
   
         # Run code to be tested: Unpublish
-        default_testconnector.unpublish_one_version(
-            drs_id=drs_id,
-            version_number=version_number
+        testconnector.unpublish_one_version(
+            drs_id=DRS_ID,
+            version_number=DS_VERSION
         )
 
         # Check result:
         expected_rabbit_task = {
-            "handle": "hdl:"+TESTVALUES['prefix']+'/afd65cd0-9296-35bc-a706-be98665c9c36',
+            "handle": DATASETHANDLE_HDL,
             "operation": "unpublish_one_version",
             "message_timestamp":"anydate",
             "aggregation_level":"dataset",
-            "data_node": TESTVALUES['data_node'],
+            "data_node": DATA_NODE,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
-            "drs_id":drs_id,
-            "version_number": int(version_number)
+            "drs_id":DRS_ID,
+            "version_number": int(DS_VERSION)
         }
-        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
-        tests.utils.replace_date_with_string(received_rabbit_task)
-        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
-        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+        received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
+        is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
+        self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
 
     '''
     We unpublish one version.
@@ -535,44 +465,37 @@ class ConnectorTestCase(unittest.TestCase):
     '''
     def test_unpublish_one_version_with_consumer_url_ok(self):
 
-        # Test variables
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        data_node = TESTVALUES['data_node']
-
         # Preparations: Make connector, but without
         # solr mock. This is to see that with consumer_solr_url,
         # the library does not try to access solr.
-        args = self.get_connector_args(
-            consumer_solr_url='fake_solr_whatever',
-            data_node=data_node
+        testconnector = TESTHELPERS.get_connector(
+            consumer_solr_url=SOLR_URL_CONSUMER,
+            data_node=DATA_NODE
         )
-        testconnector = esgfpid.Connector(**args)
-        self.__patch_connector_with_rabbit_mock(testconnector)
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
   
         # Run code to be tested: Unpublish one version
         testconnector.unpublish_one_version(
-            drs_id=drs_id,
-            version_number=version_number
+            drs_id=DRS_ID,
+            version_number=DS_VERSION
         )            
 
         # Check result:
         # We don't get the consumer_solr_url, because it is only
         # needed for unpublishing all versions.
         expected_rabbit_task = {
-            "handle": "hdl:"+TESTVALUES['prefix']+'/afd65cd0-9296-35bc-a706-be98665c9c36',
+            "handle": DATASETHANDLE_HDL,
             "operation": "unpublish_one_version",
             "message_timestamp":"anydate",
             "aggregation_level":"dataset",
-            "data_node": TESTVALUES['data_node'],
+            "data_node": DATA_NODE,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
-            "drs_id":drs_id,
-            "version_number": int(version_number)
+            "drs_id":DRS_ID,
+            "version_number": int(DS_VERSION)
         }
-        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
-        tests.utils.replace_date_with_string(received_rabbit_task)
-        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
-        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+        received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
+        is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
+        self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
 
     '''
     Test unpublishing all versions.
@@ -592,57 +515,50 @@ class ConnectorTestCase(unittest.TestCase):
         mydict = dict(dataset_handles=None, version_numbers=None)
         solr_asker_patch.return_value = mydict
 
-        # Test variables
-        drs_id = TESTVALUES['drs_id1']
-        data_node = TESTVALUES['data_node']
-
         # Preparations: Create patched connector
-        default_testconnector = self.get_connector_patched(data_node=data_node)
+        testconnector = TESTHELPERS.get_connector(data_node=DATA_NODE)
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
 
         # Run code to be tested:
-        default_testconnector.unpublish_all_versions(drs_id=drs_id)
+        testconnector.unpublish_all_versions(drs_id=DRS_ID)
 
         # Check result:
         expected_rabbit_task = {
             "operation": "unpublish_all_versions",
             "message_timestamp": "anydate",
-            "data_node": data_node,
+            "data_node": DATA_NODE,
             "aggregation_level":"dataset",
-            "drs_id":drs_id,
+            "drs_id":DRS_ID,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all'
         }
-        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
-        tests.utils.replace_date_with_string(received_rabbit_task)
-        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
-        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+        received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
+        is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
+        self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
 
     def test_unpublish_all_versions_solr_off(self):
 
-        # Test variables
-        drs_id = TESTVALUES['drs_id1']
-        data_node = TESTVALUES['data_node']
-
         # Preparations: Create patched connector
-        testconnector = self.get_connector(
-            data_node=data_node,
+        testconnector = TESTHELPERS.get_connector(
+            data_node=DATA_NODE,
             solr_switched_off=True 
         )
-        self.__patch_connector_with_rabbit_mock(testconnector)
-        testconnector.unpublish_all_versions(drs_id=drs_id)
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
+
+        # Run code to be tested:
+        testconnector.unpublish_all_versions(drs_id=DRS_ID)
 
         # Check result:
         expected_rabbit_task = {
             "operation": "unpublish_all_versions",
             "message_timestamp": "anydate",
-            "data_node": data_node,
+            "data_node": DATA_NODE,
             "aggregation_level":"dataset",
-            "drs_id":drs_id,
+            "drs_id":DRS_ID,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all'
         }
-        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
-        tests.utils.replace_date_with_string(received_rabbit_task)
-        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
-        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+        received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
+        is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
+        self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
 
 
     '''
@@ -664,41 +580,32 @@ class ConnectorTestCase(unittest.TestCase):
         mydict = dict(dataset_handles=None, version_numbers=None)
         solr_asker_patch.return_value = mydict
 
-        # Test variables:
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        data_node = TESTVALUES['data_node']
-        library_solr_url = TESTVALUES['solr_url']
-        consumer_solr_url = 'fake_solr_whatever'
-
         # Preparations: Create patched connector
-        args = self.get_connector_args(
-            data_node = data_node,
-            solr_url = library_solr_url,
-            consumer_solr_url=consumer_solr_url
+        testconnector = TESTHELPERS.get_connector(
+            data_node = DATA_NODE,
+            solr_url = SOLR_URL_LIBRARY,
+            consumer_solr_url=SOLR_URL_CONSUMER
         )
-        testconnector = esgfpid.Connector(**args)
-        self.__patch_connector_with_rabbit_mock(testconnector)
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
 
         # Run code to be tested:
         testconnector.unpublish_all_versions(
-            drs_id=drs_id,
-            data_node=data_node)
+            drs_id=DRS_ID,
+            data_node=DATA_NODE)
 
         # Check result:
         expected_rabbit_task = {
             "operation": "unpublish_all_versions",
             "message_timestamp": "anydate",
-            "data_node": data_node,
+            "data_node": DATA_NODE,
             "aggregation_level":"dataset",
-            "drs_id":drs_id,
+            "drs_id":DRS_ID,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all',
-            "consumer_solr_url":consumer_solr_url
+            "consumer_solr_url":SOLR_URL_CONSUMER
         }        
-        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
-        tests.utils.replace_date_with_string(received_rabbit_task)
-        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
-        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+        received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
+        is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
+        self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
 
     #
     # Errata
@@ -706,102 +613,87 @@ class ConnectorTestCase(unittest.TestCase):
 
     def test_add_errata_id_several_ok(self):
 
-        # Test variables:
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        errata_ids = TESTVALUES['errata_ids']
-
         # Preparations: Create patched connector
         # (Patched to avoid that message be sent, and to retrieve the created message)
-        default_testconnector = self.get_connector_patched()
+        testconnector = TESTHELPERS.get_connector()
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
 
         # Run code to be tested: Add errata
-        default_testconnector.add_errata_ids(
-            drs_id=drs_id,
-            version_number=version_number,
-            errata_ids=errata_ids
+        testconnector.add_errata_ids(
+            drs_id=DRS_ID,
+            version_number=DS_VERSION,
+            errata_ids=ERRATA_SEVERAL
         )
 
         # Check result: Was correct errata message created?
         expected_rabbit_task = {
-            "handle": "hdl:"+TESTVALUES['prefix']+"/afd65cd0-9296-35bc-a706-be98665c9c36",
+            "handle": DATASETHANDLE_HDL,
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
-            "errata_ids":errata_ids,
+            "errata_ids":ERRATA_SEVERAL,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
-            "drs_id":drs_id,
-            "version_number":version_number
+            "drs_id":DRS_ID,
+            "version_number":DS_VERSION
         }
-        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
-        tests.utils.replace_date_with_string(received_rabbit_task)
-        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
-        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+        received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
+        is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
+        self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
 
     def test_add_errata_id_one_ok(self):
 
-        # Test variables:
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        errata_id = TESTVALUES['errata_id']
-
         # Preparations: Create patched connector
         # (Patched to avoid that message be sent, and to retrieve the created message)
-        default_testconnector = self.get_connector_patched()
-
+        testconnector = TESTHELPERS.get_connector()
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
+        
         # Run code to be tested: Add errata
-        default_testconnector.add_errata_ids(
-            drs_id=drs_id,
-            version_number=version_number,
-            errata_ids=errata_id
+        testconnector.add_errata_ids(
+            drs_id=DRS_ID,
+            version_number=DS_VERSION,
+            errata_ids=ERRATA
         )
 
         # Check result: Was correct errata message created?
         expected_rabbit_task = {
-            "handle": "hdl:"+TESTVALUES['prefix']+"/afd65cd0-9296-35bc-a706-be98665c9c36",
+            "handle": DATASETHANDLE_HDL,
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
-            "errata_ids":[errata_id],
+            "errata_ids":[ERRATA],
             "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
-            "drs_id":drs_id,
-            "version_number":version_number
+            "drs_id":DRS_ID,
+            "version_number":DS_VERSION
         }
-        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
-        tests.utils.replace_date_with_string(received_rabbit_task)
-        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
-        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+        received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
+        is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
+        self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
 
     def test_remove_errata_id_one_ok(self):
 
-        # Test variables:
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        errata_id = TESTVALUES['errata_id']
-
         # Preparations: Create patched connector
         # (Patched to avoid that message be sent, and to retrieve the created message)
-        default_testconnector = self.get_connector_patched()
+        testconnector = TESTHELPERS.get_connector()
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
 
         # Run code to be tested: Add errata
-        default_testconnector.remove_errata_ids(
-            drs_id=drs_id,
-            version_number=version_number,
-            errata_ids=errata_id
+        testconnector.remove_errata_ids(
+            drs_id=DRS_ID,
+            version_number=DS_VERSION,
+            errata_ids=ERRATA
         )
 
         # Check result: Was correct errata message created?
         expected_rabbit_task = {
-            "handle": "hdl:"+TESTVALUES['prefix']+"/afd65cd0-9296-35bc-a706-be98665c9c36",
+            "handle": DATASETHANDLE_HDL,
             "operation": "remove_errata_ids",
             "message_timestamp":"anydate",
-            "errata_ids":[errata_id],
+            "errata_ids":[ERRATA],
             "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.remove',
-            "drs_id":drs_id,
-            "version_number":version_number
+            "drs_id":DRS_ID,
+            "version_number":DS_VERSION
         }
-        received_rabbit_task = self.default_rabbitmock.send_message_to_queue.call_args[0][0] # first get positional args, second get the first og those
-        tests.utils.replace_date_with_string(received_rabbit_task)
-        is_same = tests.utils.is_json_same(expected_rabbit_task, received_rabbit_task)
-        self.assertTrue(is_same, tests.utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_task))
+        received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
+        is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
+        self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
 
 
     #
@@ -811,23 +703,21 @@ class ConnectorTestCase(unittest.TestCase):
     def test_make_data_cart_pid(self):
 
         # Test variables
-        prefix = TESTVALUES['prefix']
         content1 = {'foo':'foo', 'bar':'bar'}
         content2 = {'foo':'foo', 'bar': None}
 
         # Preparations: Create patched connector
         # (Patched to avoid that message be sent, and to retrieve the created message)
-        testconnector = self.get_connector_patched()
+        testconnector = TESTHELPERS.get_connector()
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
 
         # Run code to be tested: Create data cart PIDs
         # And retrieve the messages
         pid1 = testconnector.create_data_cart_pid(content1)
-        received_rabbit_task1 = self.default_rabbitmock.send_message_to_queue.call_args[0][0]
         pid2 = testconnector.create_data_cart_pid(content2)
-        received_rabbit_task2 = self.default_rabbitmock.send_message_to_queue.call_args[0][0]
 
         # Check result: Were the correct messages created?
-        expected_handle_both_cases = "hdl:"+prefix+"/b597a79e-1dc7-3d3f-b689-75ac5a78167f"
+        expected_handle_both_cases = PREFIX_WITH_HDL+"/b597a79e-1dc7-3d3f-b689-75ac5a78167f"
         expected_rabbit_task1 = {
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
@@ -842,12 +732,12 @@ class ConnectorTestCase(unittest.TestCase):
             "data_cart_content":content2,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
-        tests.utils.replace_date_with_string(received_rabbit_task1)
-        tests.utils.replace_date_with_string(received_rabbit_task2)
-        same1 = tests.utils.is_json_same(expected_rabbit_task1, received_rabbit_task1)
-        same2 = tests.utils.is_json_same(expected_rabbit_task2, received_rabbit_task2)
-        self.assertTrue(same1, error_message(expected_rabbit_task1, received_rabbit_task1))
-        self.assertTrue(same2, error_message(expected_rabbit_task2, received_rabbit_task2))
+        received_rabbit_msg1 = TESTHELPERS.get_received_message_from_rabbitmock(testconnector, 0)
+        received_rabbit_msg2 = TESTHELPERS.get_received_message_from_rabbitmock(testconnector, 1)
+        same1 = utils.is_json_same(expected_rabbit_task1, received_rabbit_msg1)
+        same2 = utils.is_json_same(expected_rabbit_task2, received_rabbit_msg2)
+        self.assertTrue(same1, error_message(expected_rabbit_task1, received_rabbit_msg1))
+        self.assertTrue(same2, error_message(expected_rabbit_task2, received_rabbit_msg2))
         self.assertTrue(pid1==pid2, 'Both pids are not the same.')
 
     #
@@ -856,29 +746,30 @@ class ConnectorTestCase(unittest.TestCase):
 
     def test_start_messaging_thread(self):
         LOGGER.debug('Thread test')
-        default_testconnector = self.get_connector_patched()
-        default_testconnector.start_messaging_thread()
-        self.default_rabbitmock.start.assert_called_with()
+        testconnector = TESTHELPERS.get_connector()
+        rabbitmock = TESTHELPERS.patch_with_rabbit_mock(testconnector, mock.MagicMock())
+        testconnector.start_messaging_thread()
+        rabbitmock.start.assert_called_with()
 
     def test_finish_messaging_thread(self):
         LOGGER.debug('Thread test')
-        default_testconnector = self.get_connector_patched()
-        default_testconnector.finish_messaging_thread()
-        self.default_rabbitmock.finish.assert_called_with()
+        testconnector = TESTHELPERS.get_connector()
+        rabbitmock = TESTHELPERS.patch_with_rabbit_mock(testconnector, mock.MagicMock())
+        testconnector.finish_messaging_thread()
+        rabbitmock.finish.assert_called_with()
 
     def test_force_finish_messaging_thread(self):
         LOGGER.debug('Thread test')
-        default_testconnector = self.get_connector_patched()
-        default_testconnector.force_finish_messaging_thread()
-        self.default_rabbitmock.force_finish.assert_called_with()
+        testconnector = TESTHELPERS.get_connector()
+        rabbitmock = TESTHELPERS.patch_with_rabbit_mock(testconnector, mock.MagicMock())
+        testconnector.force_finish_messaging_thread()
+        rabbitmock.force_finish.assert_called_with()
 
     def test_make_handle(self):
-        testconnector = self.get_connector()
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
+        testconnector = TESTHELPERS.get_connector()
         received_handle = testconnector.make_handle_from_drsid_and_versionnumber(
-            drs_id=drs_id,
-            version_number=version_number
+            drs_id=DRS_ID,
+            version_number=DS_VERSION
         )
-        expected_handle = 'hdl:'+TESTVALUES['prefix']+'/afd65cd0-9296-35bc-a706-be98665c9c36'
+        expected_handle = DATASETHANDLE_HDL
         self.assertEquals(received_handle, expected_handle)

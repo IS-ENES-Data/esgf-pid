@@ -2,10 +2,9 @@ import unittest
 import argparse
 import logging
 import datetime
-import os
 import sys
-sys.path.append("..")
-import esgfpid
+import esgfpid.utils
+import globalvar
 
 # Setup logging:
 path = 'logs'
@@ -45,21 +44,41 @@ if __name__ == '__main__':
                    default=['all'], action='store')
 
     # Synchron or asynchron?
-    parser.add_argument('-a','--asynchron', dest='asyn',
-                   help=('Run the asynchronous rabbit tests?'),
-                   action='store_true')
-    parser.add_argument('-s','--synchron', dest='asyn',
-                   help=('Run the synchronous rabbit tests?'),
+    parser.add_argument('-noa','--no-asynchron', dest='asyn',
+                   help=('Omit the asynchronous rabbit tests?'),
+                   action='store_false')
+    parser.add_argument('-nos','--no-synchron', dest='syn',
+                   help=('Omit the synchronous rabbit tests?'),
                    action='store_false')
     parser.set_defaults(asyn=True)
+    parser.set_defaults(syn=True)
     # Slow?
-    parser.add_argument('-ls','--leave_out_slow', dest='slow',
+    parser.add_argument('-ls','--leave_out_slow', dest='leave_out',
                    help=('Leave out the slow tests?'),
-                   action='store_false')
-    parser.set_defaults(slow=True)
+                   action='store_true')
+    parser.set_defaults(slow=False)
+    # Open nodes?
+    parser.add_argument('-open','--allow_open', dest='open_allowed',
+                   help=('Can the library cope with open nodes?'),
+                   action='store_true')
+    parser.set_defaults(open_allowed=False)
+
+    # Parse the args:
     param = parser.parse_args()
-    #print('Specified test types: '+str(param.testtype))
     print('Modules to be tested: '+ ', '.join(param.modules))
+
+    # Inform user about skipping slow tests...
+    if param.leave_out == True:
+        globalvar.QUICK_ONLY = True
+        print('Leaving out the slow tests (%s).' % globalvar.QUICK_ONLY)
+    else:
+        globalvar.QUICK_ONLY = False
+    if param.open_allowed == True:
+        globalvar.RABBIT_OPEN_NOT_ALLOWED = False
+        print('Running tests for open RabbitMQ nodes, too (%s).' % globalvar.QUICK_ONLY)
+    else:
+        globalvar.RABBIT_OPEN_NOT_ALLOWED = True
+
 
     # Collect tests:
     verbosity = 5
@@ -84,12 +103,6 @@ if __name__ == '__main__':
             n = tests.countTestCases()
             numtests += n
 
-            from testcases.rabbit_rabbitutil_tests import RabbitUtilsTestCase
-            tests = unittest.TestLoader().loadTestsFromTestCase(RabbitUtilsTestCase)
-            tests_to_run.append(tests)
-            n = tests.countTestCases()
-            numtests += n
-
             from testcases.errormessage_util_tests import ErrorMessageUtilsTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(ErrorMessageUtilsTestCase)
             tests_to_run.append(tests)
@@ -106,13 +119,11 @@ if __name__ == '__main__':
 
         if 'check' in param.modules or 'all' in param.modules:
 
-            pass
-            # TODO
-            #from testcases.check_tests import CheckTestCase
-            #tests = unittest.TestLoader().loadTestsFromTestCase(CheckTestCase)
-            #tests_to_run.append(tests)
-            #n = tests.countTestCases()
-            #numtests += n
+            from testcases.check_tests import CheckTestCase
+            tests = unittest.TestLoader().loadTestsFromTestCase(CheckTestCase)
+            tests_to_run.append(tests)
+            n = tests.countTestCases()
+            numtests += n
 
         if 'data_cart' in param.modules or 'all' in param.modules:
 
@@ -124,66 +135,83 @@ if __name__ == '__main__':
 
         if 'solr' in param.modules or 'all' in param.modules:
 
-            from testcases.solr_utils_tests import SolrUtilsTestCase
+            from testcases.solr.solr_utils_tests import SolrUtilsTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrUtilsTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from testcases.solr_tests import SolrTestCase
+            from testcases.solr.solr_tests import SolrTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from testcases.solr_task1_tests import SolrTask1TestCase
+            from testcases.solr.solr_task1_tests import SolrTask1TestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrTask1TestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from testcases.solr_task2_tests import SolrTask2TestCase
+            from testcases.solr.solr_task2_tests import SolrTask2TestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrTask2TestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from testcases.solr_server_tests import SolrServerConnectorTestCase
+            from testcases.solr.solr_server_tests import SolrServerConnectorTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrServerConnectorTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-        if 'nodemanager' in param.modules or 'all' in param.modules:
+        if 'nodemanager' in param.modules or 'rabbit' in param.modules or 'all' in param.modules:
 
-            from testcases.rabbit_nodemanager_tests import RabbitNodemanagerTestCase
-            tests = unittest.TestLoader().loadTestsFromTestCase(RabbitNodemanagerTestCase)
-            tests_to_run.append(tests)
-            numtests += tests.countTestCases()
+            if False:
+                from testcases.rabbit.nodemanager_tests import NodemanagerTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(NodemanagerTestCase)
+                tests_to_run.append(tests)
+                numtests += tests.countTestCases()
 
         if 'rabbit' in param.modules or 'all' in param.modules:
 
+            if False:
+                from testcases.rabbit.rabbit_api_tests import RabbitTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitTestCase)
+                tests_to_run.append(tests)
+                n = tests.countTestCases()
+                numtests += n
+                
+                from testcases.rabbit.rabbitutil_tests import RabbitUtilsTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitUtilsTestCase)
+                tests_to_run.append(tests)
+                n = tests.countTestCases()
+                numtests += n
+
+            if param.syn:
+
+                from testcases.rabbit.syn.rabbit_synchronous_tests import RabbitConnectorTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitConnectorTestCase)
+                tests_to_run.append(tests)
+                n = tests.countTestCases()
+                numtests += n
+
             if param.asyn:
 
-                # TODO
-                
-                #from testcases.rabbit_rabbit_asyn_tests import RabbitTestCase
-                #tests = unittest.TestLoader().loadTestsFromTestCase(RabbitTestCase)
-                #tests_to_run.append(tests)
-                #numtests += tests.countTestCases()
+                # This tests the API and creating the thread
+                from testcases.rabbit.asyn.rabbit_asynchronous_tests import RabbitAsynConnectorTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynConnectorTestCase)
+                tests_to_run.append(tests)
+                numtests += tests.countTestCases()
 
-                #from testcases.rabbit_asynchronous_asynchronous_tests import RabbitAsynConnectorTestCase
-                #tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynConnectorTestCase)
-                #tests_to_run.append(tests)
-                #numtests += tests.countTestCases()
+                # Confirmer is pretty isolated and easy to test.
+                from testcases.rabbit.asyn.rabbit_thread_confirmer_tests import ThreadConfirmerTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadConfirmerTestCase)
+                tests_to_run.append(tests)
+                numtests += tests.countTestCases()
 
-                #from testcases.rabbit_thread_confirmer_tests import ThreadConfirmerTestCase
-                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadConfirmerTestCase)
-                #tests_to_run.append(tests)
-                #numtests += tests.countTestCases()
-
-                #from testcases.rabbit_thread_acceptor_tests import ThreadAcceptorTestCase
-                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadAcceptorTestCase)
+                #from testcases.rabbit.asyn.rabbit_thread_acceptor_tests import ThreadFeederTestCase
+                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadFeederTestCase)
                 #tests_to_run.append(tests)
                 #numtests += tests.countTestCases()
 
@@ -202,27 +230,12 @@ if __name__ == '__main__':
                 #tests_to_run.append(tests)
                 #numtests += tests.countTestCases()
 
-                from testcases.rabbit_asynchronous_asynchronous_module_tests import RabbitAsynModuleTestCase
+                #from testcases.rabbit_asynchronous_asynchronous_module_tests import RabbitAsynModuleTestCase
+                #tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynModuleTestCase)
+                #tests_to_run.append(tests)
+                #numtests += tests.countTestCases()
 
-                if param.slow == False:
-                    RabbitAsynModuleTestCase.setNotSlow()
-                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynModuleTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
 
-            else:
-
-                from testcases.rabbit_rabbit_syn_tests import RabbitTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitTestCase)
-                tests_to_run.append(tests)
-                n = tests.countTestCases()
-                numtests += n
-
-                from testcases.rabbit_synchronous_tests import RabbitConnectorTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitConnectorTestCase)
-                tests_to_run.append(tests)
-                n = tests.countTestCases()
-                numtests += n
 
         if 'errata' in param.modules or 'all' in param.modules:
 
@@ -258,13 +271,11 @@ if __name__ == '__main__':
 
         if 'consistency' in param.modules or 'all' in param.modules:
 
-            pass
-            # TODO
-            #from testcases.consistency_tests import ConsistencyTestCase
-            #tests = unittest.TestLoader().loadTestsFromTestCase(ConsistencyTestCase)
-            #tests_to_run.append(tests)
-            #n = tests.countTestCases()
-            #numtests += n
+            from testcases.consistency_tests import ConsistencyTestCase
+            tests = unittest.TestLoader().loadTestsFromTestCase(ConsistencyTestCase)
+            tests_to_run.append(tests)
+            n = tests.countTestCases()
+            numtests += n
 
     if param.inte:
 
@@ -310,4 +321,4 @@ if __name__ == '__main__':
 
     # Run with:
     # python -m coverage run main_test_script.py
-    # python -m coverage report
+    # python -m coverage html

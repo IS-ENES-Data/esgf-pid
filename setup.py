@@ -26,9 +26,12 @@ packages = [
 # Packages to be included for running the tests:
 test_packages = [
     'tests',
-    'tests/mocks',
     'tests/resources',
     'tests/testcases',
+    'tests/testcases/solr',
+    'tests/testcases/rabbit',
+    'tests/testcases/rabbit/syn',
+    'tests/testcases/rabbit/asyn',
     'tests/utils'
 ]
 

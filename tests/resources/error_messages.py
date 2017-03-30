@@ -1,4 +1,5 @@
-
+# Expected error messages for the unit tests
+# of the check.py module.
 
 expected_message_ok = '''Checking config for PID module (rabbit messaging queue) ...
  .. checking authentication and connection ...
@@ -6,6 +7,8 @@ expected_message_ok = '''Checking config for PID module (rabbit messaging queue)
  .. checking authentication and connection ... ok.
  .. checking channel ...
  .. checking channel ... ok.
+ .. checking exchange ...
+ .. checking exchange ... ok.
 Config for PID module (rabbit messaging queue).. ok.
 Successful connection to PID messaging queue at "this.is.my.only.host".'''
 
@@ -18,6 +21,8 @@ expected_message_first_connection_failed_then_ok = '''Checking config for PID mo
  .. checking authentication and connection ... ok.
  .. checking channel ...
  .. checking channel ... ok.
+ .. checking exchange ...
+ .. checking exchange ... ok.
 Config for PID module (rabbit messaging queue).. ok.
 Successful connection to PID messaging queue at "tomato.salad-with-spam.fr".'''
 
@@ -124,5 +129,7 @@ expected_message_first_channel_closed_then_ok = '''Checking config for PID modul
  .. checking authentication and connection ... ok.
  .. checking channel ...
  .. checking channel ... ok.
+ .. checking exchange ...
+ .. checking exchange ... ok.
 Config for PID module (rabbit messaging queue).. ok.
 Successful connection to PID messaging queue at "tomato.salad-with-spam.fr".'''

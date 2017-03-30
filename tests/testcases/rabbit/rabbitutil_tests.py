@@ -1,11 +1,8 @@
-import sys
 import unittest
-import mock
 import logging
-import copy
-import os
+
 import esgfpid.defaults
-import esgfpid.rabbit.rabbitutils as rut
+import esgfpid.rabbit.rabbitutils as rutils
 
 # Logging
 LOGGER = logging.getLogger(__name__)
@@ -15,6 +12,13 @@ LOGGER_TO_PASS = logging.getLogger('utils')
 LOGGER_TO_PASS.addHandler(logging.NullHandler())
 
 
+'''
+Unit tests for esgfpid.rabbit.rabbitutils.
+
+This module does not need any other module to
+function, so we don't need to use or to mock any
+other objects. 
+'''
 class RabbitUtilsTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -35,7 +39,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         LOGGER.info('Message: %s' % passed_message)
 
         # Run code to be checked:
-        received_key, received_message = rut.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+        received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
 
         # Check result:
         received_message = received_message.replace("'", '"')
@@ -50,7 +54,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         LOGGER.info('Message: %s' % passed_message)
 
         # Run code to be checked:
-        received_key, received_message = rut.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+        received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
 
         # Check result:
         received_message = received_message.replace("'", '"')
@@ -67,7 +71,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
 
         # Run code to be checked:
         with self.assertRaises(ValueError):
-            received_key, received_message = rut.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+            received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
 
     def test_get_message_and_routing_key_characters(self):
         
@@ -76,7 +80,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         LOGGER.info('Message: %s' % passed_message)
 
         # Run code to be checked:
-        received_key, received_message = rut.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+        received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
 
         # Check result:
         received_message = received_message.replace("'", '"')
@@ -92,7 +96,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         LOGGER.info('Message: %s' % passed_message)
 
         # Run code to be checked:
-        received_key, received_message = rut.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+        received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
 
         # Check result:
         received_message = received_message.replace("'", '"')
@@ -107,7 +111,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         LOGGER.info('Message: %s' % passed_message)
 
         # Run code to be checked:
-        received_key, received_message = rut.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+        received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
 
         # Check result:
         received_message = received_message.replace("'", '"')
@@ -123,7 +127,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         LOGGER.info('Message: %s' % passed_message)
 
         # Run code to be checked:
-        received_key, received_message = rut.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+        received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
 
         # Check result:
         received_message = received_message.replace("'", '"')
@@ -139,7 +143,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         LOGGER.info('Message: %s' % passed_message)
 
         # Run code to be checked:
-        received_key, received_message = rut.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+        received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
 
         # Check result:
         received_message = received_message.replace("'", '"')
@@ -157,5 +161,5 @@ class RabbitUtilsTestCase(unittest.TestCase):
 
         # Run code to be checked:
         with self.assertRaises(ValueError):
-            received_key, received_message = rut.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+            received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
 

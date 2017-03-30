@@ -1,20 +1,16 @@
 import unittest
-import mock
 import logging
-import json
 import copy
-import esgfpid.exceptions
-import esgfpid.assistant.messages as messages
 import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
+
 from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+import esgfpid.exceptions
+import esgfpid.assistant.messages as messages
 
 # Logging
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
-
-# Test resources:
-from resources.TESTVALUES import TESTVALUES as TESTVALUES
 
 class MessageCreationTestcase(unittest.TestCase):
 

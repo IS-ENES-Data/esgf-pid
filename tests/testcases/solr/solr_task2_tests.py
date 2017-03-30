@@ -2,7 +2,6 @@ import unittest
 import mock
 import logging
 import json
-import requests
 import esgfpid.solr.solr
 import esgfpid.solr.tasks.all_versions_of_dataset as task
 import tests.mocks.responsemock
@@ -12,10 +11,13 @@ import tests.utils
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+# Test resources:
+from resources.TESTVALUES import *
+import resources.TESTVALUES as TESTHELPERS
+
 # Load some data that is needed for testing
-PATH_RES = tests.utils.get_neighbour_directory(__file__, 'resources')
+PATH_RES = tests.utils.get_super_neighbour_directory(__file__, 'resources')
 SOLR_RESPONSE = json.load(open(PATH_RES+'/solr_response.json'))
-from tests.resources.TESTVALUES import TESTVALUES as TESTVALUES
 
 
 QUERY = {'format': 'application/solr+json', 'facets': 'pid,version', 'limit': 0, 'distrib': False, 'drs_id':'abc', 'type': 'Dataset'}
@@ -24,19 +26,13 @@ QUERY = {'format': 'application/solr+json', 'facets': 'pid,version', 'limit': 0,
 class SolrTask2TestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test (%s) ##########', __name__)
 
     def tearDown(self):
         LOGGER.info('#############################')
 
-    def make_testsolr(self):
-        testsolr = esgfpid.solr.solr.SolrInteractor(
-            solr_url = TESTVALUES['solr_url'],
-            prefix = TESTVALUES['prefix'])
-        return testsolr
-
     def make_testtask(self):
-        testsolr = self.make_testsolr()
+        testsolr = TESTHELPERS.get_testsolr()
         testtask = task.FindVersionsOfSameDataset(testsolr)
         return testtask
 
@@ -63,7 +59,7 @@ class SolrTask2TestCase(unittest.TestCase):
     def test_init_ok(self):
 
         # Preparations
-        testsolr = self.make_testsolr()
+        testsolr = TESTHELPERS.get_testsolr()
 
         # Run code to be tested:
         testtask = task.FindVersionsOfSameDataset(testsolr)

@@ -12,27 +12,37 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 # Load some data that is needed for testing
-PATH_RES = tests.utils.get_neighbour_directory(__file__, 'resources')
+PATH_RES = tests.utils.get_super_neighbour_directory(__file__, 'resources')
 SOLR_RESPONSE = json.load(open(PATH_RES+'/solr_response.json'))
-from tests.resources.TESTVALUES import TESTVALUES as TESTVALUES
 
+# Test resources:
+import resources.TESTVALUES as TESTHELPERS
 
+'''
+Unit tests for module esgfpid.solr.serverconnector.
+
+This module has no references to other modules, so
+no other modules need to be used or mocked.
+
+However, it talks to a solr server (via requests
+module), so we need to mock that one. We patch all
+calls to requests.get()
+'''
 class SolrServerConnectorTestCase(unittest.TestCase):
 
-    def make_testsolr_with_access(self):
-        testsolr = esgfpid.solr.serverconnector.SolrServerConnector(
-            solr_url = TESTVALUES['solr_url']
-        )
-        return testsolr
+    def setUp(self):
+        LOGGER.info('######## Next test (%s) ##########', __name__)
 
-
-    # Actual tests:
+    def tearDown(self):
+        LOGGER.info('#############################')
 
     def test_init_ok(self):
 
         # Run code to be tested:
         testsolr = esgfpid.solr.serverconnector.SolrServerConnector(
-            solr_url = 'blablabla///'
+            solr_url = 'blablabla///',
+            https_verify = False,
+            disable_insecure_request_warning = False
         )
 
         # Check result
@@ -61,7 +71,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr_connector()
 
         # Run code to be tested:
         response = testsolr.send_query('blah')
@@ -79,7 +89,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr_connector()
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
@@ -95,7 +105,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr_connector()
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
@@ -109,7 +119,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         getpatch.return_value = None
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr_connector()
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
@@ -124,7 +134,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr_connector()
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
@@ -138,7 +148,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         getpatch.side_effect = requests.exceptions.ConnectionError()
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr_connector()
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
@@ -153,7 +163,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr_connector()
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:

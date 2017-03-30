@@ -4,7 +4,7 @@ import logging
 import json
 import requests
 import esgfpid.solr.solr
-import tests.mocks.responsemock
+import tests.resources.responsemock
 import tests.resources
 
 # Logging:
@@ -12,76 +12,66 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 # Load some data that is needed for testing
-PATH_RES = tests.utils.get_neighbour_directory(__file__, 'resources')
+PATH_RES = tests.utils.get_super_neighbour_directory(__file__, 'resources')
 SOLR_RESPONSE = json.load(open(PATH_RES+'/solr_response.json'))
-from tests.resources.TESTVALUES import TESTVALUES as TESTVALUES
+
+# Test resources:
+from resources.TESTVALUES import *
+import resources.TESTVALUES as TESTHELPERS
 
 class SolrTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test (%s) ##########', __name__)
 
     def tearDown(self):
         LOGGER.info('#############################')
 
-    def make_testsolr_without_access(self):
-        testsolr = esgfpid.solr.solr.SolrInteractor(
-            solr_url = TESTVALUES['solr_url'],
-            prefix = TESTVALUES['prefix'],
-            switched_off = True
-        )
-        return testsolr
-
-    def make_testsolr_with_access(self):
-        testsolr = esgfpid.solr.solr.SolrInteractor(
-            solr_url = TESTVALUES['solr_url'],
-            prefix = TESTVALUES['prefix'],
-            switched_off = False
-        )
-        return testsolr
-
-    # Actual tests:
-
     def test_init_switched_off_ok(self):
 
         # Run code to be tested:
-        testsolr = esgfpid.solr.solr.SolrInteractor(
-            solr_url = TESTVALUES['solr_url'],
-            prefix = TESTVALUES['prefix'],
-            switched_off = True
+        testsolr = esgfpid.solr.SolrInteractor(
+            solr_url = SOLR_URL_LIBRARY,
+            prefix = PREFIX_NO_HDL,
+            switched_off = True,
+            https_verify = True,
+            disable_insecure_request_warning = False
         )
         has_access = not testsolr.is_switched_off()
 
         # Check result:
-        self.assertIsInstance(testsolr, esgfpid.solr.solr.SolrInteractor, 'Constructor fail.')
+        self.assertIsInstance(testsolr, esgfpid.solr.SolrInteractor, 'Constructor fail.')
         self.assertFalse(has_access, 'Solr pretends to have access although we told it to switch off.')
 
     def test_init_ok(self):
 
         # Run code to be tested:
-        testsolr = esgfpid.solr.solr.SolrInteractor(
-            solr_url = TESTVALUES['solr_url'],
-            prefix = TESTVALUES['prefix'],
+        testsolr = esgfpid.solr.SolrInteractor(
+            solr_url = SOLR_URL_LIBRARY,
+            prefix = PREFIX_NO_HDL,
+            switched_off = False,
+            https_verify = True,
+            disable_insecure_request_warning = False
         )
         has_access = not testsolr.is_switched_off()
 
         # Check result:
-        self.assertIsInstance(testsolr, esgfpid.solr.solr.SolrInteractor, 'Constructor fail.')
+        self.assertIsInstance(testsolr, esgfpid.solr.SolrInteractor, 'Constructor fail.')
         self.assertTrue(has_access, 'Solr pretends not to have access.')
 
     def test_init_missing_argument(self):
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.ArgumentError):
-            testsolr = esgfpid.solr.solr.SolrInteractor(
+            testsolr = esgfpid.solr.SolrInteractor(
                 solr_url = None,
-                prefix = TESTVALUES['prefix'],
+                prefix = PREFIX_NO_HDL
             )
 
     def test_make_solr_base_query_ok(self):
 
         # Run code to be tested:
-        testsolr = self.make_testsolr_without_access()
+        testsolr = TESTHELPERS.get_testsolr_switched_off()
         query = testsolr.make_solr_base_query()
 
         # Check result:
@@ -96,7 +86,7 @@ class SolrTestCase(unittest.TestCase):
     def test_send_query_switched_off(self):
 
         # Test variables
-        testsolr = self.make_testsolr_without_access()
+        testsolr = TESTHELPERS.get_testsolr_switched_off()
         query = testsolr.make_solr_base_query()
 
         # Run code to be tested:
@@ -107,11 +97,11 @@ class SolrTestCase(unittest.TestCase):
     def test_send_query_ok_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.responsemock.MockSolrResponse(success=True)
+        mock_response = tests.resources.responsemock.MockSolrResponse(success=True)
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr()
         query = testsolr.make_solr_base_query()
 
         # Run code to be tested:
@@ -126,11 +116,11 @@ class SolrTestCase(unittest.TestCase):
     def test_send_query_404_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.responsemock.MockSolrResponse(notfound=True)
+        mock_response = tests.resources.responsemock.MockSolrResponse(notfound=True)
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr()
         query = testsolr.make_solr_base_query()
 
         # Run code to be tested and check exception:
@@ -143,11 +133,11 @@ class SolrTestCase(unittest.TestCase):
     def test_send_query_5000_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.responsemock.MockSolrResponse(status_code=5000)
+        mock_response = tests.resources.responsemock.MockSolrResponse(status_code=5000)
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr()
         query = testsolr.make_solr_base_query()
 
         # Run code to be tested and check exception:
@@ -159,17 +149,14 @@ class SolrTestCase(unittest.TestCase):
     def test_retrieve_file_handles_of_same_dataset_no_access(self):
 
         # Test variables
-        testsolr = self.make_testsolr_without_access()
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        data_node = TESTVALUES['data_node']
+        testsolr = TESTHELPERS.get_testsolr(switched_off=True)
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrSwitchedOff):
             resp = testsolr.retrieve_file_handles_of_same_dataset(
-                drs_id=drs_id,
-                version_number=version_number,
-                data_node=data_node
+                drs_id=DRS_ID,
+                version_number=DS_VERSION,
+                data_node=DATA_NODE
             )
 
 
@@ -177,7 +164,7 @@ class SolrTestCase(unittest.TestCase):
     def test_retrieve_file_handles_of_same_dataset_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        prefix = TESTVALUES['prefix']
+        prefix = PREFIX_NO_HDL
         response_json = {
             "responseHeader":{},
             "response":{},
@@ -191,20 +178,17 @@ class SolrTestCase(unittest.TestCase):
                 }
             }
         }
-        mock_response = tests.mocks.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
+        mock_response = tests.resources.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        data_node = TESTVALUES['data_node']
+        testsolr = TESTHELPERS.get_testsolr()
 
         # Run code to be tested:
         resp = testsolr.retrieve_file_handles_of_same_dataset(
-            drs_id=drs_id,
-            version_number=version_number,
-            data_node=data_node
+            drs_id=DRS_ID,
+            version_number=DS_VERSION,
+            data_node=DATA_NODE
         )
 
         # Check result:
@@ -219,7 +203,7 @@ class SolrTestCase(unittest.TestCase):
         getpatch.side_effect = requests.exceptions.ConnectionError()
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
+        testsolr = TESTHELPERS.get_testsolr()
         query = testsolr.make_solr_base_query()
 
         # Run code to be tested and check exception:
@@ -231,7 +215,7 @@ class SolrTestCase(unittest.TestCase):
     def test_retrieve_datasethandles_or_versionnumbers_of_allversions_pids_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        prefix = TESTVALUES['prefix']
+        prefix = PREFIX_NO_HDL
         response_json = {
             "responseHeader":{},
             "response":{},
@@ -245,15 +229,14 @@ class SolrTestCase(unittest.TestCase):
                 }
             }
         }
-        mock_response = tests.mocks.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
+        mock_response = tests.resources.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
-        drs_id = TESTVALUES['drs_id1']
+        testsolr = TESTHELPERS.get_testsolr()
 
         # Run code to be tested:
-        resp = testsolr.retrieve_datasethandles_or_versionnumbers_of_allversions(drs_id)
+        resp = testsolr.retrieve_datasethandles_or_versionnumbers_of_allversions(DRS_ID)
 
         # Check result:
         expected = {'version_numbers': None, 'dataset_handles': ['hdl:'+prefix+'/345', 'hdl:'+prefix+'/234', 'hdl:'+prefix+'/123']}
@@ -264,7 +247,7 @@ class SolrTestCase(unittest.TestCase):
     def test_retrieve_datasethandles_or_versionnumbers_of_allversions_vers_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        prefix = TESTVALUES['prefix']
+        prefix = PREFIX_NO_HDL
         response_json = {
             "responseHeader":{},
             "response":{},
@@ -278,15 +261,14 @@ class SolrTestCase(unittest.TestCase):
                 }
             }
         }
-        mock_response = tests.mocks.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
+        mock_response = tests.resources.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
-        drs_id = TESTVALUES['drs_id1']
+        testsolr = TESTHELPERS.get_testsolr()
 
         # Run code to be tested:
-        resp = testsolr.retrieve_datasethandles_or_versionnumbers_of_allversions(drs_id)
+        resp = testsolr.retrieve_datasethandles_or_versionnumbers_of_allversions(DRS_ID)
 
         # Check result:
         expected = {'version_numbers': ['201622', '201611', '201633'], 'dataset_handles': None}
@@ -299,7 +281,7 @@ class SolrTestCase(unittest.TestCase):
     def test_retrieve_datasethandles_or_versionnumbers_of_allversions_both_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        prefix = TESTVALUES['prefix']
+        prefix = PREFIX_NO_HDL
         response_json = {
             "responseHeader":{},
             "response":{},
@@ -318,12 +300,12 @@ class SolrTestCase(unittest.TestCase):
                 }
             }
         }
-        mock_response = tests.mocks.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
+        mock_response = tests.resources.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
-        drs_id = TESTVALUES['drs_id1']
+        testsolr = TESTHELPERS.get_testsolr()
+        drs_id = DRS_ID
 
         # Run code to be tested:
         resp = testsolr.retrieve_datasethandles_or_versionnumbers_of_allversions(drs_id)
@@ -341,7 +323,7 @@ class SolrTestCase(unittest.TestCase):
     def test_retrieve_datasethandles_or_versionnumbers_of_allversions_none_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        prefix = TESTVALUES['prefix']
+        prefix = PREFIX_NO_HDL
         response_json = {
             "responseHeader":{},
             "response":{},
@@ -350,12 +332,12 @@ class SolrTestCase(unittest.TestCase):
                 }
             }
         }
-        mock_response = tests.mocks.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
+        mock_response = tests.resources.responsemock.MockSolrResponse(success=True, content=json.dumps(response_json))
         getpatch.return_value = mock_response
 
         # Test variables
-        testsolr = self.make_testsolr_with_access()
-        drs_id = TESTVALUES['drs_id1']
+        testsolr = TESTHELPERS.get_testsolr()
+        drs_id = DRS_ID
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrResponseError):
@@ -366,10 +348,9 @@ class SolrTestCase(unittest.TestCase):
     def test_retrieve_datasethandles_or_versionnumbers_of_allversions_no_access(self):
 
         # Test variables
-        testsolr = self.make_testsolr_without_access()
-        drs_id = TESTVALUES['drs_id1']
+        testsolr = TESTHELPERS.get_testsolr(switched_off=True)
 
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrSwitchedOff):
-            resp = testsolr.retrieve_datasethandles_or_versionnumbers_of_allversions(drs_id)
+            resp = testsolr.retrieve_datasethandles_or_versionnumbers_of_allversions(DRS_ID)
 
