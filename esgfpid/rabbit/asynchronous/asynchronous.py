@@ -32,9 +32,9 @@ import copy
 import datetime
 import logging
 import esgfpid.utils
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .rabbitthread import RabbitThread
 from .thread_statemachine import StateMachine
-from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .exceptions import OperationNotAllowed
 
 LOGGER = logging.getLogger(__name__)

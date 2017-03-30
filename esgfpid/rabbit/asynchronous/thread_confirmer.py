@@ -136,17 +136,17 @@ class Confirmer(object):
                 self.__remove_delivery_tag_and_message_single(candidate_deliv_tag)
 
 
-    # TODO USED BY???
+    ''' Called by unit test.'''
     def get_num_unconfirmed(self):
         return len(self.__unconfirmed_messages_dict)
 
-    # TODO USED BY???
+    ''' Called by unit test.'''
     def get_copy_of_unconfirmed_tags(self):
         return self.__unconfirmed_delivery_tags[:]
 
     '''
     Called by the main thread, for rescuing, after joining.
-    Any other? TODO
+    And by unit test.
     '''
     def get_copy_of_nacked(self):
         return self.__nacked_messages[:]

@@ -6,13 +6,13 @@ import copy
 import datetime
 import logging
 import esgfpid.utils
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .thread_returnhandler import UnacceptedMessagesHandler
 from .thread_statemachine import StateMachine
 from .thread_builder import ConnectionBuilder
 from .thread_feeder import RabbitFeeder
 from .thread_shutter import ShutDowner
 from .thread_confirmer import Confirmer
-from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .exceptions import OperationNotAllowed
 
 LOGGER = logging.getLogger(__name__)

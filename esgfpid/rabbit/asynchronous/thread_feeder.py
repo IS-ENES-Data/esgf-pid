@@ -195,7 +195,7 @@ class RabbitFeeder(object):
     def __try_publishing_otherwise_put_back_to_stack(self, message):
         try:
             # Getting message info:
-            properties = connparams.get_properties_for_message_publications()
+            properties = self.nodemanager.get_properties_for_message_publications()
             routing_key, msg_string = rabbitutils.get_routing_key_and_string_message_from_message_if_possible(message)
             routing_key = routing_key+'.'+self.thread.get_open_word_for_routing_key()
             

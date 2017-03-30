@@ -1,5 +1,4 @@
 import logging
-import json
 import esgfpid.utils
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 
