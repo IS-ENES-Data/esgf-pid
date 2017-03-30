@@ -1,6 +1,6 @@
 import logging
-import esgfpid.rabbit.rabbit
-import esgfpid.solr.solr
+import esgfpid.rabbit
+import esgfpid.solr
 import esgfpid.utils
 
 LOGGER = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class Coupler(object):
 
     def __create_message_sender(self, args):
         self.__complete_credentials_for_open_nodes(args)
-        self.__rabbit_message_sender = esgfpid.rabbit.rabbit.RabbitMessageSender(
+        self.__rabbit_message_sender = esgfpid.rabbit.RabbitMessageSender(
             exchange_name=args['messaging_service_exchange_name'],
             credentials=args['messaging_service_credentials'],
             test_publication=args['test_publication'],
@@ -59,7 +59,7 @@ class Coupler(object):
                 cred['password'] = 'jzlnL78ZpExV#_QHz'
 
     def __create_solr_sender(self, args):
-        self.__solr_sender = esgfpid.solr.solr.SolrInteractor(
+        self.__solr_sender = esgfpid.solr.SolrInteractor(
             solr_url=args['solr_url'],
             prefix=args['handle_prefix'],
             https_verify=args['solr_https_verify'],
