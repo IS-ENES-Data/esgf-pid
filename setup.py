@@ -17,6 +17,7 @@ packages = [
     'esgfpid/assistant',
     'esgfpid/utils',
     'esgfpid/rabbit',
+    'esgfpid/rabbit/synchronous',
     'esgfpid/rabbit/asynchronous',
     'esgfpid/solr',
     'esgfpid/solr/tasks'
