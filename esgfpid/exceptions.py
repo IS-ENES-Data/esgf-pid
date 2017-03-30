@@ -9,7 +9,15 @@ so we prefer to not even pretend we can return anything.
 '''
 class MessageNotDeliveredException(Exception):
 
-    def __init__(self, custom_message):
+    def __init__(self, custom_message, undelivered_message):
+        self.rabbit_msg = undelivered_message
+        self.msg = 'Message could not be delivered'
+        self.custom_message = custom_message
+
+        if self.custom_message is not None:
+            self.msg += ': '+self.custom_message
+        self.msg += '.'
+
         super(self.__class__, self).__init__(custom_message)
 
 class OperationUnsupportedException(Exception):
