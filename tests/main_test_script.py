@@ -167,26 +167,24 @@ if __name__ == '__main__':
 
         if 'nodemanager' in param.modules or 'rabbit' in param.modules or 'all' in param.modules:
 
-            if False:
-                from testcases.rabbit.nodemanager_tests import NodemanagerTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(NodemanagerTestCase)
-                tests_to_run.append(tests)
-                numtests += tests.countTestCases()
+            from testcases.rabbit.nodemanager_tests import NodemanagerTestCase
+            tests = unittest.TestLoader().loadTestsFromTestCase(NodemanagerTestCase)
+            tests_to_run.append(tests)
+            numtests += tests.countTestCases()
 
         if 'rabbit' in param.modules or 'all' in param.modules:
 
-            if False:
-                from testcases.rabbit.rabbit_api_tests import RabbitTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitTestCase)
-                tests_to_run.append(tests)
-                n = tests.countTestCases()
-                numtests += n
-                
-                from testcases.rabbit.rabbitutil_tests import RabbitUtilsTestCase
-                tests = unittest.TestLoader().loadTestsFromTestCase(RabbitUtilsTestCase)
-                tests_to_run.append(tests)
-                n = tests.countTestCases()
-                numtests += n
+            from testcases.rabbit.rabbit_api_tests import RabbitTestCase
+            tests = unittest.TestLoader().loadTestsFromTestCase(RabbitTestCase)
+            tests_to_run.append(tests)
+            n = tests.countTestCases()
+            numtests += n
+            
+            from testcases.rabbit.rabbitutil_tests import RabbitUtilsTestCase
+            tests = unittest.TestLoader().loadTestsFromTestCase(RabbitUtilsTestCase)
+            tests_to_run.append(tests)
+            n = tests.countTestCases()
+            numtests += n
 
             if param.syn:
 
