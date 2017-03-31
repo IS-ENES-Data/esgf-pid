@@ -78,9 +78,13 @@ class AsynchronousRabbitConnector(object):
         self.__LOGFREQUENCY = 10
 
         # Actually created the thread:
-        self.__thread = RabbitThread(self.__statemachine, self.__unpublished_messages_queue, self, node_manager)
+        #self.__thread = RabbitThread(self.__statemachine, self.__unpublished_messages_queue, self, node_manager)
+        self.__thread = self.__create_thread(node_manager)
 
         logdebug(LOGGER, 'Initializing rabbit connector... done.')
+
+    def __create_thread(self, node_manager): # easy to mock/patch in unit test!
+        return RabbitThread(self.__statemachine, self.__unpublished_messages_queue, self, node_manager)
 
 
     '''
