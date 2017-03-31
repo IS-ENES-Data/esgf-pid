@@ -145,7 +145,7 @@ class RabbitFeeder(object):
         # If no messages left, well, nothing to publish!
         try:
             message = self.__get_message_from_stack()
-        except Queue.Empty, e:
+        except Queue.Empty as e:
             logtrace(LOGGER, 'Queue empty. No more messages to be published.')
             return
 
@@ -158,10 +158,10 @@ class RabbitFeeder(object):
                 self.__postparations_after_successful_feeding(message)
 
         # Treat various errors that may occur during publishing:
-        except pika.exceptions.ChannelClosed, e:
+        except pika.exceptions.ChannelClosed as e:
             logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because the Channel is closed (%s)', self.__delivery_number+1, e.message)
 
-        except AttributeError, e:
+        except AttributeError as e:
             if self.thread._channel is None:
                 logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because there is no channel.', self.__delivery_number+1)
             else:
