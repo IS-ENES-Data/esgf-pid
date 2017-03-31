@@ -208,18 +208,13 @@ if __name__ == '__main__':
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
 
-                #from testcases.rabbit.asyn.rabbit_thread_acceptor_tests import ThreadFeederTestCase
-                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadFeederTestCase)
-                #tests_to_run.append(tests)
-                #numtests += tests.countTestCases()
+                from testcases.rabbit.asyn.thread_feeder_tests import ThreadFeederTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadFeederTestCase)
+                tests_to_run.append(tests)
+                numtests += tests.countTestCases()
 
                 #from testcases.rabbit_thread_shutter_tests import ThreadShutterTestCase
                 #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadShutterTestCase)
-                #tests_to_run.append(tests)
-                #numtests += tests.countTestCases()
-
-                #from testcases.rabbit_thread_feeder_tests import ThreadFeederTestCase
-                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadFeederTestCase)
                 #tests_to_run.append(tests)
                 #numtests += tests.countTestCases()
 
