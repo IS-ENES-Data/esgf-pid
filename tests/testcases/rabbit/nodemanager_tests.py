@@ -79,7 +79,7 @@ class NodemanagerTestCase(unittest.TestCase):
 
         # Test variables:
         mynodemanager = esgfpid.rabbit.nodemanager.NodeManager()
-        args = TESTHELPERS.get_args_for_nodemanager(priority=None)
+        args = TESTHELPERS.get_args_for_nodemanager(priority=None, vhost='foo')
 
         # Run code to be tested:
         mynodemanager.add_trusted_node(**args)
@@ -96,6 +96,7 @@ class NodemanagerTestCase(unittest.TestCase):
         self.assertFalse(node['is_open'])
         self.assertIsInstance(node['credentials'], pika.PlainCredentials)
         self.assertIsInstance(node['params'], pika.ConnectionParameters)
+        self.assertEquals(node['vhost'], 'foo')
 
     '''
     Test if I can pass several trusted nodes with no priority.
