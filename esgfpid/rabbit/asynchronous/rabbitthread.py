@@ -142,7 +142,7 @@ class RabbitThread(threading.Thread):
         self.__nodemanager = node_manager
         self.__confirmer = Confirmer()
         self.__returnhandler = UnacceptedMessagesHandler(self)
-        self.__feeder = RabbitFeeder(self, self.__statemachine)
+        self.__feeder = RabbitFeeder(self, self.__statemachine, self.__nodemanager)
         self.__shutter = ShutDowner(self, self.__statemachine)
 
         '''

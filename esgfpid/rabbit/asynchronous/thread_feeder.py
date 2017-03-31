@@ -18,7 +18,7 @@ is publish_message(), which is called from the main thread.
 '''
 class RabbitFeeder(object):
 
-    def __init__(self, thread, statemachine):
+    def __init__(self, thread, statemachine, nodemanager):
         self.thread = thread
 
         '''
@@ -26,6 +26,8 @@ class RabbitFeeder(object):
         Before publishing a message, we check the state, and we log 
         the state. '''
         self.statemachine = statemachine
+
+        self.nodemanager = nodemanager
 
         '''
         The deliver_number is important. It defines the number of the message
