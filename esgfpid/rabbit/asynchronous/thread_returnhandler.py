@@ -61,18 +61,19 @@ class UnacceptedMessagesHandler(object):
 
     def __add_emergency_routing_key(self, body_json):
         emergency_routing_key = defaults.RABBIT_EMERGENCY_ROUTING_KEY
+        key_for_routing_key = esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY
 
 
         # If it already HAS the emergency routing key, do not adapt the routing key
         # (This means the message already came back a second time...)
-        if body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] == emergency_routing_key:
+        if body_json[key_for_routing_key] == emergency_routing_key:
             pass
 
         # Otherwise, store the original one in another field...
         # and overwrite it by the emergency routing key:
         else:
             try:
-                body_json['original_routing_key'] = body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY]
+                body_json['original_routing_key'] = body_json[key_for_routing_key]
 
             # If there was no routing key, set the original one to 'None'
             except KeyError:
@@ -80,7 +81,7 @@ class UnacceptedMessagesHandler(object):
                 body_json['original_routing_key'] = 'None'
 
             logdebug(LOGGER, 'Adding emergency routing key %s', emergency_routing_key)
-            body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] = emergency_routing_key
+            body_json[key_for_routing_key] = emergency_routing_key
         return body_json
 
     def __resend_an_unroutable_message(self, message):
