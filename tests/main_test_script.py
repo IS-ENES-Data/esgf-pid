@@ -208,11 +208,18 @@ if __name__ == '__main__':
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
 
+                # Feeder needs some mocking...
                 from testcases.rabbit.asyn.thread_feeder_tests import ThreadFeederTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(ThreadFeederTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
 
+                # Returner needs some mocking...
+                from testcases.rabbit.asyn.thread_returner_tests import ThreadReturnerTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadReturnerTestCase)
+                tests_to_run.append(tests)
+                numtests += tests.countTestCases()
+                
                 #from testcases.rabbit_thread_shutter_tests import ThreadShutterTestCase
                 #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadShutterTestCase)
                 #tests_to_run.append(tests)

@@ -65,6 +65,16 @@ DATASETHANDLE_HDL2 = PREFIX_WITH_HDL+'/'+SUFFIX_DS2
 # Mocks
 #
 
+
+def get_thread_mock():
+    return MockThread()
+
+def get_thread_mock2(error=None):
+    return MockThread2(error=error)
+
+def get_thread_mock3(error=None):
+    return MockThread3(error=error)
+
 class MockThread(object):
 
     def __init__(self):
@@ -106,7 +116,7 @@ class MockThread(object):
         return self.unconfirmed
 
 '''
-Used for testing the thread_feeder:
+Used for testing the thread_feeder.
 '''
 class MockThread2(object):
 
@@ -121,7 +131,6 @@ class MockThread2(object):
         self._channel = mock.MagicMock()
         if error is not None:
             self._channel.basic_publish.side_effect = error
-
 
     def get_message_from_unpublished_stack(self, seconds):
         if len(self.messages) == 0:
@@ -147,6 +156,20 @@ class MockThread2(object):
 
     def put_to_unconfirmed_messages_dict(self, tag, msg):
         self.undelivered_msg.append(msg)
+
+
+'''
+Used for testing the thread_returner.
+'''
+class MockThread3(object):
+
+    def __init__(self, error=None):
+        # Rabbit API, used by modules:
+        self._channel = mock.MagicMock()
+        self.send_a_message = mock.MagicMock()
+
+        if error is not None:
+            self.send_a_message.side_effect = error
 
 
 
@@ -366,11 +389,6 @@ def get_synchronous_rabbit():
 def get_asynchronous_rabbit():
     return esgfpid.rabbit.asynchronous.AsynchronousRabbitConnector(get_nodemanager())
 
-def get_thread_mock():
-    return MockThread()
-
-def get_thread_mock2(error=None):
-    return MockThread2(error=error)
 
 #
 # Solr
