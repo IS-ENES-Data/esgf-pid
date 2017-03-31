@@ -28,6 +28,7 @@ pikalogger.setLevel(logging.INFO)
 
 # Simple call with pika logs to console:
 #rabbitmqtest -ho foo.com -u user -p passy -pik
+# (This argument can always be added)
 
 # Message test:
 #rabbitmqtest -ho foo.com -u user -p passy -m foomessage -ex exch
@@ -92,7 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('-u','--user', nargs=1, action='store', required=True,
                    help='The RabbitMQ user name.')
     parser.add_argument('-p','--password', nargs=1, action='store', required=True,
-                   help='The RabbitMQ password.')
+                   help='The RabbitMQ password. Please escape "!" and "$" and "`" with backslashes!')
     # Optional, for connection
     parser.add_argument('-vh', '--virtualhost', nargs='?', action='store',
                     help='The virtual host to connect to.')
@@ -117,6 +118,9 @@ if __name__ == '__main__':
     # Get mandatory args
     user = param.user[0]
     password = param.password[0]
+    if '\!' in password:
+        print('Replacing "\!" in password with "!".')
+        password = password.replace('\!', '!')
     host = param.host[0]
 
     # Get optional args
