@@ -203,7 +203,7 @@ if __name__ == '__main__':
                 numtests += tests.countTestCases()
 
                 # Confirmer is pretty isolated and easy to test.
-                from testcases.rabbit.asyn.rabbit_thread_confirmer_tests import ThreadConfirmerTestCase
+                from testcases.rabbit.asyn.thread_confirmer_tests import ThreadConfirmerTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(ThreadConfirmerTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
