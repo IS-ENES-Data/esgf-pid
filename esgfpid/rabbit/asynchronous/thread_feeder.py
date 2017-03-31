@@ -119,7 +119,7 @@ class RabbitFeeder(object):
                 if self.__have_not_warned_about_connection_fail_yet:
                     logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. The connection failed definitively.')
                     self.__have_not_warned_about_connection_fail_yet = False
-            elif self.statemachine.detail_closed_by_publisher:
+            elif self.statemachine.get_detail_closed_by_publisher():
                 logtrace(LOGGER, 'Cannot publish message to RabbitMQ, as the connection was closed by the user.')
                 if self.__have_not_warned_about_force_close_yet:
                     logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. The sender was closed by the user.')
