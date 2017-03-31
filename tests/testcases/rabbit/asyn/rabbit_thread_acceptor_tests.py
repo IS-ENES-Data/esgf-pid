@@ -1,8 +1,7 @@
 import unittest
-import mock
 import logging
-import copy
-import os
+import Queue
+import pika
 import esgfpid.rabbit.asynchronous.thread_feeder
 from esgfpid.rabbit.asynchronous.exceptions import OperationNotAllowed
 
@@ -21,9 +20,9 @@ class ThreadFeederTestCase(unittest.TestCase):
     def tearDown(self):
         LOGGER.info('#############################')
 
-    def make_feeder(self):
+    def make_feeder(self, error=None):
 
-        thread = TESTHELPERS.get_thread_mock()
+        thread = TESTHELPERS.get_thread_mock2(error)
         statemachine = esgfpid.rabbit.asynchronous.thread_statemachine.StateMachine()
         nodemanager = TESTHELPERS.get_nodemanager()
 
@@ -52,33 +51,120 @@ class ThreadFeederTestCase(unittest.TestCase):
         feeder.publish_message()
 
         # Check result:
-        #feeder.put_message_into_queue_of_unsent_messages.assert_called_with('foo')
-        thread._channel.basic_publish.assert_any_call()
+        # Publish was called:
+        thread._channel.basic_publish.assert_called_once()
+        # Message not waiting in queue anymore:
         self.assertNotIn(msg, thread.messages)
 
 
+    def test_send_message_empty(self):
+
+        # Preparation:
+        feeder, thread = self.make_feeder()
+
+        # Run code to be tested:
+        feeder.publish_message()
+        feeder.publish_message()
+
+        # Check result:
+        # Publish was not called:
+        thread._channel.basic_publish.assert_not_called()
+  
+
+    def test_send_message_error(self):
+
+        # Preparation:
+        msg = "{'foo':'bar'}"
+        feeder, thread = self.make_feeder(error=pika.exceptions.ChannelClosed)
+        thread.messages.append(msg)
+
+        # Run code to be tested:
+        feeder.publish_message()
+
+        # Check result:
+        # Publish was tried:
+        thread._channel.basic_publish.assert_called_once()
+        # Message was put back to queue:
+        self.assertIn(msg, thread.messages)
+        self.assertIn(msg, thread.put_back)
+
+    def test_send_message_NOT_STARTED_YET(self):
+
+        # Preparation:
+        msg = "{'foo':'bar'}"
+        feeder, thread = self.make_feeder()
+        thread.messages.append(msg)
+        feeder.statemachine._StateMachine__state = 0
+        
+        # Run code to be tested:
+        feeder.publish_message()
+
+        # Check result:
+        self.assertTrue(feeder.statemachine.is_NOT_STARTED_YET())
+        self.assertIn(msg, thread.messages)
+        thread._channel.basic_publish.assert_not_called()
+
+    def test_send_message_PERMANENTLY_UNAVAILABLE_1(self):
+
+        # Preparation:
+        msg = "{'foo':'bar'}"
+        feeder, thread = self.make_feeder()
+        thread.messages.append(msg)
+        feeder.statemachine.set_to_permanently_unavailable()
+        feeder.statemachine.set_detail_closed_by_publisher()
+
+        # Run code to be tested:
+        feeder.publish_message()
+
+        # Check result:
+        self.assertTrue(feeder.statemachine.is_PERMANENTLY_UNAVAILABLE())
+        self.assertIn(msg, thread.messages)
+        thread._channel.basic_publish.assert_not_called()
+
+    def test_send_message_PERMANENTLY_UNAVAILABLE_2(self):
+
+        # Preparation:
+        msg = "{'foo':'bar'}"
+        feeder, thread = self.make_feeder()
+        thread.messages.append(msg)
+        feeder.statemachine.set_to_permanently_unavailable()
+        feeder.statemachine.detail_could_not_connect = True
+
+        # Run code to be tested:
+        feeder.publish_message()
+
+        # Check result:
+        self.assertTrue(feeder.statemachine.is_PERMANENTLY_UNAVAILABLE())
+        self.assertIn(msg, thread.messages)
+        thread._channel.basic_publish.assert_not_called()
+
+    def test_send_message_WAITING_TO_BE_AVAILABLE(self):
+
+        # Preparation:
+        msg = "{'foo':'bar'}"
+        feeder, thread = self.make_feeder()
+        thread.messages.append(msg)
+        feeder.statemachine.set_to_waiting_to_be_available()
+        
+        # Run code to be tested:
+        feeder.publish_message()
+
+        # Check result:
+        self.assertIn(msg, thread.messages)
+        self.assertTrue(feeder.statemachine.is_WAITING_TO_BE_AVAILABLE())
+        thread._channel.basic_publish.assert_not_called()
+
     if False:
 
-        def test_send_many_messages_ok(self):
-
-            # Preparation:
-            feeder = self.make_feeder()
-
-            # Run code to be tested:
-            feeder.send_many_messages(['foo','bar'])
-
-            # Check result:
-            self.feeder.put_message_into_queue_of_unsent_messages.assert_any_call('bar')
-            self.feeder.put_message_into_queue_of_unsent_messages.assert_any_call('foo')
-            self.thread._connection.add_timeout.call_count = 2
-
+        # is other module
         def test_resend_message_ok(self):
 
             # Preparation:
-            feeder = self.make_feeder()
-            channel = mock.MagicMock()
-            self.thread._connection._channel = channel
-            message = '{"foo":"bar","ROUTING_KEY":"myfoo"}'
+            msg = '{"foo":"bar","ROUTING_KEY":"myfoo"}'
+            feeder, thread = self.make_feeder()
+            thread.messages.append(msg)
+            #channel = mock.MagicMock()
+            #self.thread._connection._channel = channel
 
             # Run code to be tested:
 
@@ -88,73 +174,3 @@ class ThreadFeederTestCase(unittest.TestCase):
             exp = '{"original_routing_key": "myfoo", "foo": "bar", "ROUTING_KEY": "cmip6.publisher.HASH.emergency"}'
             self.feeder.put_message_into_queue_of_unsent_messages.assert_called_with(exp)
             self.thread._connection.add_timeout.assert_called_with(0, self.feeder.publish_message)
-
-        def test_send_message_no_more_accept(self):
-
-            # Preparation:
-            feeder = self.make_feeder()
-            self.statemachine._StateMachine__state = self.statemachine._StateMachine__IS_AVAILABLE_BUT_WANTS_TO_STOP
-
-            # Run code to be tested:
-            with self.assertRaises(OperationNotAllowed) as e:
-                feeder.publish_message('foo')
-            self.assertIn('Accepting no more messages', e.exception.message)
-            with self.assertRaises(OperationNotAllowed) as e:
-                feeder.send_many_messages(['foo','bar'])
-            self.assertIn('Accepting no more messages', e.exception.message)
-
-        def test_send_message_cannot_trigger_1(self):
-
-            # Preparation:
-            feeder = self.make_feeder()
-            self.statemachine._StateMachine__state = self.statemachine._StateMachine__WAITING_TO_BE_AVAILABLE
-            
-            # Run code to be tested:
-            feeder.publish_message('foo')
-
-            # Check result:
-            self.feeder.put_message_into_queue_of_unsent_messages.assert_called_with('foo')
-            self.thread._connection.add_timeout.assert_not_called()
-
-        def test_send_message_cannot_trigger_2(self):
-
-            # Preparation:
-            feeder = self.make_feeder()
-            self.statemachine._StateMachine__state = self.statemachine._StateMachine__NOT_STARTED_YET
-
-            # Run code to be tested:
-            feeder.publish_message('foo')
-
-            # Check result:
-            self.feeder.put_message_into_queue_of_unsent_messages.assert_called_with('foo')
-            self.thread._connection.add_timeout.assert_not_called()
-
-        def test_send_message_cannot_trigger_3(self):
-
-            # Preparation:
-            feeder = self.make_feeder()
-            self.statemachine._StateMachine__state = self.statemachine._StateMachine__PERMANENTLY_UNAVAILABLE
-            self.statemachine.could_not_connect = True
-
-            # Run code to be tested:
-            feeder.publish_message('foo')
-
-            # Check result:
-            self.feeder.put_message_into_queue_of_unsent_messages.assert_called_with('foo')
-            self.thread._connection.add_timeout.assert_not_called()
-
-        def test_send_message_cannot_trigger_4(self):
-
-            # Preparation:
-            feeder = self.make_feeder()
-            self.statemachine._StateMachine__state = self.statemachine._StateMachine__PERMANENTLY_UNAVAILABLE
-            self.statemachine.could_not_connect = False
-            self.statemachine.closed_by_publisher = True
-
-            # Run code to be tested:
-            feeder.send_many_messages(['foo','bar'])
-
-            # Check result:
-            self.feeder.put_message_into_queue_of_unsent_messages.assert_any_call('bar')
-            self.feeder.put_message_into_queue_of_unsent_messages.assert_any_call('foo')
-            self.thread._connection.add_timeout.assert_not_called()

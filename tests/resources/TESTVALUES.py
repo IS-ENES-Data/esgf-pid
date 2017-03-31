@@ -4,6 +4,7 @@ import tests.mocks.responsemock
 import tests.mocks.solrmock
 import tests.mocks.rabbitmock
 import tests.utils as utils
+import Queue
 from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Errata
@@ -103,6 +104,49 @@ class MockThread(object):
 
     def get_unconfirmed_messages_as_list_copy(self):
         return self.unconfirmed
+
+'''
+Used for testing the thread_feeder:
+'''
+class MockThread2(object):
+
+    def __init__(self, error=None):
+        # Used for mocking the behaviour:
+        self.messages = []
+        self.put_back = []
+        self.undelivered_msg = []
+        self.unconfirmed_tags = []
+        self.exchange_name = 'foo'
+        # Rabbit API, used by modules:
+        self._channel = mock.MagicMock()
+        if error is not None:
+            self._channel.basic_publish.side_effect = error
+
+
+    def get_message_from_unpublished_stack(self, seconds):
+        if len(self.messages) == 0:
+            raise Queue.Empty()
+        else:
+            return self.messages.pop()
+
+    def get_num_unpublished(self):
+        return len(self.messages)
+
+    def get_open_word_for_routing_key(self):
+        return 'foo'
+
+    def put_one_message_into_queue_of_unsent_messages(self, msg):
+        self.messages.append(msg)
+        self.put_back.append(msg)
+
+    def get_exchange_name(self):
+        return self.exchange_name
+
+    def put_to_unconfirmed_delivery_tags(self, tag):
+        self.unconfirmed_tags.append(tag)
+
+    def put_to_unconfirmed_messages_dict(self, tag, msg):
+        self.undelivered_msg.append(msg)
 
 
 
@@ -325,7 +369,8 @@ def get_asynchronous_rabbit():
 def get_thread_mock():
     return MockThread()
 
-
+def get_thread_mock2(error=None):
+    return MockThread2(error=error)
 
 #
 # Solr
