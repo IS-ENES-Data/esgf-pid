@@ -23,6 +23,9 @@ pikalogger.setLevel(logging.INFO)
 # Simple call:
 #rabbitmqtest -ho foo.com -u user -p passy
 
+# Simple call with a virtual host
+#rabbitmqtest -ho foo.com -u user -p passy -vh foo
+
 # Simple call with pika logs to console:
 #rabbitmqtest -ho foo.com -u user -p passy -pik
 
@@ -83,13 +86,16 @@ if __name__ == '__main__':
     # Argument parsing
     parser = argparse.ArgumentParser(description=desc)
     
-    # Modules to be tested:
+    # Mandatory, for connection
     parser.add_argument('-ho','--host', nargs=1, action='store', required=True,
                    help='The RabbitMQ host to connect to.')
     parser.add_argument('-u','--user', nargs=1, action='store', required=True,
                    help='The RabbitMQ user name.')
     parser.add_argument('-p','--password', nargs=1, action='store', required=True,
                    help='The RabbitMQ password.')
+    # Optional, for connection
+    parser.add_argument('-vh', '--virtualhost', nargs='?', action='store',
+                    help='The virtual host to connect to.')
     # Optional, for sending messages:
     parser.add_argument('-m', '--message', nargs='?', action='store',
                     help='The test message to send. Can be any string.')
@@ -129,6 +135,9 @@ if __name__ == '__main__':
     synchronous_mode = True
     if param.asynchron is not None and param.asynchron == True:
         synchronous_mode = False
+    vhost = None
+    if param.virtualhost is not None:
+        vhost = param.virtualhost
 
     # Switch on pika log:
     if param.pikalog is not None and param.pikalog == True:
@@ -182,6 +191,8 @@ if __name__ == '__main__':
    # Make connector
     print('\nTesting connection to RabbitMQ at %s (user %s, password ****)' % (host, user))
     cred = dict(user=user, password=password, url=host)
+    if vhost is not None:
+        cred['vhost'] = vhost
     connector = esgfpid.Connector(
         handle_prefix=prefix,
         messaging_service_exchange_name=exch,
