@@ -58,7 +58,7 @@ class Connector(object):
             Each needs to have the entries: "user", "password", "url".
             They may have an integer "priority" too. If two nodes have
             the same priority, the library chooses randomly between
-            them.
+            them. They also may have a "vhost" (RabbitMQ virtual host).
             Dictionaries for 'open nodes' do not need a password
             to be provided. Open nodes are only used if no more
             other nodes are available.

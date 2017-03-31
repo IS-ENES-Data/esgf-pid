@@ -153,6 +153,11 @@ class NodeManager(object):
         else:
             node_info_dict['priority'] = 'zzzz_last'
 
+        # Complete the object:
+        vhost = None
+        if 'vhost' in node_info_dict and node_info_dict['vhost'] is not None:
+            vhost = node_info_dict['vhost']
+
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_PIKA_SOCKET_TIMEOUT
         connection_attempts = esgfpid.defaults.RABBIT_PIKA_CONNECTION_ATTEMPTS
@@ -162,11 +167,13 @@ class NodeManager(object):
         # https://pika.readthedocs.org/en/0.9.6/connecting.html
         params = pika.ConnectionParameters(
             host=node_info_dict['host'], # TODO: PORTS ETC.
+            virtual_host=vhost,
             credentials=node_info_dict['credentials'],
             socket_timeout=socket_timeout,
             connection_attempts=connection_attempts,
             retry_delay=retry_delay
         )
+
         node_info_dict['params'] = params
 
         # Add some stuff
