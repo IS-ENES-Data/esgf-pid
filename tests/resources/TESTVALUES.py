@@ -75,12 +75,6 @@ class MockThread(object):
         self.nacked = []
         self.unconfirmed = []
         self.messages = []
-        # RabbitThread attributes:
-        self._channel = mock.MagicMock()
-        self._channel.basic_publish = mock.MagicMock()
-        self._connection = mock.MagicMock()
-
-
 
     # RabbitThread API:
 
@@ -109,29 +103,6 @@ class MockThread(object):
 
     def get_unconfirmed_messages_as_list_copy(self):
         return self.unconfirmed
-
-    def get_message_from_unpublished_stack(self, seconds):
-        return self.messages.pop()
-
-    def get_num_unpublished(self):
-        return len(self.messages)
-
-    def get_open_word_for_routing_key(self):
-        return 'foo'
-
-    def put_one_message_into_queue_of_unsent_messages(self, msg):
-        self.messages.append(msg)
-
-    def get_exchange_name(self):
-        return EXCHANGE_NAME
-
-    def put_to_unconfirmed_delivery_tags(self, foo):
-        pass
-
-    def put_to_unconfirmed_messages_dict(self, foo, bar):
-        pass
-
-
 
 
 
