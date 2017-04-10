@@ -43,8 +43,8 @@ class ConnectorTestCase(unittest.TestCase):
     If open nodes are allowed, this should work fine.
     Otherwise, we expect an exception.
     '''
-    @unittest.skipIf(not(globalvar.RABBIT_OPEN_NOT_ALLOWED), '(this test cannot open rabbit nodes)')
-    def test_init_trusted_and_open_ok(self):
+    @unittest.skipIf(not(globalvar.RABBIT_OPEN_NOT_ALLOWED), '(this test cannot cope with open rabbit nodes)')
+    def test_init_trusted_and_open_ok_1(self):
 
         # Preparations: Connector args.
         # Use trusted and open node:
@@ -64,7 +64,7 @@ class ConnectorTestCase(unittest.TestCase):
     Otherwise, we expect an exception.
     '''
     @unittest.skipIf(globalvar.RABBIT_OPEN_NOT_ALLOWED, '(this test uses open rabbit nodes)')
-    def test_init_trusted_and_open_ok(self):
+    def test_init_trusted_and_open_ok_2(self):
 
         # Preparations: Connector args.
         # Use trusted and open node:
@@ -89,7 +89,6 @@ class ConnectorTestCase(unittest.TestCase):
     def test_init_no_prefix(self):
 
         # Preparations: Connector args.
-        # Use trusted and open node:
         rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED]
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds,
