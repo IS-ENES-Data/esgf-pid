@@ -237,7 +237,7 @@ class Connector(object):
 
     def __throw_error_if_prefix_not_in_list(self):
         if self.prefix is None:
-            raise esgfpid.exceptions.ArgumentError('Prefix not set yet, cannot check its existence.')
+            raise esgfpid.exceptions.ArgumentError('Missing handle prefix!')
         if self.prefix not in esgfpid.defaults.ACCEPTED_PREFIXES:
             raise esgfpid.exceptions.ArgumentError('The prefix "%s" is not a valid prefix! Please check your config. Accepted prefixes: %s'
                 % (self.prefix, ', '.join(esgfpid.defaults.ACCEPTED_PREFIXES)))

@@ -103,7 +103,7 @@ class ConnectorTestCase(unittest.TestCase):
             testconnector = esgfpid.Connector(**args)
 
         # Check result: Error message ok?
-        self.assertIn('Prefix not set yet', str(e.exception))
+        self.assertIn('Missing handle prefix', str(e.exception))
 
     def test_init_wrong_prefix(self):
 
