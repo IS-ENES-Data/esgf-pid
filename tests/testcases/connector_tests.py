@@ -214,6 +214,42 @@ class ConnectorTestCase(unittest.TestCase):
         self.assertEquals(node_manager.get_num_left_trusted(), 0)
         self.assertEquals(node_manager.get_num_left_open(),1)
 
+    def test_init_rabbit_user_as_list(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = [RABBIT_USER_TRUSTED],
+            password = RABBIT_PASSWORD
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        testconnector = esgfpid.Connector(**args)
+
+        # Check result: Did init work?
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+
+    def test_init_too_many_rabbit_users(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = [RABBIT_USER_TRUSTED, 'johndoe', 'alicedoe'],
+            password = RABBIT_PASSWORD
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        with self.assertRaises(ArgumentError) as e:
+            testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Wrong type', str(e.exception))
 
     '''
     Test if the solr URL is passed to the consumer in the

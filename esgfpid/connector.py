@@ -190,13 +190,40 @@ class Connector(object):
 
     def __check_rabbit_credentials_completeness(self, args):
         for credentials in args['messaging_service_credentials']:
+
+            # Check presence of URL:
             if 'url' not in credentials:
                 raise esgfpid.exceptions.ArgumentError('Missing URL for messaging service!')
+
+            # Check type of URL:
+            elif not type(credentials['url']) == type('foo'):
+                if type(credentials['url']) == type([]) and len(credentials['url']) == 1:
+                    credentials['url'] = credentials['url'][0]
+                else:
+                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service URL. Expected string, got %s.' % type(credentials['url']))
+
+            # Check presence of user:
             if 'user' not in credentials:
                 raise esgfpid.exceptions.ArgumentError('Missing user for messaging service "%s"!' % credentials['url'])
+
+            # Check type of user:
+            elif not type(credentials['user']) == type('foo'):
+                if type(credentials['user']) == type([]) and len(credentials['user']) == 1:
+                    credentials['user'] = credentials['user'][0]
+                else:
+                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service username. Expected string, got %s.' % type(credentials['user']))
+
+            # Check presence of password:
             if 'password' not in credentials:
-                # Remove exception to enable use of open node!
+                # If you want open nodes to be enabled again, remove this exception!
                 raise esgfpid.exceptions.ArgumentError('Missing password for messaging service "%s"!' % credentials['url'])
+
+            # Check type of user:
+            elif not type(credentials['password']) == type('foo'):
+                if type(credentials['password']) == type([]) and len(credentials['password']) == 1:
+                    credentials['password'] = credentials['password'][0]
+                else:
+                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service password. Expected string, got %s.' % type(credentials['password']))
 
     '''
     These are not (only) needed during initialisation, but
