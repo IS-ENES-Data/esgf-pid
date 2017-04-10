@@ -193,10 +193,10 @@ class Connector(object):
             if 'url' not in credentials:
                 raise esgfpid.exceptions.ArgumentError('Missing URL for messaging service!')
             if 'user' not in credentials:
-                raise esgfpid.exceptions.ArgumentError('Missing user for messaging service "'+credentials['url']+'"!')
+                raise esgfpid.exceptions.ArgumentError('Missing user for messaging service "%s"!' % credentials['url'])
             if 'password' not in credentials:
                 # Remove exception to enable use of open node!
-                raise esgfpid.exceptions.ArgumentError('Missing password for messaging service "'+credentials['url']+'"!')
+                raise esgfpid.exceptions.ArgumentError('Missing password for messaging service "%s"!' % credentials['url'])
 
     '''
     These are not (only) needed during initialisation, but
