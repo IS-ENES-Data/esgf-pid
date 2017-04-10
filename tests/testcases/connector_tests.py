@@ -54,8 +54,11 @@ class ConnectorTestCase(unittest.TestCase):
         )
 
         # Run code to be tested and check exception:
-        with self.assertRaises(ArgumentError):
+        with self.assertRaises(ArgumentError) as e:
             testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Missing password', str(e.exception))
 
     '''
     Test the constructor, with trusted (and open) node.
@@ -96,13 +99,15 @@ class ConnectorTestCase(unittest.TestCase):
         )
 
         # Run code to be tested and check exception:
-        with self.assertRaises(ArgumentError):
+        with self.assertRaises(ArgumentError) as e:
             testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Prefix not set yet', str(e.exception))
 
     def test_init_wrong_prefix(self):
 
         # Preparations: Connector args.
-        # Use trusted and open node:
         rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED]
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds,
@@ -110,14 +115,15 @@ class ConnectorTestCase(unittest.TestCase):
         )
 
         # Run code to be tested and check exception:
-        with self.assertRaises(ArgumentError):
+        with self.assertRaises(ArgumentError) as e:
             testconnector = esgfpid.Connector(**args)
 
+        # Check result: Error message ok?
+        self.assertIn('is not a valid prefix', str(e.exception))
 
     def test_init_no_rabbit_url(self):
 
         # Preparations: Connector args.
-        # Use trusted and open node:
         rabbit_creds = dict(
             user = RABBIT_USER_TRUSTED,
             password = RABBIT_PASSWORD
@@ -127,13 +133,15 @@ class ConnectorTestCase(unittest.TestCase):
         )
 
         # Run code to be tested and check exception:
-        with self.assertRaises(ArgumentError):
+        with self.assertRaises(ArgumentError) as e:
             testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Missing URL for', str(e.exception))
 
     def test_init_no_rabbit_user(self):
 
         # Preparations: Connector args.
-        # Use trusted and open node:
         rabbit_creds = dict(
             url = RABBIT_URL_TRUSTED,
             password = RABBIT_PASSWORD
@@ -143,8 +151,11 @@ class ConnectorTestCase(unittest.TestCase):
         )
 
         # Run code to be tested and check exception:
-        with self.assertRaises(ArgumentError):
+        with self.assertRaises(ArgumentError) as e:
             testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Missing user', str(e.exception))
 
     '''
     Test the constructor, with trusted node.
@@ -184,8 +195,11 @@ class ConnectorTestCase(unittest.TestCase):
         )
 
         # Run code to be tested and check exception:
-        with self.assertRaises(ArgumentError):
+        with self.assertRaises(ArgumentError) as e:
             testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Missing password', str(e.exception))
 
 
     '''
@@ -418,12 +432,15 @@ class ConnectorTestCase(unittest.TestCase):
         testconnector = esgfpid.Connector(**args)
 
         # Run code to be tested and check exception: Init dataset wizard
-        with self.assertRaises(esgfpid.exceptions.ArgumentError):
+        with self.assertRaises(esgfpid.exceptions.ArgumentError) as e:
             wizard = testconnector.create_publication_assistant(
                 drs_id='bar',
                 version_number=2016,
                 is_replica=False
             )
+
+        # Check result: Error message ok?
+        self.assertIn('No thredds_service_path given', str(e.exception))
 
     '''
     If we want to publish a dataset, "data_node" and
@@ -436,12 +453,15 @@ class ConnectorTestCase(unittest.TestCase):
         testconnector = esgfpid.Connector(**args)
 
         # Run code to be tested and check exception: Init dataset wizard
-        with self.assertRaises(esgfpid.exceptions.ArgumentError):
+        with self.assertRaises(esgfpid.exceptions.ArgumentError) as e:
             wizard = testconnector.create_publication_assistant(
                 drs_id='bar',
                 version_number=2016,
                 is_replica=False
             )
+
+        # Check result: Error message ok?
+        self.assertIn('No data_node given', str(e.exception))
 
     #
     # Unpublication
@@ -459,8 +479,11 @@ class ConnectorTestCase(unittest.TestCase):
         TESTHELPERS.patch_with_rabbit_mock(testconnector)
 
         # Run code to be tested: Unpublish
-        with self.assertRaises(esgfpid.exceptions.ArgumentError):
+        with self.assertRaises(esgfpid.exceptions.ArgumentError) as e:
             testconnector.unpublish_all_versions(drs_id=DRS_ID)
+
+        # Check result: Error message ok?
+        self.assertIn('No data_node given', str(e.exception))
 
     '''
     This passes the correct args.
