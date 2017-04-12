@@ -164,7 +164,7 @@ class AsynchronousRabbitConnector(object):
 
     '''
     Tries several times to join the thread.
-    Note: May block for up to 10 seconds!
+    Note: May block for up to 6 seconds!
     '''
     def __join_and_rescue(self):
         timeout_seconds = 2
@@ -172,9 +172,9 @@ class AsynchronousRabbitConnector(object):
         if success:
             self.__rescue_leftovers()
         else:
-            for i in xrange(10):
-                time.sleep(1) # blocking
             loginfo(LOGGER, 'Joining the thread failed once... Retrying.')
+            for i in xrange(20):
+                time.sleep(0.1) # blocking
             self.__thread.add_event_force_finish()
             success = self.__join(timeout_seconds)
             if success:
