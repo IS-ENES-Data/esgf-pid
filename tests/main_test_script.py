@@ -196,7 +196,7 @@ if __name__ == '__main__':
 
             if param.asyn:
 
-                # This tests the API and creating the thread
+                # This tests the API and the thread
                 from testcases.rabbit.asyn.rabbit_asynchronous_tests import RabbitAsynConnectorTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynConnectorTestCase)
                 tests_to_run.append(tests)
@@ -219,23 +219,18 @@ if __name__ == '__main__':
                 tests = unittest.TestLoader().loadTestsFromTestCase(ThreadReturnerTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
-                
-                #from testcases.rabbit_thread_shutter_tests import ThreadShutterTestCase
-                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadShutterTestCase)
-                #tests_to_run.append(tests)
-                #numtests += tests.countTestCases()
+            
+                # Shutter needs some mocking...
+                from testcases.rabbit.asyn.thread_shutter_tests import ThreadShutterTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadShutterTestCase)
+                tests_to_run.append(tests)
+                numtests += tests.countTestCases()
 
-                #from testcases.rabbit_thread_builder_tests import ThreadBuilderTestCase
-                #tests = unittest.TestLoader().loadTestsFromTestCase(ThreadBuilderTestCase)
-                #tests_to_run.append(tests)
-                #numtests += tests.countTestCases()
-
-                #from testcases.rabbit_asynchronous_asynchronous_module_tests import RabbitAsynModuleTestCase
-                #tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynModuleTestCase)
-                #tests_to_run.append(tests)
-                #numtests += tests.countTestCases()
-
-
+                # Builder needs lots of mocking
+                from testcases.rabbit.asyn.thread_builder_tests import ThreadBuilderTestCase
+                tests = unittest.TestLoader().loadTestsFromTestCase(ThreadBuilderTestCase)
+                tests_to_run.append(tests)
+                numtests += tests.countTestCases()
 
         if 'errata' in param.modules or 'all' in param.modules:
 

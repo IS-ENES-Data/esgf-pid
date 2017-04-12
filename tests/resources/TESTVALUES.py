@@ -75,6 +75,20 @@ def get_thread_mock2(error=None):
 def get_thread_mock3(error=None):
     return MockThread3(error=error)
 
+def get_thread_mock4(error=None):
+    return MockThread4(error=error)
+
+def get_connection_mock():
+    connectionmock = mock.MagicMock()
+    def side_effect_add_timeout(seconds, callback):
+        callback()
+    connectionmock.add_timeout = mock.MagicMock()
+    connectionmock.add_timeout.side_effect = side_effect_add_timeout
+    return connectionmock
+
+
+
+
 class MockThread(object):
 
     def __init__(self):
@@ -164,12 +178,73 @@ Used for testing the thread_returner.
 class MockThread3(object):
 
     def __init__(self, error=None):
-        # Rabbit API, used by modules:
+        # Attributes (used by modules):
         self._channel = mock.MagicMock()
+        # Methods (used by modules):
         self.send_a_message = mock.MagicMock()
 
         if error is not None:
             self.send_a_message.side_effect = error
+
+'''
+Used for testing the thread_returner.
+'''
+class MockThread4(object):
+
+    def __init__(self, error=None):
+        self.num_unpublished = 0
+        self.num_unconfirmed = 0.0
+        self.fake_confirms = False
+        self.confirm_rate = 1
+        # Attributes (used by modules):
+        self.ERROR_CODE_CONNECTION_FORCE_CLOSED = 999
+        self.ERROR_TEXT_CONNECTION_FORCE_CLOSED = "errortext"
+        self.ERROR_CODE_CONNECTION_CLOSED_BY_USER = 888
+        self.ERROR_TEXT_CONNECTION_CLOSED_BY_USER = "bla"
+        self.ERROR_CODE_CONNECTION_NORMAL_SHUTDOWN = 777
+        self.ERROR_TEXT_CONNECTION_NORMAL_SHUTDOWN = 'bli'
+        self._connection = mock.MagicMock()
+        self._connection.is_closed = False
+        self._connection.is_closing = False
+        self._connection.is_open = True
+
+        # Implement callback
+        def side_effect(wait_seconds, callback):
+            callback()
+        self._connection.add_timeout.side_effect = side_effect
+
+        # Methods (used by modules):
+        self.tell_publisher_to_stop_waiting_for_gentle_finish = mock.MagicMock()
+        self.make_permanently_closed_by_user = mock.MagicMock()
+        self.add_event_publish_message = mock.MagicMock()
+        self.add_event_publish_message.side_effect = self.side_effect_add_event_publish_message
+
+    def get_num_unpublished(self):
+        #print('Unpublished: '+str(self.num_unpublished))
+        return int(round(self.num_unpublished))
+
+    def get_num_unconfirmed(self):
+        num_conf = self.num_unconfirmed
+        # This fakes receiving confirms from Rabbit:
+        if self.fake_confirms:
+            self.num_unconfirmed = self.num_unconfirmed - self.confirm_rate
+            if (self.num_unconfirmed < 0):
+                self.num_unconfirmed = 0
+        # This returns num confirms
+        #print('Unconfirmed: '+str(self.num_unconfirmed))
+        return num_conf
+
+    def side_effect_add_event_publish_message(self):
+        self.num_unpublished = self.num_unpublished -1
+        if (self.num_unpublished < 0):
+            self.num_unpublished = 0
+        #print('Called add_event_publish_message! Now: %i' % self.num_unpublished)
+
+    def set_fake_confirms(self):
+        self.fake_confirms = True
+
+
+
 
 
 

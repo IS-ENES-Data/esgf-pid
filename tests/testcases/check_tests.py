@@ -17,8 +17,14 @@ LOGGER.addHandler(logging.NullHandler())
 from resources.TESTVALUES import *
 import resources.TESTVALUES as TESTHELPERS
 
+import globalvar
+if globalvar.QUICK_ONLY:
+    print('Skipping slow tests in module "%s".' % __name__)
+
 
 class CheckTestCase(unittest.TestCase):
+
+    slow_message = '\nRunning a slow test (avoid by using -ls flag).'
 
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
@@ -104,11 +110,14 @@ class CheckTestCase(unittest.TestCase):
     # Connection failures
     #
 
+    '''
+    Test if the correct error message gets printed by the check method on connection failure.
+    Connection failure does not need to be mocked. We really try to connect here.
+    '''
+    @unittest.skipIf(globalvar.QUICK_ONLY, '(this test is slow)')
     def test_run_check_connection_failed(self):
-        '''
-        Test if the correct error message gets printed by the check method on connection failure.
-        Connection failure does not need to be mocked. We really try to connect here.
-        '''
+
+        print(self.slow_message)
 
         # Test variables:
         rabbit1 = dict(
@@ -166,8 +175,12 @@ class CheckTestCase(unittest.TestCase):
         self.assertEquals(expected_message, output,
             'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
 
+
+    '''Test if the correct error message gets printed by the check method on connection failure.'''
+    @unittest.skipIf(globalvar.QUICK_ONLY, '(this test is slow)')
     def test_run_check_connection_failed_several_urls(self):
-        '''Test if the correct error message gets printed by the check method on connection failure.'''
+
+        print(self.slow_message)
 
         # Test variables:
         #messaging_service_urls = ['tomato.salad-with-spam.fr', 'mystery-tour.uk']

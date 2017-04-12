@@ -154,23 +154,30 @@ class ThreadFeederTestCase(unittest.TestCase):
         self.assertTrue(feeder.statemachine.is_WAITING_TO_BE_AVAILABLE())
         thread._channel.basic_publish.assert_not_called()
 
-    if False:
+    def test_reset_delivery_number(self):
 
-        # is other module
-        def test_resend_message_ok(self):
+        # Preparation:
+        msg = "{'foo':'bar'}"
+        feeder, thread = self.make_feeder()
+        thread.messages.append(msg)
+        thread.messages.append(msg)
+        thread.messages.append(msg)
 
-            # Preparation:
-            msg = '{"foo":"bar","ROUTING_KEY":"myfoo"}'
-            feeder, thread = self.make_feeder()
-            thread.messages.append(msg)
-            #channel = mock.MagicMock()
-            #self.thread._connection._channel = channel
+        # Pre-Check:
+        self.assertEquals(feeder._RabbitFeeder__delivery_number, 1)
 
-            # Run code to be tested:
+        # Increase delivery number:
+        feeder.publish_message()
+        feeder.publish_message()
+        feeder.publish_message()
+        thread._channel.basic_publish.assert_called()
 
-            feeder.on_message_not_accepted(channel, 'serverreturnfoo', 'propsfoo', message)
+        # Check if it was increased:
+        self.assertEquals(feeder._RabbitFeeder__delivery_number, 4)
 
-            # Check result:
-            exp = '{"original_routing_key": "myfoo", "foo": "bar", "ROUTING_KEY": "cmip6.publisher.HASH.emergency"}'
-            self.feeder.put_message_into_queue_of_unsent_messages.assert_called_with(exp)
-            self.thread._connection.add_timeout.assert_called_with(0, self.feeder.publish_message)
+        # Run code to be tested:
+        feeder.reset_delivery_number()
+
+        # Check if it was reset:
+        self.assertEquals(feeder._RabbitFeeder__delivery_number, 1)
+
