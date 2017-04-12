@@ -339,7 +339,7 @@ class AsynchronousRabbitConnector(object):
                 raise OperationNotAllowed(errormsg)
 
         elif self.__statemachine.is_NOT_STARTED_YET():
-            errormsg('Cannot send a message, the messaging thread was not started yet!')
+            errormsg = 'Cannot send a message, the messaging thread was not started yet!'
             logwarn(LOGGER, errormsg+' (dropping %s).', message)
             raise OperationNotAllowed(errormsg)
             # This is almost the same as the one raised if self.__not_started_yet is True.
@@ -358,10 +358,11 @@ class AsynchronousRabbitConnector(object):
         elif self.__statemachine.is_AVAILABLE_BUT_WANTS_TO_STOP() or self.__statemachine.is_PERMANENTLY_UNAVAILABLE():
             errormsg = 'Accepting no more messages'
             logwarn(LOGGER, errormsg+' (dropping %i messages).', len(messages))
-            raise OperationNotAllowed(errormsg)
+            if self.__statemachine.get_detail_closed_by_publisher():
+                raise OperationNotAllowed(errormsg)
 
         elif self.__statemachine.is_NOT_STARTED_YET():
-            errormsg('Cannot send any messages, the messaging thread was not started yet!')
+            errormsg = 'Cannot send any messages, the messaging thread was not started yet!'
             logwarn(LOGGER, errormsg+' (dropping %i messages).', len(messages))
             raise OperationNotAllowed(errormsg)
 
