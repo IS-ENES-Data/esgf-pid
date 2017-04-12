@@ -61,6 +61,7 @@ class NodeManager(object):
 
         # Current node
         self.__current_node = None
+        self.__exchange_name = None
 
         # Important info
         self.__has_trusted = False
@@ -265,6 +266,9 @@ class NodeManager(object):
             logdebug(LOGGER, 'Selected an open node: %s', self.__current_node['host'])
 
         else:
+            if self.__current_node is None:
+                logwarn(LOGGER, 'Unexpected: No RabbitMQ node left to try, and there is no current one.')
+                raise esgfpid.exceptions.ArgumentError('No RabbitMQ nodes were passed at all.')
             logwarn(LOGGER, 'No RabbitMQ node left to try! Leaving the last one: %s', self.__current_node['host'])
 
         self.__exchange_name = self.__current_node['exchange_name']
