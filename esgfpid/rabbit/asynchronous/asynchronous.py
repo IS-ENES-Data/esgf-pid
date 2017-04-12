@@ -167,7 +167,8 @@ class AsynchronousRabbitConnector(object):
     Note: May block for up to 10 seconds!
     '''
     def __join_and_rescue(self):
-        success = self.__join()
+        timeout_seconds = 2
+        success = self.__join(timeout_seconds)
         if success:
             self.__rescue_leftovers()
         else:
@@ -175,15 +176,14 @@ class AsynchronousRabbitConnector(object):
                 time.sleep(1) # blocking
             loginfo(LOGGER, 'Joining the thread failed once... Retrying.')
             self.__thread.add_event_force_finish()
-            success = self.__join()
+            success = self.__join(timeout_seconds)
             if success:
                 self.__rescue_leftovers()
             else:
                 logerror(LOGGER, 'Joining failed again. No idea why.')
 
-    def __join(self):        
+    def __join(self, timeout_seconds):        
         logdebug(LOGGER, 'Joining...')
-        timeout_seconds=2 # blocking
         self.__thread.join(timeout_seconds)
         if self.__thread.is_alive():
             logdebug(LOGGER, 'Joining failed.')
