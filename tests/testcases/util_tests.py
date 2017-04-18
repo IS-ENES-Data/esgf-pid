@@ -3,18 +3,26 @@ import mock
 import logging
 import json
 import sys
-sys.path.append("..")
-import esgfpid
 import datetime
 import uuid
 import os
+import esgfpid
 
+# Logging
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-from resources.TESTVALUES import TESTVALUES as TESTVALUES
+# Test resources:
+from resources.TESTVALUES import *
 
 
+'''
+Unit tests for esgfpid.utils.
+
+This module does not need any other module to
+function, so we don't need to use or to mock any
+other objects. 
+'''
 class UtilsTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -29,17 +37,13 @@ class UtilsTestCase(unittest.TestCase):
 
     def test_make_handle_from_drsid_and_versionnumber_ok(self):
 
-        drs_id = TESTVALUES['drs_id1']
-        version_number = TESTVALUES['version_number1']
-        prefix = TESTVALUES['prefix']
-
         received_handle = esgfpid.utils.make_handle_from_drsid_and_versionnumber(
-            drs_id=drs_id,
-            version_number=version_number,
-            prefix=prefix
+            drs_id=DRS_ID,
+            version_number=DS_VERSION,
+            prefix=PREFIX_NO_HDL
         )
 
-        expected_handle = 'hdl:'+prefix+'/'+TESTVALUES['suffix1']
+        expected_handle = DATASETHANDLE_HDL
         self.assertEquals(received_handle, expected_handle)
 
     #

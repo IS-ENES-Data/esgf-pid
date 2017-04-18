@@ -39,3 +39,10 @@ def get_neighbour_directory(file_path_string, dirname):
     super_directory_list.append(dirname)
     neighbour_directory_string = os.path.join(*super_directory_list)
     return os.path.sep+neighbour_directory_string
+
+def get_super_neighbour_directory(file_path_string, dirname):
+    this_directory = get_this_directory(file_path_string)
+    super_super_directory_list = get_super_directory(this_directory, as_list=True)
+    super_super_directory_list.append(dirname)
+    target_directory_string = os.path.join(*super_super_directory_list)
+    return os.path.sep+target_directory_string

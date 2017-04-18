@@ -1,0 +1,1 @@
+from .rabbit import RabbitMessageSender

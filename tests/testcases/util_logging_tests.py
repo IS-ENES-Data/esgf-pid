@@ -1,19 +1,11 @@
 import unittest
 import mock
 import logging
-import json
-import sys
-sys.path.append("..")
 import esgfpid
-import datetime
-import uuid
-import esgfpid.utils
-import os
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-from resources.TESTVALUES import TESTVALUES as TESTVALUES
 
 class LoggerMock(object):
 

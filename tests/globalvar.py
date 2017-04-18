@@ -1,0 +1,5 @@
+
+
+QUICK_ONLY = False
+
+RABBIT_OPEN_NOT_ALLOWED = True

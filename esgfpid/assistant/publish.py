@@ -1,7 +1,4 @@
 import logging
-import uuid
-import json
-import sys
 import esgfpid.exceptions
 import esgfpid.assistant.consistency
 import esgfpid.assistant.messages

@@ -1,12 +1,27 @@
 import json
-import esgfpid.defaults
 import random
 import logging
+import esgfpid.defaults
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+'''
+Retrieves the routing key from the message, checks
+the message's validity and returns
+the string message and the routing key string.
+
+If message is string, convert to JSON (dictionary).
+If message is dictionary, check if it's valid JSON.
+Retrieve the routing key, which should be included
+with the key "ROUTING_KEY". Otherwise, a default
+routing key is added.
+
+:param msg: Message to be sent to RabbitMQ as JSON
+    string or dictionary.
+:return: Routing key string and string message as tuple.
+'''
 def get_routing_key_and_string_message_from_message_if_possible(msg):
 
     # Try to convert message to json:
@@ -66,3 +81,26 @@ def get_routing_key_and_string_message_from_message_if_possible(msg):
 
     return routing_key, msg_string
 
+
+def add_emergency_routing_key(body_json):
+    emergency_routing_key = esgfpid.defaults.RABBIT_EMERGENCY_ROUTING_KEY
+
+    # If it already HAS the emergency routing key, do not adapt the routing key
+    # (This means the message already came back a second time...)
+    if body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] == emergency_routing_key:
+        pass
+
+    # Otherwise, store the original one in another field...
+    # and overwrite it by the emergency routing key:
+    else:
+        try:
+            body_json['original_routing_key'] = body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY]
+
+        # If there was no routing key, set the original one to 'None'
+        except KeyError:
+            logerror('Very unexpected: RabbitMQ returned a message that had no routing key: %s', body_json)
+            body_json['original_routing_key'] = 'None'
+
+        logdebug(LOGGER, 'Adding emergency routing key %s', emergency_routing_key)
+        body_json[esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY] = emergency_routing_key
+    return body_json, emergency_routing_key

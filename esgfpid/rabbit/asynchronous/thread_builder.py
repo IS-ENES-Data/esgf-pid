@@ -2,11 +2,11 @@ import logging
 import pika
 import time
 import copy
+import datetime
 from esgfpid.utils import get_now_utc_as_formatted_string as get_now_utc_as_formatted_string
 import esgfpid.defaults as defaults
-import esgfpid.rabbit.connparams
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
-from .exceptions import PIDServerException
+from ..exceptions import PIDServerException
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -54,8 +54,42 @@ class ConnectionBuilder(object):
         '''
         self.__node_manager = nodemanager
 
-        ''' To count how many times we have tried to reconnect to the same RabbitMQ URL.'''
+        '''
+        To count how many times we have tried to reconnect the set of
+        RabbitMQ hosts.
+        '''
         self.__reconnect_counter = 0
+
+        '''
+        To see how many times we should try reconnecting to the set 
+        of RabbitMQ hosts. Note that if there is 3 hosts, and we try 2
+        times, this means 6 connection tries in total.
+        '''
+        self.__max_reconnection_tries = defaults.RABBIT_RECONNECTION_MAX_TRIES
+
+        '''
+        How many seconds to wait before reconnecting after having tried
+        all hosts. (There is no waiting time trying to connect to a different
+        host after one fails).
+        '''
+        self.__wait_seconds_before_reconnect = defaults.RABBIT_RECONNECTION_SECONDS
+
+        '''
+        Set of all tried hosts, for logging.
+        '''
+        self.__all_hosts_that_were_tried = set()
+
+        '''
+        To see how much time it takes to connect. Once a connection is
+        established or failed, we print the time delta to logs.
+        '''
+        self.__start_connect_time = None
+
+        '''
+        Name of the fallback exchange to try if the normal exchange
+        is not found.
+        '''
+        self.__fallback_exchange_name = defaults.RABBIT_FALLBACK_EXCHANGE_NAME
 
     ####################
     ### Start ioloop ###
@@ -102,8 +136,8 @@ class ConnectionBuilder(object):
                 self.thread._connection.ioloop.start()
 
             except pika.exceptions.ProbableAuthenticationError as e:
-
-                logerror(LOGGER, 'Caught Authentication Exception during connection ("%s").', e.__class__.__name__)
+                time_passed = datetime.datetime.now() - self.__start_connect_time
+                logerror(LOGGER, 'Caught Authentication Exception after %s seconds during connection ("%s").', time_passed.total_seconds(), e.__class__.__name__)
                 self.statemachine.set_to_waiting_to_be_available()
                 self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
 
@@ -158,8 +192,10 @@ class ConnectionBuilder(object):
     ''' Asynchronous, waits for answer from RabbitMQ.'''
     def __please_open_connection(self):
         params = self.__node_manager.get_connection_parameters()
+        self.__start_connect_time = datetime.datetime.now()
         logdebug(LOGGER, 'Connecting to RabbitMQ at %s... (%s)',
             params.host, get_now_utc_as_formatted_string())
+        self.__all_hosts_that_were_tried.add(params.host)
         loginfo(LOGGER, 'Opening connection to RabbitMQ...')
         self.thread._connection = pika.SelectConnection(
             parameters=params,
@@ -193,7 +229,8 @@ class ConnectionBuilder(object):
 
     ''' Callback, called by RabbitMQ. '''
     def on_channel_open(self, channel):
-        logdebug(LOGGER, 'Opening channel... done.')
+        time_passed = datetime.datetime.now() - self.__start_connect_time
+        logdebug(LOGGER, 'Opening channel... done. Took %s seconds.' % time_passed.total_seconds())
         logtrace(LOGGER, 'Channel has number: %s.', channel.channel_number)
         self.thread._channel = channel
         self.__reconnect_counter = 0
@@ -271,17 +308,17 @@ class ConnectionBuilder(object):
     def on_connection_error(self, connection, msg):
 
         oldhost = self.__node_manager.get_connection_parameters().host
-        loginfo(LOGGER, 'Failed connection to RabbitMQ at %s. Reason: %s.', oldhost, msg)
+        time_passed = datetime.datetime.now() - self.__start_connect_time
+        loginfo(LOGGER, 'Failed connection to RabbitMQ at %s after %s seconds. Reason: %s.', oldhost, time_passed.total_seconds(), msg)
 
         # If there was a force-finish, we do not reconnect.
         if self.statemachine.is_FORCE_FINISHED():
             # TODO This is the same code as above. Make a give_up function from it?
             #self.statemachine.set_to_permanently_unavailable()
             #self.statemachine.detail_could_not_connect = True
-            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.')
+            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s until received a force-finish. Giving up. No PID requests will be sent.' % list(self.__all_hosts_that_were_tried))
             logerror(LOGGER, errormsg)
             raise PIDServerException(errormsg)
-
         
         # If there is alternative URLs, try one of them:
         if self.__node_manager.has_more_urls():
@@ -292,13 +329,12 @@ class ConnectionBuilder(object):
             reopen_seconds = 0
             self.__wait_and_trigger_reconnection(connection, reopen_seconds)
 
-
         # If there is no URLs, reset the node manager to
         # start at the first nodes again...
         else:
             self.__reconnect_counter += 1;
-            if self.__reconnect_counter <= defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES:
-                reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+            if self.__reconnect_counter <= self.__max_reconnection_tries:
+                reopen_seconds = self.__wait_seconds_before_reconnect
                 logdebug(LOGGER, 'Connection failure: Failed connecting to all hosts. Waiting %s seconds and starting over.', reopen_seconds)
                 self.__node_manager.reset_nodes()
                 newhost = self.__node_manager.get_connection_parameters().host
@@ -309,8 +345,7 @@ class ConnectionBuilder(object):
             else:
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
-                max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
-                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % max_tries)
+                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s %s times. Giving up. No PID requests will be sent.' % (list(self.__all_hosts_that_were_tried) ,self.__max_reconnection_tries))
                 logerror(LOGGER, errormsg)
                 raise PIDServerException(errormsg)
 
@@ -392,8 +427,8 @@ class ConnectionBuilder(object):
         self.statemachine.set_to_waiting_to_be_available()
 
         # New exchange name
-        logdebug(LOGGER, 'Setting exchange name to fallback exchange "%s"', defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
-        self.thread.set_exchange_name(defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
+        logdebug(LOGGER, 'Setting exchange name to fallback exchange "%s"', self.__fallback_exchange_name)
+        self.thread.set_exchange_name(self.__fallback_exchange_name)
 
         # If this happened while sending message to the wrong exchange, we
         # have to trigger their resending...
@@ -425,7 +460,7 @@ class ConnectionBuilder(object):
             loginfo(LOGGER, 'Connection to %s closed.', self.__node_manager.get_connection_parameters().host)
             self.make_permanently_closed_by_error(connection, reply_text)
         else:
-            #reopen_seconds = defaults.RABBIT_ASYN_RECONNECTION_SECONDS
+            #reopen_seconds = defaults.RABBIT_RECONNECTION_SECONDS
             #self.__wait_and_trigger_reconnection(connection, reopen_seconds)
             self.on_connection_error(connection, reply_text)
 
@@ -501,8 +536,8 @@ class ConnectionBuilder(object):
             # TODO This is the same code as above. Make a give_up function from it?
             #self.statemachine.set_to_permanently_unavailable()
             #self.statemachine.detail_could_not_connect = True
-            #max_tries = defaults.RABBIT_ASYN_RECONNECTION_MAX_TRIES
-            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.')
+            #max_tries = defaults.RABBIT_RECONNECTION_MAX_TRIES
+            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s until received a force-finish. Giving up. No PID requests will be sent.' % list(self.__all_hosts_that_were_tried))
             logerror(LOGGER, errormsg)
             raise PIDServerException(errormsg)
         else:

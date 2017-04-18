@@ -58,10 +58,15 @@ class Connector(object):
             Each needs to have the entries: "user", "password", "url".
             They may have an integer "priority" too. If two nodes have
             the same priority, the library chooses randomly between
-            them.
+            them. They also may have a "vhost" (RabbitMQ virtual host).
             Dictionaries for 'open nodes' do not need a password
             to be provided. Open nodes are only used if no more
-            other nodes are available. 
+            other nodes are available.
+
+        :param message_service_synchronous: Optional. Boolean to
+            define if the connection to RabbitMQ and the message
+            sending should work in synchronous mode. Defaults to
+            the value defined in defaults.py.
 
         :param data_node: Mandatory/Optional.
 
@@ -123,6 +128,8 @@ class Connector(object):
         LOGGER.debug(40*'-')
         LOGGER.debug('Creating PID connector object ..')
         self.__check_presence_of_args(args)
+        self.__check_rabbit_credentials_completeness(args)
+        self.__define_defaults_for_optional_args(args)
         self.__store_some_args(args)
         self.__throw_error_if_prefix_not_in_list()
         self.__coupler = esgfpid.coupling.Coupler(**args)
@@ -142,23 +149,86 @@ class Connector(object):
             'solr_https_verify',
             'disable_insecure_request_warning',
             'solr_switched_off',
-            'consumer_solr_url'
+            'consumer_solr_url',
+            'message_service_synchronous'
         ]
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-        esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
+
+    def __define_defaults_for_optional_args(self, args):
         
-        # Check RabbitMQ credentials:
+        if 'data_node' not in args or args['data_node'] is None:
+            ''' May be None, only needed for some operations.
+                If it is needed, its presence is checked later. '''
+            args['data_node'] = None
+
+        if 'thredds_service_path' not in args or args['thredds_service_path'] is None:
+            ''' May be None, only needed for some operations.
+                If it is needed, its presence is checked later. '''
+            args['thredds_service_path'] = None
+
+        if 'test_publication' not in args or args['test_publication'] is None:
+            args['test_publication'] = False
+
+        if 'solr_url' not in args or args['solr_url'] is None:
+            args['solr_url'] = None
+            args['solr_switched_off'] = True
+
+        if 'solr_switched_off' not in args or args['solr_switched_off'] is None:
+            args['solr_switched_off'] = False
+
+        if 'solr_https_verify' not in args or args['solr_https_verify'] is None:
+            args['solr_https_verify'] = esgfpid.defaults.SOLR_HTTPS_VERIFY_DEFAULT
+
+        if 'disable_insecure_request_warning' not in args or args['disable_insecure_request_warning'] is None:
+            args['disable_insecure_request_warning'] = False
+
+        if 'message_service_synchronous' not in args or args['message_service_synchronous'] is None:
+            args['message_service_synchronous'] = not esgfpid.defaults.RABBIT_IS_ASYNCHRONOUS
+
+        if 'consumer_solr_url' not in args or args['consumer_solr_url'] is None:
+            args['consumer_solr_url'] = None
+
+    def __check_rabbit_credentials_completeness(self, args):
         for credentials in args['messaging_service_credentials']:
+
+            # Check presence of URL:
             if 'url' not in credentials:
-                raise ArgumentError('Missing URL for messaging service!')
+                raise esgfpid.exceptions.ArgumentError('Missing URL for messaging service!')
+
+            # Check type of URL:
+            elif not type(credentials['url']) == type('foo'):
+                if type(credentials['url']) == type([]) and len(credentials['url']) == 1:
+                    credentials['url'] = credentials['url'][0]
+                else:
+                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service URL. Expected string, got %s.' % type(credentials['url']))
+
+            # Check presence of user:
             if 'user' not in credentials:
-                raise ArgumentError('Missing user for messaging service "'+credentials['url']+'"!')
+                raise esgfpid.exceptions.ArgumentError('Missing user for messaging service "%s"!' % credentials['url'])
+
+            # Check type of user:
+            elif not type(credentials['user']) == type('foo'):
+                if type(credentials['user']) == type([]) and len(credentials['user']) == 1:
+                    credentials['user'] = credentials['user'][0]
+                else:
+                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service username. Expected string, got %s.' % type(credentials['user']))
+
+            # Check presence of password:
             if 'password' not in credentials:
-                pass   
-                # No exception, to enable use of open node!
-                #raise ArgumentError('Missing password for messaging service "'+credentials['url']+'"!')
+                # If you want open nodes to be enabled again, remove this exception!
+                raise esgfpid.exceptions.ArgumentError('Missing password for messaging service "%s"!' % credentials['url'])
 
+            # Check type of user:
+            elif not type(credentials['password']) == type('foo'):
+                if type(credentials['password']) == type([]) and len(credentials['password']) == 1:
+                    credentials['password'] = credentials['password'][0]
+                else:
+                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service password. Expected string, got %s.' % type(credentials['password']))
 
+    '''
+    These are not (only) needed during initialisation, but
+    (also) later on.
+    '''
     def __store_some_args(self, args):
         self.prefix = args['handle_prefix']
         self.__thredds_service_path = args['thredds_service_path']
@@ -167,7 +237,7 @@ class Connector(object):
 
     def __throw_error_if_prefix_not_in_list(self):
         if self.prefix is None:
-            raise esgfpid.exceptions.ArgumentError('Prefix not set yet, cannot check its existence.')
+            raise esgfpid.exceptions.ArgumentError('Missing handle prefix!')
         if self.prefix not in esgfpid.defaults.ACCEPTED_PREFIXES:
             raise esgfpid.exceptions.ArgumentError('The prefix "%s" is not a valid prefix! Please check your config. Accepted prefixes: %s'
                 % (self.prefix, ', '.join(esgfpid.defaults.ACCEPTED_PREFIXES)))
@@ -263,7 +333,7 @@ class Connector(object):
 
         # Check if data node is given
         if self.__data_node is None:
-            msg = 'No data_node given (but it is mandatory for publication)'
+            msg = 'No data_node given (but it is mandatory for unpublication)'
             logwarn(LOGGER, msg)
             raise esgfpid.exceptions.ArgumentError(msg)
 
@@ -310,7 +380,8 @@ class Connector(object):
 
         # Check if solr has access:
         if self.__coupler.is_solr_switched_off():
-            pass
+            msg = 'Unpublication of all versions. Without solr access, we cannot identify the versions, so the consumer will have to take care of this.'
+            logdebug(LOGGER, msg)
             #raise esgfpid.exceptions.ArgumentError('No solr access. Solr access is needed for publication. Please provide access to a solr index when initializing the library')
 
         # Unpublish

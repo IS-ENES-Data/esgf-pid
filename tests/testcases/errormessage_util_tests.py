@@ -17,7 +17,7 @@ LOGGER_TO_PASS.addHandler(logging.NullHandler())
 class ErrorMessageUtilsTestCase(unittest.TestCase):
 
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test (%s) ##########', __name__)
 
     def tearDown(self):
         LOGGER.info('#############################')
@@ -26,7 +26,7 @@ class ErrorMessageUtilsTestCase(unittest.TestCase):
     # Test getting routing key and string message
     #
 
-    def test_get_message_and_routing_key_string_ok(self):
+    def test_get_message_and_routing_key_string_ok1(self):
         
         # Test variables:
         passed_messages = ['foo', 'bar', 'lorem ipsum lorem ipsum loooorem']
@@ -44,7 +44,7 @@ class ErrorMessageUtilsTestCase(unittest.TestCase):
         self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
 
-    def test_get_message_and_routing_key_string_ok(self):
+    def test_get_message_and_routing_key_string_ok2(self):
         
         # Test variables:
         passed_messages = ['foo']

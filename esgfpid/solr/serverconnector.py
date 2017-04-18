@@ -10,33 +10,37 @@ from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+'''
+This class is only responsible for sending queries
+(that were assembled elsewhere) to a solr instance,
+validate and parse the result and return it.
+
+It basically only provides one method,
+:func:`~solr.SolrServerConnector.send_query`.
+
+'''
 class SolrServerConnector(object):
+
     '''
-    The SolrServerConnector only provides one method, send_query(query).
+    Create an instance.
 
-    It raises SolrError exceptions in various situations:
-     - Connection problems
-     - Response is empty, None, or invalid JSON
-     - Response returns 404 or any other HTTP code other than 200
-
-    It returns a JSON response. It never returns None.
+    :param solr_url: Mandatory.
+    :param https_verify: Mandatory. Boolean.
+    :param disable_insecure_request_warning: Mandatory. Boolean.
     '''
-
     def __init__(self, **args):
         self.__check_presence_of_args(args)
         self.__set_attributes(args)
         self.__disable_warning_if_desired(args)
 
     def __check_presence_of_args(self, args):
-        mandatory_args = ['solr_url']
-        optional_args = ['https_verify', 'disable_insecure_request_warning']
+        mandatory_args = ['solr_url', 'https_verify', 'disable_insecure_request_warning']
         esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         esgfpid.utils.check_noneness_of_mandatory_args(args, mandatory_args)
-        esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
 
     def __set_attributes(self, args):
         self.__solr_url = args['solr_url'].strip('/')
-        self.__https_verify = args['https_verify'] or esgfpid.defaults.SOLR_HTTPS_VERIFY_DEFAULT
+        self.__https_verify = args['https_verify']
         self.__solr_headers = {'Accept': 'application/json,text/json', 'Content-Type': 'application/json'}
 
     def __disable_warning_if_desired(self, args):
@@ -49,6 +53,17 @@ class SolrServerConnector(object):
         from requests.packages.urllib3.exceptions import InsecureRequestWarning
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+    '''
+    Send a message to a solr instance.
+
+    This raises SolrError exceptions in various situations:
+     - Connection problems
+     - Response is empty, None, or invalid JSON
+     - Response returns 404 or any other HTTP code other than 200
+
+     :raises: esgfpid.exceptions.SolrError
+     :return: A JSON response. It never returns None.
+    '''
     def send_query(self, query):
         response = self.__get_request_to_solr(query)
         self.__check_response_for_error_codes(response)

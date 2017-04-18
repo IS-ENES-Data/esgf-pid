@@ -1,8 +1,7 @@
 import logging
 import pika
 import Queue
-import esgfpid.rabbit.connparams as connparams
-import esgfpid.rabbit.rabbitutils as rabbitutils
+from .. import rabbitutils
 import esgfpid.defaults as defaults
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 
@@ -19,7 +18,7 @@ is publish_message(), which is called from the main thread.
 '''
 class RabbitFeeder(object):
 
-    def __init__(self, thread, statemachine):
+    def __init__(self, thread, statemachine, nodemanager):
         self.thread = thread
 
         '''
@@ -27,6 +26,8 @@ class RabbitFeeder(object):
         Before publishing a message, we check the state, and we log 
         the state. '''
         self.statemachine = statemachine
+
+        self.nodemanager = nodemanager
 
         '''
         The deliver_number is important. It defines the number of the message
@@ -118,7 +119,7 @@ class RabbitFeeder(object):
                 if self.__have_not_warned_about_connection_fail_yet:
                     logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. The connection failed definitively.')
                     self.__have_not_warned_about_connection_fail_yet = False
-            elif self.statemachine.detail_closed_by_publisher:
+            elif self.statemachine.get_detail_closed_by_publisher():
                 logtrace(LOGGER, 'Cannot publish message to RabbitMQ, as the connection was closed by the user.')
                 if self.__have_not_warned_about_force_close_yet:
                     logwarn(LOGGER, 'Could not publish message(s) to RabbitMQ. The sender was closed by the user.')
@@ -144,7 +145,7 @@ class RabbitFeeder(object):
         # If no messages left, well, nothing to publish!
         try:
             message = self.__get_message_from_stack()
-        except Queue.Empty, e:
+        except Queue.Empty as e:
             logtrace(LOGGER, 'Queue empty. No more messages to be published.')
             return
 
@@ -157,10 +158,10 @@ class RabbitFeeder(object):
                 self.__postparations_after_successful_feeding(message)
 
         # Treat various errors that may occur during publishing:
-        except pika.exceptions.ChannelClosed, e:
+        except pika.exceptions.ChannelClosed as e:
             logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because the Channel is closed (%s)', self.__delivery_number+1, e.message)
 
-        except AttributeError, e:
+        except AttributeError as e:
             if self.thread._channel is None:
                 logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because there is no channel.', self.__delivery_number+1)
             else:
@@ -195,7 +196,7 @@ class RabbitFeeder(object):
     def __try_publishing_otherwise_put_back_to_stack(self, message):
         try:
             # Getting message info:
-            properties = connparams.get_properties_for_message_publications()
+            properties = self.nodemanager.get_properties_for_message_publications()
             routing_key, msg_string = rabbitutils.get_routing_key_and_string_message_from_message_if_possible(message)
             routing_key = routing_key+'.'+self.thread.get_open_word_for_routing_key()
             

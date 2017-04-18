@@ -32,9 +32,9 @@ import copy
 import datetime
 import logging
 import esgfpid.utils
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .rabbitthread import RabbitThread
 from .thread_statemachine import StateMachine
-from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .exceptions import OperationNotAllowed
 
 LOGGER = logging.getLogger(__name__)
@@ -46,10 +46,11 @@ class AsynchronousRabbitConnector(object):
     '''
     Constructor for the asychronous rabbit connection module.
 
-    :param exchange_name: Name of the RabbitMQ to publish to.
-    :param url_preferred: URL of the RabbitMQ host to first try to connect to.
-    :param urls_fallback: List of RabbitMQ URLs that are tried of the first one failed.
-    :param credentials: RabbitMQ credentials of type TODO.
+    This does not open a connection or start a thread yet.
+
+    :param node_manager: NodeManager object that contains 
+        the info about all the available RabbitMQ instances,
+        their credentials, their priorities.
 
     '''
     def __init__(self, node_manager):
@@ -77,9 +78,13 @@ class AsynchronousRabbitConnector(object):
         self.__LOGFREQUENCY = 10
 
         # Actually created the thread:
-        self.__thread = RabbitThread(self.__statemachine, self.__unpublished_messages_queue, self, node_manager)
+        #self.__thread = RabbitThread(self.__statemachine, self.__unpublished_messages_queue, self, node_manager)
+        self.__thread = self.__create_thread(node_manager)
 
         logdebug(LOGGER, 'Initializing rabbit connector... done.')
+
+    def __create_thread(self, node_manager): # easy to mock/patch in unit test!
+        return RabbitThread(self.__statemachine, self.__unpublished_messages_queue, self, node_manager)
 
 
     '''
@@ -159,26 +164,26 @@ class AsynchronousRabbitConnector(object):
 
     '''
     Tries several times to join the thread.
-    Note: May block for up to 10 seconds!
+    Note: May block for up to 6 seconds!
     '''
     def __join_and_rescue(self):
-        success = self.__join()
+        timeout_seconds = 2
+        success = self.__join(timeout_seconds)
         if success:
             self.__rescue_leftovers()
         else:
-            for i in xrange(10):
-                time.sleep(1) # blocking
             loginfo(LOGGER, 'Joining the thread failed once... Retrying.')
+            for i in xrange(20):
+                time.sleep(0.1) # blocking
             self.__thread.add_event_force_finish()
-            success = self.__join()
+            success = self.__join(timeout_seconds)
             if success:
                 self.__rescue_leftovers()
             else:
                 logerror(LOGGER, 'Joining failed again. No idea why.')
 
-    def __join(self):        
+    def __join(self, timeout_seconds):        
         logdebug(LOGGER, 'Joining...')
-        timeout_seconds=2 # blocking
         self.__thread.join(timeout_seconds)
         if self.__thread.is_alive():
             logdebug(LOGGER, 'Joining failed.')
@@ -334,7 +339,7 @@ class AsynchronousRabbitConnector(object):
                 raise OperationNotAllowed(errormsg)
 
         elif self.__statemachine.is_NOT_STARTED_YET():
-            errormsg('Cannot send a message, the messaging thread was not started yet!')
+            errormsg = 'Cannot send a message, the messaging thread was not started yet!'
             logwarn(LOGGER, errormsg+' (dropping %s).', message)
             raise OperationNotAllowed(errormsg)
             # This is almost the same as the one raised if self.__not_started_yet is True.
@@ -353,10 +358,11 @@ class AsynchronousRabbitConnector(object):
         elif self.__statemachine.is_AVAILABLE_BUT_WANTS_TO_STOP() or self.__statemachine.is_PERMANENTLY_UNAVAILABLE():
             errormsg = 'Accepting no more messages'
             logwarn(LOGGER, errormsg+' (dropping %i messages).', len(messages))
-            raise OperationNotAllowed(errormsg)
+            if self.__statemachine.get_detail_closed_by_publisher():
+                raise OperationNotAllowed(errormsg)
 
         elif self.__statemachine.is_NOT_STARTED_YET():
-            errormsg('Cannot send any messages, the messaging thread was not started yet!')
+            errormsg = 'Cannot send any messages, the messaging thread was not started yet!'
             logwarn(LOGGER, errormsg+' (dropping %i messages).', len(messages))
             raise OperationNotAllowed(errormsg)
 

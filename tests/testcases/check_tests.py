@@ -1,4 +1,3 @@
-import sys
 import unittest
 import mock
 import logging
@@ -14,11 +13,21 @@ import pika
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+# Test resources:
+from resources.TESTVALUES import *
+import resources.TESTVALUES as TESTHELPERS
+
+import globalvar
+if globalvar.QUICK_ONLY:
+    print('Skipping slow tests in module "%s".' % __name__)
+
 
 class CheckTestCase(unittest.TestCase):
 
+    slow_message = '\nRunning a slow test (avoid by using -ls flag).'
+
     def setUp(self):
-        LOGGER.info('######## Next test ##########')
+        LOGGER.info('######## Next test (%s) ##########', __name__)
 
     def tearDown(self):
         LOGGER.info('#############################')
@@ -31,90 +40,30 @@ class CheckTestCase(unittest.TestCase):
         ''' Test if the constructor of the RabbitChecker works fine (with foo bar values).'''
 
         # Test variables:
-        messaging_service_urls = 'this.is.my.only.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        rabbit1 = dict(
+            user = 'johndoe',
+            password = 'abc123yx',
+            url = 'this.is.my.only.host')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1])
 
         # Run code to be tested:
         testobject = esgfpid.check.RabbitChecker(
-            messaging_service_urls = messaging_service_urls,
-            messaging_service_password = messaging_service_password,
-            print_to_console = print_to_console,
-            messaging_service_username = messaging_service_username,
+            connector = testconnector,
+            print_to_console = True,
             print_success_to_console = True
         )
 
         # Check result:
         self.assertIsInstance(testobject, esgfpid.check.RabbitChecker,
             'Init with placeholder params did not work.')
-        self.assertIn('this.is.my.only.host', testobject._RabbitChecker__current_rabbit_host)
-
-    def test_init_rabbitchecker_only_preferred(self):
-        ''' Test if the constructor of the RabbitChecker works fine (with foo bar values).'''
-
-        # Test variables:
-        url = 'this.is.my.favourite.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
-
-        # Run code to be tested:
-        testobject = esgfpid.check.RabbitChecker(
-            messaging_service_url_preferred = url,
-            messaging_service_password = messaging_service_password,
-            print_to_console = print_to_console,
-            messaging_service_username = messaging_service_username,
-            print_success_to_console = True
-        )
-
-        # Check result:
-        self.assertIsInstance(testobject, esgfpid.check.RabbitChecker,
-            'Init with placeholder params did not work.')
-        self.assertIn(url, testobject._RabbitChecker__current_rabbit_host)
-
-    def test_init_rabbitchecker_preferred_and_fallback(self):
-        ''' Test if the constructor of the RabbitChecker works fine (with foo bar values).'''
-
-        # Test variables:
-        fave = 'this.is.my.favourite.host'
-        urls = ['tomato.salad-with-spam.fr', 'magical-mystery-tour.uk']
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
-
-        # Run code to be tested:
-        testobject = esgfpid.check.RabbitChecker(
-            messaging_service_urls = urls,
-            messaging_service_url_preferred = fave,
-            messaging_service_password = messaging_service_password,
-            print_to_console = print_to_console,
-            messaging_service_username = messaging_service_username,
-            print_success_to_console = True
-        )
-
-        # Check result:
-        self.assertIsInstance(testobject, esgfpid.check.RabbitChecker,
-            'Init with placeholder params did not work.')
-        self.assertIn(fave, testobject._RabbitChecker__current_rabbit_host)
-        self.assertIn(urls[0], testobject._RabbitChecker__rabbit_hosts)
-        self.assertIn(urls[1], testobject._RabbitChecker__rabbit_hosts)
 
     def test_init_rabbitchecker_missing_args(self):
         ''' Test if the constructor of the RabbitChecker complains if an argument is missing.'''
 
-        # Test variables:
-        messaging_service_urls = 'this.is.my.only.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = False
-
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.ArgumentError):
             testobject = esgfpid.check.RabbitChecker(
-                messaging_service_urls = messaging_service_urls,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                print_to_console = True,
                 print_success_to_console = True
             )
 
@@ -134,18 +83,18 @@ class CheckTestCase(unittest.TestCase):
         connection_patch.return_value = mock_response
 
         # Test variables:
-        messaging_service_urls = 'this.is.my.only.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        rabbit1 = dict(
+            user = 'johndoe',
+            password = 'abc123yx',
+            url = 'this.is.my.only.host')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1])
+
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
             esgfpid.check.check_pid_queue_availability(
-                messaging_service_urls = messaging_service_urls,
-                messaging_service_password = messaging_service_password,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                connector = testconnector,
+                print_to_console = True,
                 print_success_to_console = True
             )
 
@@ -161,25 +110,27 @@ class CheckTestCase(unittest.TestCase):
     # Connection failures
     #
 
+    '''
+    Test if the correct error message gets printed by the check method on connection failure.
+    Connection failure does not need to be mocked. We really try to connect here.
+    '''
+    @unittest.skipIf(globalvar.QUICK_ONLY, '(this test is slow)')
     def test_run_check_connection_failed(self):
-        '''
-        Test if the correct error message gets printed by the check method on connection failure.
-        Connection failure does not need to be mocked. We really try to connect here.
-        '''
+
+        print(self.slow_message)
 
         # Test variables:
-        messaging_service_urls = 'this.is.my.only.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        rabbit1 = dict(
+            user = 'johndoe',
+            password = 'abc123yx',
+            url = 'this.is.my.only.host')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1])
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
             esgfpid.check.check_pid_queue_availability(
-                messaging_service_urls = messaging_service_urls,
-                messaging_service_password = messaging_service_password,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                connector = testconnector,
+                print_to_console = True,
                 print_success_to_console = True
             )
 
@@ -202,18 +153,17 @@ class CheckTestCase(unittest.TestCase):
         connection_patch.return_value = None
 
         # Test variables:
-        messaging_service_urls = 'this.is.my.only.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        rabbit1 = dict(
+            user = 'johndoe',
+            password = 'abc123yx',
+            url = 'this.is.my.only.host')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1])
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
             esgfpid.check.check_pid_queue_availability(
-                messaging_service_urls = messaging_service_urls,
-                messaging_service_password = messaging_service_password,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                connector = testconnector,
+                print_to_console = True,
                 print_success_to_console = True
             )
 
@@ -225,24 +175,40 @@ class CheckTestCase(unittest.TestCase):
         self.assertEquals(expected_message, output,
             'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
 
+
+    '''Test if the correct error message gets printed by the check method on connection failure.'''
+    @unittest.skipIf(globalvar.QUICK_ONLY, '(this test is slow)')
     def test_run_check_connection_failed_several_urls(self):
-        '''Test if the correct error message gets printed by the check method on connection failure.'''
+
+        print(self.slow_message)
 
         # Test variables:
-        messaging_service_urls = ['tomato.salad-with-spam.fr', 'mystery-tour.uk']
-        messaging_service_url_preferred = 'this.is.my.favourite.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        #messaging_service_urls = ['tomato.salad-with-spam.fr', 'mystery-tour.uk']
+        #messaging_service_url_preferred = 'this.is.my.favourite.host'
+        user = 'johndoe'
+        pw = 'abc123yx'
+        rabbit1 = dict(
+            user = user,
+            password = pw,
+            url = 'this.is.my.favourite.host',
+            priority=1)
+        rabbit2 = dict(
+            user = user,
+            password = pw,
+            priority=2,
+            url = 'mystery-tour.uk')
+        rabbit3 = dict(
+            user = user,
+            password = pw,
+            priority=3,
+            url = 'tomato.salad-with-spam.fr')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1,rabbit2,rabbit3])
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
             esgfpid.check.check_pid_queue_availability(
-                messaging_service_urls = messaging_service_urls,
-                messaging_service_url_preferred = messaging_service_url_preferred,
-                messaging_service_password = messaging_service_password,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                connector = testconnector,
+                print_to_console = True,
                 print_success_to_console = True
             )
 
@@ -262,11 +228,26 @@ class CheckTestCase(unittest.TestCase):
         '''
 
         # Test variables:
-        messaging_service_url_preferred = 'this.is.my.favourite.host'
-        messaging_service_urls =  ['tomato.salad-with-spam.fr', 'mystery-tour.uk']
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        #messaging_service_url_preferred = 'this.is.my.favourite.host'
+        #messaging_service_urls =  ['tomato.salad-with-spam.fr', 'mystery-tour.uk']
+        user = 'johndoe'
+        pw = 'abc123yx'
+        rabbit1 = dict(
+            user = user,
+            password = pw,
+            priority=1,
+            url = 'this.is.my.favourite.host')
+        rabbit2 = dict(
+            user = user,
+            password = pw,
+            priority=3,
+            url = 'tomato.salad-with-spam.fr')
+        rabbit3 = dict(
+            user = user,
+            password = pw,
+            priority=2,
+            url = 'mystery-tour.uk')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1,rabbit2,rabbit3])
 
         # Define the replacement for the patched method:
         def different_mock_response_depending_on_host(params):
@@ -279,11 +260,8 @@ class CheckTestCase(unittest.TestCase):
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
             esgfpid.check.check_pid_queue_availability(
-                messaging_service_url_preferred=messaging_service_url_preferred,
-                messaging_service_urls = messaging_service_urls,
-                messaging_service_password = messaging_service_password,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                connector = testconnector,
+                print_to_console = True,
                 print_success_to_console = True
             )
 
@@ -310,18 +288,17 @@ class CheckTestCase(unittest.TestCase):
         connection_patch.side_effect = pikaexceptions.ProbableAuthenticationError
 
         # Test variables:
-        messaging_service_urls = 'this.is.my.only.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        rabbit1 = dict(
+            user = 'johndoe',
+            password = 'abc123yx',
+            url = 'this.is.my.only.host')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1])
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
             esgfpid.check.check_pid_queue_availability(
-                messaging_service_urls = messaging_service_urls,
-                messaging_service_password = messaging_service_password,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                connector = testconnector,
+                print_to_console = True,
                 print_success_to_console = True
             )
 
@@ -343,20 +320,32 @@ class CheckTestCase(unittest.TestCase):
         connection_patch.side_effect = pikaexceptions.ProbableAuthenticationError
 
         # Test variables:
-        messaging_service_urls =  ['tomato.salad-with-spam.fr', 'mystery-tour.uk']
-        messaging_service_url_preferred = 'this.is.my.favourite.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        #messaging_service_urls =  ['tomato.salad-with-spam.fr', 'mystery-tour.uk']
+        #messaging_service_url_preferred = 'this.is.my.favourite.host'
+        user = 'johndoe'
+        pw = 'abc123yx'
+        rabbit1 = dict(
+            user = user,
+            password = pw,
+            url = 'this.is.my.favourite.host',
+            priority=1)
+        rabbit2 = dict(
+            user = user,
+            password = pw,
+            priority=3,
+            url = 'tomato.salad-with-spam.fr')
+        rabbit3 = dict(
+            user = user,
+            password = pw,
+            priority=2,
+            url = 'mystery-tour.uk')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1,rabbit2,rabbit3])
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
             esgfpid.check.check_pid_queue_availability(
-                messaging_service_urls = messaging_service_urls,
-                messaging_service_url_preferred = messaging_service_url_preferred,
-                messaging_service_password = messaging_service_password,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                connector = testconnector,
+                print_to_console = True,
                 print_success_to_console = True
             )
 
@@ -381,18 +370,17 @@ class CheckTestCase(unittest.TestCase):
         connection_patch.return_value = mock_response
 
         # Test variables:
-        messaging_service_urls = 'this.is.my.only.host'
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        rabbit1 = dict(
+            user = 'johndoe',
+            password = 'abc123yx',
+            url = 'this.is.my.only.host')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1])
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
             esgfpid.check.check_pid_queue_availability(
-                messaging_service_urls = messaging_service_urls,
-                messaging_service_password = messaging_service_password,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                connector = testconnector,
+                print_to_console = True,
                 print_success_to_console = True
             )
 
@@ -412,11 +400,26 @@ class CheckTestCase(unittest.TestCase):
         '''
 
         # Test variables:
-        messaging_service_url_preferred = 'this.is.my.favourite.host'
-        messaging_service_urls =  ['tomato.salad-with-spam.fr', 'mystery-tour.uk']
-        messaging_service_username = 'johndoe'
-        messaging_service_password = 'abc123yx'
-        print_to_console = True
+        #messaging_service_url_preferred = 'this.is.my.favourite.host'
+        #messaging_service_urls =  ['tomato.salad-with-spam.fr', 'mystery-tour.uk']
+        user = 'johndoe'
+        pw = 'abc123yx'
+        rabbit1 = dict(
+            user = user,
+            password = pw,
+            priority=1,
+            url = 'this.is.my.favourite.host')
+        rabbit2 = dict(
+            user = user,
+            password = pw,
+            priority=3,
+            url = 'tomato.salad-with-spam.fr')
+        rabbit3 = dict(
+            user = user,
+            password = pw,
+            priority=2,
+            url = 'mystery-tour.uk')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1,rabbit2,rabbit3])
 
         # Define the replacement for the patched method:
         def different_mock_response_depending_on_host(params):
@@ -431,11 +434,8 @@ class CheckTestCase(unittest.TestCase):
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
             esgfpid.check.check_pid_queue_availability(
-                messaging_service_url_preferred=messaging_service_url_preferred,
-                messaging_service_urls = messaging_service_urls,
-                messaging_service_password = messaging_service_password,
-                print_to_console = print_to_console,
-                messaging_service_username = messaging_service_username,
+                connector = testconnector,
+                print_to_console = True,
                 print_success_to_console = True
             )
 

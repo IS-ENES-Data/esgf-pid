@@ -25,19 +25,17 @@ RABBIT_DELIVERY_MODE = _persistent # 'delivery_mode': See https://pika.readthedo
 RABBIT_MANDATORY_DELIVERY = True  # 'mandatory':  "This flag tells the server how to react if the message cannot be routed to a queue. If this flag is set, the server will return an unroutable message with a Return method. If this flag is zero, the server silently drops the message." # See: http://www.rabbitmq.com/amqp-0-9-1-reference.html#basic.publish
 RABBIT_FALLBACK_EXCHANGE_NAME = "FALLBACK"
 
-# Synchronous rabbit module:
-RABBIT_SYN_SOCKET_TIMEOUT=2 # defaults to 0.25 sec
-RABBIT_SYN_CONNECTION_ATTEMPTS=3 # defaults to 1
-RABBIT_SYN_CONNECTION_RETRY_DELAY_SECONDS=1 # no default
-RABBIT_SYN_MAX_TRIES=3
-RABBIT_SYN_TIMEOUT_MILLISEC=10
-
-# Asynchronous rabbit module:
-RABBIT_ASYN_RECONNECTION_SECONDS=0.5 # after how much time try to retry connecting to same hosts if connection was closed?
-RABBIT_ASYN_RECONNECTION_MAX_TRIES=2 # how many times should the module try reconnecting? Not so many times, rather throw exception to publisher.
-RABBIT_ASYN_SOCKET_TIMEOUT=2 # defaults to 0.25 sec
-RABBIT_ASYN_CONNECTION_ATTEMPTS=1 # defaults to 1
-RABBIT_ASYN_CONNECTION_RETRY_DELAY_SECONDS=1 # no default
+# Rabbit module, values for pika
+RABBIT_PIKA_SOCKET_TIMEOUT=0.25 # defaults to 0.25 sec
+RABBIT_PIKA_CONNECTION_ATTEMPTS=1 # defaults to 1
+RABBIT_PIKA_CONNECTION_RETRY_DELAY_SECONDS=0 # no default
+# Rabbit reconnection attempts
+RABBIT_RECONNECTION_SECONDS=0.5 # after how much time try to retry connecting to same hosts if connection was closed?
+RABBIT_RECONNECTION_MAX_TRIES=2 # how many times should the module try reconnecting? Not so many times, rather throw exception to publisher.
+# Rabbit attempts to send message (synchronous only):
+RABBIT_SYN_MESSAGE_MAX_TRIES=3
+RABBIT_SYN_MESSAGE_TIMEOUT_MILLISEC=10
+# Rabbit closing down algorithm (asynchronous only):
 RABBIT_ASYN_FINISH_MAX_TRIES=10 # How many times to recheck if all messages are published+confirmed (on finish)
 RABBIT_ASYN_FINISH_WAIT_SECONDS=0.5 # How much time to wait until you recheck (on finish)
 

@@ -49,7 +49,7 @@ def compare_json_return_errormessage(expected, received, full=True):
             error_occurred = True
         elif expected[key] != received[key]:
             #error_msg += ('\nReceived for key "'+str(key)+'":\n'+str(received[key])+'\nnot same as expected\n'+str(expected[key]))
-            error_msg += ('\nReceived for key "%s":\n%s (%s)\nnot same as expected\n%s (%s)' % (key, received[key], type(received[key]), expected[key], type(expected[key])))
+            error_msg += ('\nReceived for key "%s":\n\t%s (%s)\nnot same as expected\n\t%s (%s)' % (key, received[key], type(received[key]), expected[key], type(expected[key])))
             error_occurred = True
             expected_keys.remove(key)
             received_keys.remove(key)
@@ -64,7 +64,7 @@ def compare_json_return_errormessage(expected, received, full=True):
     if error_occurred:
         if full:
             #error_msg += '\nExpected:\n'+str(expected)+'\nReceived:\n'+str(received)
-            error_msg += ('\nExpected:\n%s\nReceived:\n%s' % (expected, received))
+            error_msg += ('\nExpected:\n\t%s\nReceived:\n\t%s' % (expected, received))
         return error_msg
     else:
         return None

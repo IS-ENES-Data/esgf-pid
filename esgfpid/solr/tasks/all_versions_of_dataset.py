@@ -1,6 +1,6 @@
 import logging
-import esgfpid.solr.tasks.utils as solrutils
 import esgfpid.exceptions
+from . import utils as solrutils
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())

@@ -1,22 +1,31 @@
 import unittest
-import mock
 import logging
-import json
-import esgfpid.assistant.datacart
-import tests.mocks.rabbitmock
-import tests.mocks.solrmock
 import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
+import esgfpid.assistant.datacart
+from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Logging
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 # Test resources:
-from resources.TESTVALUES import TESTVALUES as TESTVALUES
+from resources.TESTVALUES import *
+import resources.TESTVALUES as TESTHELPERS
 
+
+'''
+Unit tests for esgfpid.assistant.datacart.
+
+This module needs a coupler to work: It forwards calls to
+RabbitMQ to the coupler.
+
+For the tests, we use a real coupler object that has a
+mocked RabbitMQ connection., and whose solr communication
+is simply switched off (not mocked), as it is never used
+for errata operations anyway.
+'''
 class DataCartTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -25,48 +34,19 @@ class DataCartTestCase(unittest.TestCase):
     def tearDown(self):
         LOGGER.info('#############################')
 
-    def make_test_coupler_for_sending_messages(self):
-        rabbit_creds_open = {
-            "url":TESTVALUES['url_rabbit_open'],
-            "user":TESTVALUES['rabbit_username_open']
-        }
-        rabbit_creds_trusted = {
-            "url":TESTVALUES['url_rabbit_trusted'],
-            "user":TESTVALUES['rabbit_username_trusted'],
-            "password":TESTVALUES['rabbit_password']
-        }
-        testcoupler = esgfpid.coupling.Coupler(
-            handle_prefix = TESTVALUES['prefix'],
-            messaging_service_credentials = [rabbit_creds_trusted, rabbit_creds_open],
-            messaging_service_exchange_name = TESTVALUES['rabbit_exchange_name'],
-            solr_url = TESTVALUES['solr_url'],
-            solr_switched_off = True,
-            solr_https_verify=False
-        )
-        # Replace objects that interact with servers with mocks
-        testcoupler._Coupler__rabbit_message_sender = tests.mocks.rabbitmock.SimpleMockRabbitSender()
-        return testcoupler
-
-    def __get_received_message_from_rabbit_mock(self, coupler, index):
-        return coupler._Coupler__rabbit_message_sender.received_messages[index]
-
-    ### Actual test cases: ###
-
     '''
     Trivial test of the constructor.
     Only check if instantiation works without errors.
     '''
     def test_init_ok(self):
 
-        # Test variables
-        prefix = 'myprefix'
-
         # Preparation: Make patched test coupler
-        testcoupler = self.make_test_coupler_for_sending_messages()
+        testcoupler = TESTHELPERS.get_coupler(solr_switched_off=True)
+        TESTHELPERS.patch_with_rabbit_mock(testcoupler)
 
         # Run code to be tested:
         assistant = esgfpid.assistant.datacart.DataCartAssistant(
-            prefix=prefix,
+            prefix='foo',
             coupler=testcoupler
         )
 
@@ -97,7 +77,8 @@ class DataCartTestCase(unittest.TestCase):
         content = {dataset_id : dataset_pid}
 
         # Preparations: Make an assistant with a patched coupler.
-        testcoupler = self.make_test_coupler_for_sending_messages()
+        testcoupler = TESTHELPERS.get_coupler(solr_switched_off=True)
+        TESTHELPERS.patch_with_rabbit_mock(testcoupler)
         assistant = esgfpid.assistant.datacart.DataCartAssistant(
             prefix=prefix,
             coupler=testcoupler
@@ -116,13 +97,13 @@ class DataCartTestCase(unittest.TestCase):
     def test_datacart_for_several_datasets_with_pids(self):
 
         # Test variables
-        prefix = 'myprefix'
         content = {'foo':'foo', 'bar':'bar'}
   
         # Preparations: Make an assistant with a patched coupler.
-        testcoupler = self.make_test_coupler_for_sending_messages()
+        testcoupler = TESTHELPERS.get_coupler(solr_switched_off=True)
+        TESTHELPERS.patch_with_rabbit_mock(testcoupler)
         assistant = esgfpid.assistant.datacart.DataCartAssistant(
-            prefix=prefix,
+            prefix=PREFIX_NO_HDL,
             coupler=testcoupler
         )
 
@@ -131,13 +112,13 @@ class DataCartTestCase(unittest.TestCase):
 
         # Check result:
         expected_rabbit_task = {
-            "handle": "hdl:"+prefix+'/b597a79e-1dc7-3d3f-b689-75ac5a78167f',
+            "handle": PREFIX_WITH_HDL+'/b597a79e-1dc7-3d3f-b689-75ac5a78167f',
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
             "data_cart_content":{'foo':'foo', 'bar':'bar'},
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
-        received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
+        received_rabbit_task = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler)
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 
@@ -148,13 +129,13 @@ class DataCartTestCase(unittest.TestCase):
     def test_datacart_some_datasets_have_no_handles(self):
 
         # Test variablesl
-        prefix = 'myprefix'
         content = {'foo':'foo', 'bar':None}
   
         # Preparations: Make an assistant with a patched coupler.
-        testcoupler = self.make_test_coupler_for_sending_messages()
+        testcoupler = TESTHELPERS.get_coupler(solr_switched_off=True)
+        TESTHELPERS.patch_with_rabbit_mock(testcoupler)
         assistant = esgfpid.assistant.datacart.DataCartAssistant(
-            prefix=prefix,
+            prefix=PREFIX_NO_HDL,
             coupler=testcoupler
         )
 
@@ -163,13 +144,13 @@ class DataCartTestCase(unittest.TestCase):
 
         # Check result:
         expected_rabbit_task = {
-            "handle": "hdl:"+prefix+'/b597a79e-1dc7-3d3f-b689-75ac5a78167f',
+            "handle": PREFIX_WITH_HDL+'/b597a79e-1dc7-3d3f-b689-75ac5a78167f',
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
             "data_cart_content": content,
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
-        received_rabbit_task = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
+        received_rabbit_task = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler)
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 
@@ -181,7 +162,6 @@ class DataCartTestCase(unittest.TestCase):
     def test_datacart_several_times_same_datasets(self):
 
         # Test variables
-        prefix = 'myprefix'
         content1 = {'foo':'foo', 'bar':'bar'}
         content2 = {'foo':'foo', 'bar': None}
         content3 = {'foo':'foo', 'bar':'hdl:bar'}
@@ -189,23 +169,21 @@ class DataCartTestCase(unittest.TestCase):
         # the same data cart PID has to be created/updated.
 
         # Preparations: Make an assistant with a patched coupler.
-        testcoupler = self.make_test_coupler_for_sending_messages()
+        testcoupler = TESTHELPERS.get_coupler(solr_switched_off=True)
+        TESTHELPERS.patch_with_rabbit_mock(testcoupler)
         assistant = esgfpid.assistant.datacart.DataCartAssistant(
-            prefix=prefix,
+            prefix=PREFIX_NO_HDL,
             coupler=testcoupler
         )
 
         # Run code to be tested:
         pid1 = assistant.make_data_cart_pid(content1)
-        received_rabbit_task1 = self.__get_received_message_from_rabbit_mock(testcoupler, 0)
         pid2 = assistant.make_data_cart_pid(content2)
-        received_rabbit_task2 = self.__get_received_message_from_rabbit_mock(testcoupler, 1)
         pid3 = assistant.make_data_cart_pid(content3)
-        received_rabbit_task3 = self.__get_received_message_from_rabbit_mock(testcoupler, 2)
 
         # Check result:
         # These are the expected messages:
-        expected_handle_all_cases = "hdl:"+prefix+"/b597a79e-1dc7-3d3f-b689-75ac5a78167f"
+        expected_handle_all_cases = PREFIX_WITH_HDL+"/b597a79e-1dc7-3d3f-b689-75ac5a78167f"
         expected_rabbit_task1 = {
             "handle": expected_handle_all_cases,
             "operation": "shopping_cart",
@@ -228,6 +206,9 @@ class DataCartTestCase(unittest.TestCase):
             "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
         }
         # Check if all the messages are correct:
+        received_rabbit_task1 = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler, 0)
+        received_rabbit_task2 = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler, 1)
+        received_rabbit_task3 = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler, 2)
         same1 = utils.is_json_same(expected_rabbit_task1, received_rabbit_task1)
         same2 = utils.is_json_same(expected_rabbit_task2, received_rabbit_task2)
         same3 = utils.is_json_same(expected_rabbit_task3, received_rabbit_task3)

@@ -6,13 +6,13 @@ import copy
 import datetime
 import logging
 import esgfpid.utils
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .thread_returnhandler import UnacceptedMessagesHandler
 from .thread_statemachine import StateMachine
 from .thread_builder import ConnectionBuilder
 from .thread_feeder import RabbitFeeder
 from .thread_shutter import ShutDowner
 from .thread_confirmer import Confirmer
-from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from .exceptions import OperationNotAllowed
 
 LOGGER = logging.getLogger(__name__)
@@ -142,7 +142,7 @@ class RabbitThread(threading.Thread):
         self.__nodemanager = node_manager
         self.__confirmer = Confirmer()
         self.__returnhandler = UnacceptedMessagesHandler(self)
-        self.__feeder = RabbitFeeder(self, self.__statemachine)
+        self.__feeder = RabbitFeeder(self, self.__statemachine, self.__nodemanager)
         self.__shutter = ShutDowner(self, self.__statemachine)
 
         '''
@@ -378,7 +378,7 @@ class RabbitThread(threading.Thread):
     def reset_delivery_number(self):
         return self.__feeder.reset_delivery_number()
 
-    ''' Called by builder, only for logging. '''
+    ''' Called by feeder. Called by builder, only for logging. '''
     def get_exchange_name(self):
         if self.__fallback_exchange is not None:
             return self.__fallback_exchange

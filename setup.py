@@ -17,6 +17,7 @@ packages = [
     'esgfpid/assistant',
     'esgfpid/utils',
     'esgfpid/rabbit',
+    'esgfpid/rabbit/synchronous',
     'esgfpid/rabbit/asynchronous',
     'esgfpid/solr',
     'esgfpid/solr/tasks'
@@ -25,9 +26,12 @@ packages = [
 # Packages to be included for running the tests:
 test_packages = [
     'tests',
-    'tests/mocks',
     'tests/resources',
     'tests/testcases',
+    'tests/testcases/solr',
+    'tests/testcases/rabbit',
+    'tests/testcases/rabbit/syn',
+    'tests/testcases/rabbit/asyn',
     'tests/utils'
 ]
 
@@ -44,11 +48,11 @@ except(IOError, ImportError):
 
 setup(
     name='esgfpid',
-    version='0.7.3',
+    version='0.7.4',
     author='Merret Buurman, German Climate Computing Centre (DKRZ)',
     author_email='buurman@dkrz.de',
     url='https://github.com/IS-ENES-Data/esgf-pid',
-    download_url='https://github.com/IS-ENES-Data/esgf-pid/archive/0.7.3.tar.gz',
+    download_url='https://github.com/IS-ENES-Data/esgf-pid/archive/0.7.4.tar.gz',
     description='Library for sending PID requests to a rabbit messaging queue during ESGF publication.',
     long_description=long_description,
     packages=packages + test_packages,

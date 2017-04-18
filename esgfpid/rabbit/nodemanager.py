@@ -61,6 +61,7 @@ class NodeManager(object):
 
         # Current node
         self.__current_node = None
+        self.__exchange_name = None
 
         # Important info
         self.__has_trusted = False
@@ -101,9 +102,10 @@ class NodeManager(object):
                      of this instance.
     '''
     def add_open_node(self, **kwargs):
-        kwargs['is_open'] = True
-        added = node_info = self.__add_node(self.__open_nodes, self.__open_nodes_archive, **kwargs)
-        logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
+        raise esgfpid.exceptions.ArgumentError('Open nodes no longer supported! (Messaging service "'+kwargs['host']+'")')
+        #kwargs['is_open'] = True
+        #added = node_info = self.__add_node(self.__open_nodes, self.__open_nodes_archive, **kwargs)
+        #logdebug(LOGGER, 'Open rabbit: %s', self.__get_node_log_string(node_info))
 
     def __add_node(self, store_where, store_archive, **kwargs):
         if self.__has_necessary_info(kwargs):
@@ -152,20 +154,27 @@ class NodeManager(object):
         else:
             node_info_dict['priority'] = 'zzzz_last'
 
+        # Complete the object:
+        vhost = None
+        if 'vhost' in node_info_dict and node_info_dict['vhost'] is not None:
+            vhost = node_info_dict['vhost']
+
         # Get some defaults:
-        socket_timeout = esgfpid.defaults.RABBIT_ASYN_SOCKET_TIMEOUT
-        connection_attempts = esgfpid.defaults.RABBIT_ASYN_CONNECTION_ATTEMPTS
-        retry_delay = esgfpid.defaults.RABBIT_ASYN_CONNECTION_RETRY_DELAY_SECONDS
+        socket_timeout = esgfpid.defaults.RABBIT_PIKA_SOCKET_TIMEOUT
+        connection_attempts = esgfpid.defaults.RABBIT_PIKA_CONNECTION_ATTEMPTS
+        retry_delay = esgfpid.defaults.RABBIT_PIKA_CONNECTION_RETRY_DELAY_SECONDS
         
         # Make pika connection params
         # https://pika.readthedocs.org/en/0.9.6/connecting.html
         params = pika.ConnectionParameters(
             host=node_info_dict['host'], # TODO: PORTS ETC.
+            virtual_host=vhost,
             credentials=node_info_dict['credentials'],
             socket_timeout=socket_timeout,
             connection_attempts=connection_attempts,
             retry_delay=retry_delay
         )
+
         node_info_dict['params'] = params
 
         # Add some stuff
@@ -189,6 +198,8 @@ class NodeManager(object):
     def get_connection_parameters(self):
         if self.__current_node is None:
             self.set_next_host()
+        if self.__current_node['is_open']:
+            raise ArgumentError('Open nodes no longer supported! (Messaging service "'+credentials['url']+'")')
         return self.__current_node['params']
 
     '''
@@ -255,6 +266,9 @@ class NodeManager(object):
             logdebug(LOGGER, 'Selected an open node: %s', self.__current_node['host'])
 
         else:
+            if self.__current_node is None:
+                logwarn(LOGGER, 'Unexpected: No RabbitMQ node left to try, and there is no current one.')
+                raise esgfpid.exceptions.ArgumentError('No RabbitMQ nodes were passed at all.')
             logwarn(LOGGER, 'No RabbitMQ node left to try! Leaving the last one: %s', self.__current_node['host'])
 
         self.__exchange_name = self.__current_node['exchange_name']
