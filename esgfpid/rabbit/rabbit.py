@@ -213,7 +213,6 @@ class RabbitMessageSender(object):
                     priority=cred['priority'],
                     vhost=cred['vhost'],
                     port=cred['port']
-
                 )
 
             # Trusted node:

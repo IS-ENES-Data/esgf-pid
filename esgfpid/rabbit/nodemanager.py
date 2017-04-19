@@ -154,7 +154,13 @@ class NodeManager(object):
         else:
             node_info_dict['priority'] = 'zzzz_last'
 
-        # Complete the object:
+        # Mandatories:
+        host = node_info_dict['host']
+        credentials = node_info_dict['credentials']
+
+        # Optional ones
+        # If not specified, use "None", which results in pika using its
+        # defaults.
         vhost = None
         if 'vhost' in node_info_dict and node_info_dict['vhost'] is not None:
             vhost = node_info_dict['vhost']
@@ -170,10 +176,10 @@ class NodeManager(object):
         # Make pika connection params
         # https://pika.readthedocs.org/en/0.9.6/connecting.html
         params = pika.ConnectionParameters(
-            host=node_info_dict['host'],
+            host=host,
             port=port,
             virtual_host=vhost,
-            credentials=node_info_dict['credentials'],
+            credentials=credentials,
             socket_timeout=socket_timeout,
             connection_attempts=connection_attempts,
             retry_delay=retry_delay
