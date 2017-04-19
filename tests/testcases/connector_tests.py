@@ -48,7 +48,7 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Preparations: Connector args.
         # Use trusted and open node:
-        rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED, TEST_RABBIT_CREDS_OPEN]
+        rabbit_creds = [copy.deepcopy(TEST_RABBIT_CREDS_TRUSTED), copy.deepcopy(TEST_RABBIT_CREDS_OPEN)]
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds
         )
@@ -71,7 +71,7 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Preparations: Connector args.
         # Use trusted and open node:
-        rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED, TEST_RABBIT_CREDS_OPEN]
+        rabbit_creds = [copy.deepcopy(TEST_RABBIT_CREDS_TRUSTED), copy.deepcopy(TEST_RABBIT_CREDS_OPEN)]
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds
         )
@@ -92,7 +92,7 @@ class ConnectorTestCase(unittest.TestCase):
     def test_init_no_prefix(self):
 
         # Preparations: Connector args.
-        rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED]
+        rabbit_creds = [copy.deepcopy(TEST_RABBIT_CREDS_TRUSTED)]
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds,
             handle_prefix = None
@@ -108,7 +108,7 @@ class ConnectorTestCase(unittest.TestCase):
     def test_init_wrong_prefix(self):
 
         # Preparations: Connector args.
-        rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED]
+        rabbit_creds = [copy.deepcopy(TEST_RABBIT_CREDS_TRUSTED)]
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds,
             handle_prefix = '987654321'
@@ -164,7 +164,7 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Preparation: Connector args.
         # Use trusted node:
-        rabbit_creds = [TEST_RABBIT_CREDS_TRUSTED]
+        rabbit_creds = [copy.deepcopy(TEST_RABBIT_CREDS_TRUSTED)]
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds
         )
@@ -189,7 +189,7 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Preparation: Connector args.
         # Use open node:
-        rabbit_creds = [TEST_RABBIT_CREDS_OPEN]
+        rabbit_creds = [copy.deepcopy(TEST_RABBIT_CREDS_OPEN)]
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds
         )
@@ -210,7 +210,7 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Preparation: Connector args.
         # Use open node:
-        rabbit_creds = [TEST_RABBIT_CREDS_OPEN]
+        rabbit_creds = [copy.deepcopy(TEST_RABBIT_CREDS_OPEN)]
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = rabbit_creds
         )
