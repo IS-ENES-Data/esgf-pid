@@ -58,7 +58,9 @@ class Connector(object):
             Each needs to have the entries: "user", "password", "url".
             They may have an integer "priority" too. If two nodes have
             the same priority, the library chooses randomly between
-            them. They also may have a "vhost" (RabbitMQ virtual host).
+            them. They also may have a "vhost" (RabbitMQ virtual host)
+            and a "port". Please refer to pika documentation
+            (http://pika.readthedocs.io/en/latest/modules/parameters.html).
             Dictionaries for 'open nodes' do not need a password
             to be provided. Open nodes are only used if no more
             other nodes are available. Note: Open nodes are no longer
@@ -233,6 +235,13 @@ class Connector(object):
                         credentials['vhost'] = credentials['vhost'][0]
                     else:
                         raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service vhost. Expected string, got %s.' % type(credentials['vhost']))
+
+            # If port is given, check type of port:
+            if 'port' in credentials:
+                if type(credentials['port']) == type([]) and len(credentials['port']) == 1:
+                        credentials['port'] = credentials['port'][0]
+                if not isinstance(credentials['port'], int):
+                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service port. Expected int, got %s.' % type(credentials['port']))
 
 
     '''

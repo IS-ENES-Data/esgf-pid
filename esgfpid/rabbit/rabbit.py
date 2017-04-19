@@ -200,6 +200,8 @@ class RabbitMessageSender(object):
                 cred['priority'] = None
             if 'vhost' not in cred:
                 cred['vhost'] = None
+            if 'port' not in cred:
+                cred['port'] = None
 
             # Open node:
             if cred['password'] == 'jzlnL78ZpExV#_QHz':
@@ -209,7 +211,9 @@ class RabbitMessageSender(object):
                     host=cred['url'],
                     exchange_name=args['exchange_name'],
                     priority=cred['priority'],
-                    vhost=cred['vhost']
+                    vhost=cred['vhost'],
+                    port=cred['port']
+
                 )
 
             # Trusted node:
@@ -220,7 +224,8 @@ class RabbitMessageSender(object):
                     host=cred['url'],
                     exchange_name=args['exchange_name'],
                     priority=cred['priority'],
-                    vhost=cred['vhost']
+                    vhost=cred['vhost'],
+                    port=cred['port']
                 )
 
         return node_manager
