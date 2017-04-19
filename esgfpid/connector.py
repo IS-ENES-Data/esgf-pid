@@ -226,6 +226,15 @@ class Connector(object):
                 else:
                     raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service password. Expected string, got %s.' % type(credentials['password']))
 
+            # If vhost is given, check type of vhost:
+            if 'vhost' in credentials:
+                if not type(credentials['vhost']) == type('foo'):
+                    if type(credentials['vhost']) == type([]) and len(credentials['vhost']) == 1:
+                        credentials['vhost'] = credentials['vhost'][0]
+                    else:
+                        raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service vhost. Expected string, got %s.' % type(credentials['vhost']))
+
+
     '''
     These are not (only) needed during initialisation, but
     (also) later on.
