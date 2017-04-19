@@ -194,54 +194,40 @@ class Connector(object):
     def __check_rabbit_credentials_completeness(self, args):
         for credentials in args['messaging_service_credentials']:
 
-            # Check presence of URL:
-            if 'url' not in credentials:
-                raise esgfpid.exceptions.ArgumentError('Missing URL for messaging service!')
+            if not isinstance(credentials, dict):
+                errmsg = 'Credentials for each RabbitMQ node should be a dictionary.'
+                raise esgfpid.exceptions.ArgumentError(errmsg)
 
-            # Check type of URL:
-            elif not type(credentials['url']) == type('foo'):
-                if type(credentials['url']) == type([]) and len(credentials['url']) == 1:
-                    credentials['url'] = credentials['url'][0]
+            # Mandatory:
+            self.__check_presence_and_type('url', credentials, basestring)
+            self.__check_presence_and_type('user', credentials, basestring)
+            self.__check_presence_and_type('password', credentials, basestring) # If you want open nodes to be enabled again, remove this!
+            
+            # Optional:
+            self.__check_type_if_exists('password', credentials, basestring)
+            self.__check_type_if_exists('vhost', credentials, basestring)
+            self.__check_type_if_exists('port', credentials, int)
+
+    def __check_presence_and_type(self, attname, credentials, desiredtype):
+        self.__check_presence(attname, credentials)
+        self.__check_type_if_exists(attname, credentials, desiredtype)
+
+    def __check_presence(self, attname, credentials):
+        if attname not in credentials:
+            rabbitname_for_errmsg = '(not specified)'
+            if 'url' in credentials:
+                rabbitname_for_errmsg = credentials['url']
+            errmsg = 'Missing %s for messaging service "%s"!' % (attname, rabbitname_for_errmsg)
+            raise esgfpid.exceptions.ArgumentError(errmsg)
+
+    def __check_type_if_exists(self, attname, credentials, desiredtype):
+        if attname in credentials:
+            if not isinstance(credentials[attname], desiredtype):
+                if type(credentials[attname]) == type([]) and len(credentials[attname]) == 1:
+                    credentials[attname] = credentials[attname][0]
                 else:
-                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service URL. Expected string, got %s.' % type(credentials['url']))
-
-            # Check presence of user:
-            if 'user' not in credentials:
-                raise esgfpid.exceptions.ArgumentError('Missing user for messaging service "%s"!' % credentials['url'])
-
-            # Check type of user:
-            elif not type(credentials['user']) == type('foo'):
-                if type(credentials['user']) == type([]) and len(credentials['user']) == 1:
-                    credentials['user'] = credentials['user'][0]
-                else:
-                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service username. Expected string, got %s.' % type(credentials['user']))
-
-            # Check presence of password:
-            if 'password' not in credentials:
-                # If you want open nodes to be enabled again, remove this exception!
-                raise esgfpid.exceptions.ArgumentError('Missing password for messaging service "%s"!' % credentials['url'])
-
-            # Check type of user:
-            elif not type(credentials['password']) == type('foo'):
-                if type(credentials['password']) == type([]) and len(credentials['password']) == 1:
-                    credentials['password'] = credentials['password'][0]
-                else:
-                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service password. Expected string, got %s.' % type(credentials['password']))
-
-            # If vhost is given, check type of vhost:
-            if 'vhost' in credentials:
-                if not type(credentials['vhost']) == type('foo'):
-                    if type(credentials['vhost']) == type([]) and len(credentials['vhost']) == 1:
-                        credentials['vhost'] = credentials['vhost'][0]
-                    else:
-                        raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service vhost. Expected string, got %s.' % type(credentials['vhost']))
-
-            # If port is given, check type of port:
-            if 'port' in credentials:
-                if type(credentials['port']) == type([]) and len(credentials['port']) == 1:
-                        credentials['port'] = credentials['port'][0]
-                if not isinstance(credentials['port'], int):
-                    raise esgfpid.exceptions.ArgumentError('Wrong type of messaging service port. Expected int, got %s.' % type(credentials['port']))
+                    errmsg = 'Wrong type of messaging service %s. Expected %s, got %s.' % (attname, desiredtype, type(credentials[attname]))
+                    raise esgfpid.exceptions.ArgumentError(errmsg)
 
 
     '''
