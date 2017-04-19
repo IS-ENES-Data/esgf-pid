@@ -188,7 +188,7 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Preparation: Connector args.
         # Use trusted node:
-        rabbit_creds = TESTHELPERS.get_rabbit_credentials(vhost='foo', port=666)
+        rabbit_creds = TESTHELPERS.get_rabbit_credentials(vhost='foo', port=666, ssl_enabled=True)
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = [rabbit_creds]
         )
@@ -296,6 +296,26 @@ class ConnectorTestCase(unittest.TestCase):
             user = RABBIT_USER_TRUSTED,
             password = RABBIT_PASSWORD,
             vhost = 123
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        with self.assertRaises(ArgumentError) as e:
+            testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Wrong type', str(e.exception))
+
+    def test_init_sslenabled_no_bool(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = RABBIT_USER_TRUSTED,
+            password = RABBIT_PASSWORD,
+            ssl_enabled = 123
         )
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = [rabbit_creds]
