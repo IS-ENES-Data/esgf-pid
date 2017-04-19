@@ -314,7 +314,7 @@ def get_coupler(**kwargs):
 # that can be mocked with solr mock, rabbit mock...
 #
 
-def get_rabbit_args(**kwargs):
+def get_rabbit_credentials(**kwargs):
     rabbit_args = dict(
         user = RABBIT_USER_TRUSTED,
         url = RABBIT_URL_TRUSTED,
@@ -325,7 +325,7 @@ def get_rabbit_args(**kwargs):
     return rabbit_args
 
 def get_connector_with_rabbit(**kwargs):
-    cred = get_rabbit_args(**kwargs)
+    cred = get_rabbit_credentials(**kwargs)
     return get_connector(messaging_service_credentials=[cred])
 
 def get_connector_args(**kwargs):
