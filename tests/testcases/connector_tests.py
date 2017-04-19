@@ -137,7 +137,7 @@ class ConnectorTestCase(unittest.TestCase):
             testconnector = esgfpid.Connector(**args)
 
         # Check result: Error message ok?
-        self.assertIn('Missing URL for', str(e.exception))
+        self.assertIn('Missing url for', str(e.exception))
 
     def test_init_no_rabbit_user(self):
 
