@@ -206,7 +206,7 @@ class ConnectorTestCase(unittest.TestCase):
     Test the constructor, with only open nodes.
     '''
     @unittest.skipIf(globalvar.RABBIT_OPEN_NOT_ALLOWED, '(this test uses open rabbit nodes)')
-    def test_init_open_ok(self):
+    def test_init_open_ok_2(self):
 
         # Preparation: Connector args.
         # Use open node:
