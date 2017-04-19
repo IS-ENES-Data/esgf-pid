@@ -1,4 +1,5 @@
 import mock
+import copy
 import esgfpid
 import tests.mocks.responsemock
 import tests.mocks.solrmock
@@ -285,9 +286,10 @@ class MockRabbitSender(object):
 #
 
 def get_coupler_args(**kwargs):
+    cred_copy = copy.deepcopy(TEST_RABBIT_CREDS_TRUSTED)
     coupler_args = dict(
         handle_prefix = PREFIX_NO_HDL,
-        messaging_service_credentials = [TEST_RABBIT_CREDS_TRUSTED],
+        messaging_service_credentials = [cred_copy],
         messaging_service_exchange_name = EXCHANGE_NAME,
         data_node = DATA_NODE,
         thredds_service_path = THREDDS,
@@ -312,7 +314,7 @@ def get_coupler(**kwargs):
 # that can be mocked with solr mock, rabbit mock...
 #
 
-def get_rabbit_args(**kwargs):
+def get_rabbit_credentials(**kwargs):
     rabbit_args = dict(
         user = RABBIT_USER_TRUSTED,
         url = RABBIT_URL_TRUSTED,
@@ -323,14 +325,15 @@ def get_rabbit_args(**kwargs):
     return rabbit_args
 
 def get_connector_with_rabbit(**kwargs):
-    cred = get_rabbit_args(**kwargs)
+    cred = get_rabbit_credentials(**kwargs)
     return get_connector(messaging_service_credentials=[cred])
 
 def get_connector_args(**kwargs):
+    cred_copy = copy.deepcopy(TEST_RABBIT_CREDS_TRUSTED)
     connector_args = dict(
         handle_prefix = PREFIX_NO_HDL,
         messaging_service_exchange_name = EXCHANGE_NAME,
-        messaging_service_credentials = [TEST_RABBIT_CREDS_TRUSTED]
+        messaging_service_credentials = [cred_copy]
     )
     for k,v in kwargs.iteritems():
         connector_args[k] = v
@@ -418,8 +421,9 @@ def patch_with_solr_mock(connector_or_coupler, solrmock):
 def get_rabbit_args(**kwargs):
     if not 'is_synchronous_mode' in kwargs:
         raise ValueError('Please specify argument "is_synchronous_mode"!')
+    cred_copy = copy.deepcopy(TEST_RABBIT_CREDS_TRUSTED)
     rabbit_args = dict(
-        credentials = [TEST_RABBIT_CREDS_TRUSTED],
+        credentials = [cred_copy],
         exchange_name='exch',
         test_publication=False,
         is_synchronous_mode=kwargs['is_synchronous_mode']

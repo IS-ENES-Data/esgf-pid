@@ -26,9 +26,10 @@ RABBIT_MANDATORY_DELIVERY = True  # 'mandatory':  "This flag tells the server ho
 RABBIT_FALLBACK_EXCHANGE_NAME = "FALLBACK"
 
 # Rabbit module, values for pika
+# See http://pika.readthedocs.io/en/latest/_modules/pika/connection.html
 RABBIT_PIKA_SOCKET_TIMEOUT=0.25 # defaults to 0.25 sec
 RABBIT_PIKA_CONNECTION_ATTEMPTS=1 # defaults to 1
-RABBIT_PIKA_CONNECTION_RETRY_DELAY_SECONDS=0 # no default
+RABBIT_PIKA_CONNECTION_RETRY_DELAY_SECONDS=0 # defaults to 2.0
 # Rabbit reconnection attempts
 RABBIT_RECONNECTION_SECONDS=0.5 # after how much time try to retry connecting to same hosts if connection was closed?
 RABBIT_RECONNECTION_MAX_TRIES=2 # how many times should the module try reconnecting? Not so many times, rather throw exception to publisher.

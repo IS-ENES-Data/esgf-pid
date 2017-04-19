@@ -154,10 +154,22 @@ class NodeManager(object):
         else:
             node_info_dict['priority'] = 'zzzz_last'
 
-        # Complete the object:
+        # Mandatories:
+        host = node_info_dict['host']
+        credentials = node_info_dict['credentials']
+
+        # Optional ones
+        # If not specified, use "None", which results in pika using its
+        # defaults.
         vhost = None
         if 'vhost' in node_info_dict and node_info_dict['vhost'] is not None:
             vhost = node_info_dict['vhost']
+        port = None
+        if 'port' in node_info_dict and node_info_dict['port'] is not None:
+            port = node_info_dict['port']
+        ssl_enabled = None
+        if 'ssl_enabled' in node_info_dict and node_info_dict['ssl_enabled'] is not None:
+            ssl_enabled = node_info_dict['ssl_enabled']
 
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_PIKA_SOCKET_TIMEOUT
@@ -167,9 +179,11 @@ class NodeManager(object):
         # Make pika connection params
         # https://pika.readthedocs.org/en/0.9.6/connecting.html
         params = pika.ConnectionParameters(
-            host=node_info_dict['host'], # TODO: PORTS ETC.
+            host=host,
+            ssl=ssl_enabled,
+            port=port,
             virtual_host=vhost,
-            credentials=node_info_dict['credentials'],
+            credentials=credentials,
             socket_timeout=socket_timeout,
             connection_attempts=connection_attempts,
             retry_delay=retry_delay

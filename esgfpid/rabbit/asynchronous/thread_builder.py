@@ -136,6 +136,7 @@ class ConnectionBuilder(object):
                 self.thread._connection.ioloop.start()
 
             except pika.exceptions.ProbableAuthenticationError as e:
+
                 time_passed = datetime.datetime.now() - self.__start_connect_time
                 logerror(LOGGER, 'Caught Authentication Exception after %s seconds during connection ("%s").', time_passed.total_seconds(), e.__class__.__name__)
                 self.statemachine.set_to_waiting_to_be_available()
