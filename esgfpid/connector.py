@@ -58,8 +58,9 @@ class Connector(object):
             Each needs to have the entries: "user", "password", "url".
             They may have an integer "priority" too. If two nodes have
             the same priority, the library chooses randomly between
-            them. They also may have a "vhost" (RabbitMQ virtual host)
-            and a "port". Please refer to pika documentation
+            them. They also may have a "vhost" (RabbitMQ virtual host),
+            a "port" and a boolean "ssl_enabled". Please refer to pika's
+            documentation
             (http://pika.readthedocs.io/en/latest/modules/parameters.html).
             Dictionaries for 'open nodes' do not need a password
             to be provided. Open nodes are only used if no more
