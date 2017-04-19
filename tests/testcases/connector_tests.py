@@ -182,6 +182,30 @@ class ConnectorTestCase(unittest.TestCase):
         self.assertEquals(node_manager.get_num_left_open(),0)
 
     '''
+    Test the constructor, with trusted node.
+    '''
+    def test_init_trusted_only_more_args_ok(self):
+
+        # Preparation: Connector args.
+        # Use trusted node:
+        rabbit_creds = TESTHELPERS.get_rabbit_credentials(vhost='foo', port=666)
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested: Connector constructor
+        testconnector = esgfpid.Connector(**args)
+
+        # Check results: Did init work?
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+
+        # Check results: Did the module get the right number of
+        # trusted and open rabbit nodes?
+        node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
+        self.assertEquals(node_manager.get_num_left_trusted(), 1)
+        self.assertEquals(node_manager.get_num_left_open(),0)
+
+    '''
     Test the constructor, with only open nodes.
     '''
     @unittest.skipIf(not(globalvar.RABBIT_OPEN_NOT_ALLOWED), '(this test cannot deal with open rabbit nodes)')
@@ -252,6 +276,46 @@ class ConnectorTestCase(unittest.TestCase):
             url = RABBIT_URL_TRUSTED,
             user = [RABBIT_USER_TRUSTED, 'johndoe', 'alicedoe'],
             password = RABBIT_PASSWORD
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        with self.assertRaises(ArgumentError) as e:
+            testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Wrong type', str(e.exception))
+
+    def test_init_vhost_no_string(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = RABBIT_USER_TRUSTED,
+            password = RABBIT_PASSWORD,
+            vhost = 123
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        with self.assertRaises(ArgumentError) as e:
+            testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Wrong type', str(e.exception))
+
+    def test_init_port_no_int(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = RABBIT_USER_TRUSTED,
+            password = RABBIT_PASSWORD,
+            port = 'foo'
         )
         args = TESTHELPERS.get_connector_args(
             messaging_service_credentials = [rabbit_creds]
