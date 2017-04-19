@@ -214,7 +214,8 @@ class RabbitMessageSender(object):
                     exchange_name=args['exchange_name'],
                     priority=cred['priority'],
                     vhost=cred['vhost'],
-                    port=cred['port']
+                    port=cred['port'],
+                    ssl_enabled=cred['ssl_enabled']
                 )
 
             # Trusted node:
@@ -226,7 +227,8 @@ class RabbitMessageSender(object):
                     exchange_name=args['exchange_name'],
                     priority=cred['priority'],
                     vhost=cred['vhost'],
-                    port=cred['port']
+                    port=cred['port'],
+                    ssl_enabled=cred['ssl_enabled']
                 )
 
         return node_manager
