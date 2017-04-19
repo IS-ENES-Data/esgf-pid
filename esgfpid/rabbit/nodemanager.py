@@ -167,6 +167,10 @@ class NodeManager(object):
         port = None
         if 'port' in node_info_dict and node_info_dict['port'] is not None:
             port = node_info_dict['port']
+        ssl_enabled = None
+        if 'ssl_enabled' in node_info_dict and node_info_dict['ssl_enabled'] is not None:
+            ssl_enabled = node_info_dict['ssl_enabled']
+
 
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_PIKA_SOCKET_TIMEOUT
@@ -177,6 +181,7 @@ class NodeManager(object):
         # https://pika.readthedocs.org/en/0.9.6/connecting.html
         params = pika.ConnectionParameters(
             host=host,
+            ssl=ssl_enabled,
             port=port,
             virtual_host=vhost,
             credentials=credentials,

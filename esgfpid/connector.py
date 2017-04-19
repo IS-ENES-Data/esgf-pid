@@ -207,6 +207,7 @@ class Connector(object):
             self.__check_type_if_exists('password', credentials, basestring)
             self.__check_type_if_exists('vhost', credentials, basestring)
             self.__check_type_if_exists('port', credentials, int)
+            self.__check_type_if_exists('ssl_enabled', credentials, bool)
 
     def __check_presence_and_type(self, attname, credentials, desiredtype):
         self.__check_presence(attname, credentials)
