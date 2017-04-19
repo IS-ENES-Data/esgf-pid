@@ -61,7 +61,8 @@ class Connector(object):
             them. They also may have a "vhost" (RabbitMQ virtual host).
             Dictionaries for 'open nodes' do not need a password
             to be provided. Open nodes are only used if no more
-            other nodes are available.
+            other nodes are available. Note: Open nodes are no longer
+            supported.
 
         :param message_service_synchronous: Optional. Boolean to
             define if the connection to RabbitMQ and the message
