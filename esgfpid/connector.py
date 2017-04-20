@@ -222,14 +222,21 @@ class Connector(object):
             errmsg = 'Missing %s for messaging service "%s"!' % (attname, rabbitname_for_errmsg)
             raise esgfpid.exceptions.ArgumentError(errmsg)
 
-    def __check_type_if_exists(self, attname, credentials, desiredtype):
+    def __check_and_adapt_type_if_exists(self, attname, credentials, desiredtype):
         if attname in credentials:
-            if not isinstance(credentials[attname], desiredtype):
-                if type(credentials[attname]) == type([]) and len(credentials[attname]) == 1:
-                    credentials[attname] = credentials[attname][0]
-                else:
-                    errmsg = 'Wrong type of messaging service %s. Expected %s, got %s.' % (attname, desiredtype, type(credentials[attname]))
-                    raise esgfpid.exceptions.ArgumentError(errmsg)
+
+            # List to object:
+            if type(credentials[attname]) == type([]) and len(credentials[attname]) == 1:
+                credentials[attname] = credentials[attname][0]
+
+            # Don't check if None:
+            if credentials[attname] is None:
+                pass
+
+            # Check type:
+            elif not isinstance(credentials[attname], desiredtype):
+                errmsg = 'Wrong type of messaging service %s. Expected %s, got %s.' % (attname, desiredtype, type(credentials[attname]))
+                raise esgfpid.exceptions.ArgumentError(errmsg)
 
 
     '''
