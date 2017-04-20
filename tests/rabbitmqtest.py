@@ -97,6 +97,8 @@ if __name__ == '__main__':
     # Optional, for connection
     parser.add_argument('-vh', '--virtualhost', nargs='?', action='store',
                     help='The virtual host to connect to.')
+    parser.add_argument('-po', '--port', nargs='?', action='store',
+                    help='The port to connect to.')
     # Optional, for sending messages:
     parser.add_argument('-m', '--message', nargs='?', action='store',
                     help='The test message to send. Can be any string.')
@@ -142,6 +144,9 @@ if __name__ == '__main__':
     vhost = None
     if param.virtualhost is not None:
         vhost = param.virtualhost
+    port = None
+    if param.port is not None:
+        port = param.port
 
     # Switch on pika log:
     if param.pikalog is not None and param.pikalog == True:
@@ -197,6 +202,8 @@ if __name__ == '__main__':
     cred = dict(user=user, password=password, url=host)
     if vhost is not None:
         cred['vhost'] = vhost
+    if port is not None:
+        cred['port'] = port
     connector = esgfpid.Connector(
         handle_prefix=prefix,
         messaging_service_exchange_name=exch,
