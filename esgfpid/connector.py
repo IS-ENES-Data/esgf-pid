@@ -239,9 +239,31 @@ class Connector(object):
 
             # Check type:
             elif not isinstance(credentials[attname], desiredtype):
-                errmsg = 'Wrong type of messaging service %s. Expected %s, got %s.' % (attname, desiredtype, type(credentials[attname]))
-                raise esgfpid.exceptions.ArgumentError(errmsg)
 
+                # Try conversion:
+                try:
+                    credentials[attname] = self.__try_conversion(credentials[attname], desiredtype)
+
+                except ValueError as e:
+                    errmsg = ('Wrong type of messaging service %s (%s). Expected %s, got %s, conversion failed.' % 
+                        (attname, credentials[attname], desiredtype, type(credentials[attname])))
+                    raise esgfpid.exceptions.ArgumentError(errmsg)
+
+    def __try_conversion(self, value, desiredtype):
+        if desiredtype == bool:
+            if isinstance(value, basestring):
+                if str.lower(value) == 'true':
+                    return True
+                elif str.lower(value) == 'false':
+                    return False
+            raise ValueError()
+        if desiredtype == basestring:
+            #return str(value)
+            raise ValueError('Not transforming booleans')
+        if desiredtype == int:
+            return int(value)
+        else:
+            return desiredtype(value)
 
     '''
     These are not (only) needed during initialisation, but

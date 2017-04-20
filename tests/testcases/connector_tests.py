@@ -328,6 +328,64 @@ class ConnectorTestCase(unittest.TestCase):
         # Check result: Error message ok?
         self.assertIn('Wrong type', str(e.exception))
 
+    def test_init_sslenabled_string_bool_true(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = RABBIT_USER_TRUSTED,
+            password = RABBIT_PASSWORD,
+            ssl_enabled = 'tRuE'
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        testconnector = esgfpid.Connector(**args)
+
+        # Check result: Did init work?
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+
+    def test_init_sslenabled_string_bool_false(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = RABBIT_USER_TRUSTED,
+            password = RABBIT_PASSWORD,
+            ssl_enabled = 'fAlSe'
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        testconnector = esgfpid.Connector(**args)
+
+        # Check result: Did init work?
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+
+    def test_init_sslenabled_string_bool_other(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = RABBIT_USER_TRUSTED,
+            password = RABBIT_PASSWORD,
+            ssl_enabled = 'yes'
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        with self.assertRaises(ArgumentError) as e:
+            testconnector = esgfpid.Connector(**args)
+
+        # Check result: Error message ok?
+        self.assertIn('Wrong type', str(e.exception))
+
     def test_init_port_no_int(self):
 
         # Preparations: Connector args.
@@ -347,6 +405,25 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Check result: Error message ok?
         self.assertIn('Wrong type', str(e.exception))
+
+    def test_init_port_string_int(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = RABBIT_USER_TRUSTED,
+            password = RABBIT_PASSWORD,
+            port = '123'
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        testconnector = esgfpid.Connector(**args)
+
+        # Check result: Did init work?
+        self.assertIsInstance(testconnector, esgfpid.Connector)
 
     '''
     Test if the solr URL is passed to the consumer in the
