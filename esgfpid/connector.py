@@ -205,14 +205,14 @@ class Connector(object):
             self.__check_presence_and_type('password', credentials, basestring) # If you want open nodes to be enabled again, remove this!
             
             # Optional:
-            self.__check_type_if_exists('password', credentials, basestring)
-            self.__check_type_if_exists('vhost', credentials, basestring)
-            self.__check_type_if_exists('port', credentials, int)
-            self.__check_type_if_exists('ssl_enabled', credentials, bool)
+            self.__check_and_adapt_type_if_exists('password', credentials, basestring)
+            self.__check_and_adapt_type_if_exists('vhost', credentials, basestring)
+            self.__check_and_adapt_type_if_exists('port', credentials, int)
+            self.__check_and_adapt_type_if_exists('ssl_enabled', credentials, bool)
 
     def __check_presence_and_type(self, attname, credentials, desiredtype):
         self.__check_presence(attname, credentials)
-        self.__check_type_if_exists(attname, credentials, desiredtype)
+        self.__check_and_adapt_type_if_exists(attname, credentials, desiredtype)
 
     def __check_presence(self, attname, credentials):
         if attname not in credentials:
@@ -224,6 +224,10 @@ class Connector(object):
 
     def __check_and_adapt_type_if_exists(self, attname, credentials, desiredtype):
         if attname in credentials:
+
+            # Empty string to None:
+            if credentials[attname] == '':
+                credentials[attname] = None
 
             # List to object:
             if type(credentials[attname]) == type([]) and len(credentials[attname]) == 1:
