@@ -99,7 +99,7 @@ class StateMachine(object):
     are not accepted anymore.
     '''
     def get_reason_shutdown(self):
-        elif self.detail_could_not_connect:
+        if self.detail_could_not_connect:
             return 'Could not connect'
         elif self.__detail_closed_by_publisher or self.detail_asked_to_closed_by_publisher:
             return 'Was closed by publisher'
