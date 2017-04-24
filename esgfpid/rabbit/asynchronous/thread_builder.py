@@ -158,21 +158,18 @@ class ConnectionBuilder(object):
                 # Some pika errors:
                 if isinstance(e, pika.exceptions.ProbableAuthenticationError):
                     errorname = self.__make_error_name(e, 'e.g. wrong user or password')
-                    logerror(LOGGER, 'Could not connect: %s (connection failure after %s seconds)', errorname, time_passed_seconds)
                     self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
 
                 elif isinstance(e, pika.exceptions.ProbableAccessDeniedError):
                     errorname = self.__make_error_name(e, 'e.g. wrong virtual host name')
-                    logerror(LOGGER, 'Could not connect: %s (connection failure after %s seconds)', errorname, time_passed_seconds)
                 
                 elif isinstance(e, pika.exceptions.IncompatibleProtocolError):
                     errorname = self.__make_error_name(e, 'e.g. trying TLS/SSL on wrong port')
-                    logerror(LOGGER, 'Could not connect: %s (connection failure after %s seconds)', errorname, time_passed_seconds)
 
                 # Other errors:
                 else:
                     errorname = self.__make_error_name(e)
-                    logerror(LOGGER, 'Unexpected error during event listener\'s lifetime (after %s seconds): %s', time_passed_seconds, errorname)
+                    logdebug(LOGGER, 'Unexpected error during event listener\'s lifetime (after %s seconds): %s', time_passed_seconds, errorname)
 
                 # Now trigger reconnection:
                 self.statemachine.set_to_waiting_to_be_available()
@@ -323,7 +320,8 @@ class ConnectionBuilder(object):
 
         oldhost = self.__node_manager.get_connection_parameters().host
         time_passed = datetime.datetime.now() - self.__start_connect_time
-        loginfo(LOGGER, 'Failed connection to RabbitMQ at %s after %s seconds. Reason: %s.', oldhost, time_passed.total_seconds(), msg)
+        time_passed_seconds = time_passed.total_seconds()
+        logerror(LOGGER, 'Could not connect to %s: %s (connection failure after %s seconds)', oldhost, msg, time_passed_seconds)
 
         # If there was a force-finish, we do not reconnect.
         if self.statemachine.is_FORCE_FINISHED():
