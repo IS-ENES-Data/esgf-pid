@@ -360,7 +360,7 @@ class ConnectionBuilder(object):
             else:
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
-                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % self.__max_reconnection_tries)
+                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % self.__max_reconnection_tries+1)
                 logerror(LOGGER, errormsg)
                 raise PIDServerException(errormsg+'\nProblems:\n'+self.__print_connection_errors())
 
