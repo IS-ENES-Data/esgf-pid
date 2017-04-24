@@ -212,6 +212,13 @@ class RabbitThread(threading.Thread):
         logdebug(LOGGER, 'Asking rabbit thread to finish...')
         self.__add_event(self.__shutter.finish_gently)
         self.__wait_for_thread_to_finish_gently()
+        # This waiting is necessary, because after finishing gently
+        # the main thread needs to join the rabbit thread, which
+        # only makes sense if finishing gently is done.
+        # If we separated the finish_gently command and the join()
+        # command, the main thread could do other stuff in the mean-
+        # time, but we'd have to trust the user to call both, to
+        # avoid missing the join.
 
     '''
     Allows the main thread to retrieve all unconfirmed messages.

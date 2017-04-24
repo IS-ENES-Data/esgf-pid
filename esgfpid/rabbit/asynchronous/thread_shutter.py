@@ -51,12 +51,10 @@ class ShutDowner(object):
 
     def __finish_gently(self):
         # Called directly from outside the thread!
-        #self.statemachine.asked_to_closed_by_publisher = True # TODO
 
-        # Make sure no more messages are accepted from publisher # TODO
-        # while publishes/confirms are still accepted:
-        #if self.statemachine.is_available_for_client_publishes():
-        #    self.statemachine.set_to_wanting_to_stop()
+        # No more messages can arrive from publisher (because
+        # the main thread blocks), but publishes/confirms are still
+        # accepted.
 
         # Inform user
         if self.__are_any_messages_pending():
@@ -72,7 +70,7 @@ class ShutDowner(object):
         self.recursive_decision_about_closing()
         # This iteratively checks if all messages are published+confirmed.
         # If not, it waits and then rechecks, up to a maximum number of iterations.
-        # THe main thread waits for this by using a threading.Event.
+        # The main thread waits for this by using a threading.Event.
 
     ''' Called by builder (via thread), so close-events are not lost if a new ioloop is started.'''
     def continue_gently_closing_if_applicable(self):

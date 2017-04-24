@@ -67,13 +67,19 @@ class RabbitFeeder(object):
     should be fired as soon as the module is in available state
     again.
 
-    TODO:
+    # TODO: Find better way to make sure enough publish events are fired.
     Are we sure there is not ever a way to have some messages
     in the unpublished Queue that could be sent, but aren't, because
     no event was fired for them? For example, if an exception occurs
     during publish, and the message was put back - will there ever
-    be an event to trigger its publication?
-    I don't think so. This is to do!
+    be an event to trigger its publication? I don't think so.
+
+    Interim solution (hack):
+    (a) At the moment, for every message that the publisher hands 
+        over, I fire two events (rabbitthread).
+    (b) During the close-down algorithm, if there is unpublished
+        messages, I fire publish events, to make sure they are
+        published (thread_shutter).
 
     '''
     def publish_message(self):
