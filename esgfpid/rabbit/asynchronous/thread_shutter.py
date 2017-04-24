@@ -209,8 +209,6 @@ class ShutDowner(object):
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (previously closed by user).')
         elif self.statemachine.detail_could_not_connect:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (unable to connect).')
-        elif self.statemachine.detail_authentication_exception:
-            logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (authentication exception).')
         else:
             logwarn(LOGGER, 'Not waiting for pending messages: No connection to server (unsure why).')
 

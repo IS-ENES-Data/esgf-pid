@@ -19,7 +19,6 @@ class StateMachine(object):
         self.__detail_closed_by_publisher = False # this needs a setter, as it depends on the others!
         self.detail_asked_to_closed_by_publisher = False
         self.detail_could_not_connect = False
-        self.detail_authentication_exception = False
 
     #
     # Setters
@@ -100,8 +99,6 @@ class StateMachine(object):
     are not accepted anymore.
     '''
     def get_reason_shutdown(self):
-        if self.detail_authentication_exception:
-            return 'Could not authenticate'
         elif self.detail_could_not_connect:
             return 'Could not connect'
         elif self.__detail_closed_by_publisher or self.detail_asked_to_closed_by_publisher:
@@ -117,7 +114,7 @@ class StateMachine(object):
     #
 
     def set_detail_closed_by_publisher(self):
-        if self.detail_could_not_connect or self.detail_authentication_exception:
+        if self.detail_could_not_connect:
             # If the connection was already closed because of these,
             # it was not really closed by publisher!!
             pass
