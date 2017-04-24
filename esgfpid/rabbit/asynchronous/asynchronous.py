@@ -133,7 +133,7 @@ class AsynchronousRabbitConnector(object):
         # while publishes/confirms are still accepted:
         if self.__statemachine.is_AVAILABLE():
             self.__statemachine.set_to_wanting_to_stop()
-        self.__statemachine.detail_asked_to_closed_by_publisher = True
+        self.__statemachine.detail_asked_to_gently_close_by_publisher = True
 
         # Asking the thread to finish:
         self.__thread.add_event_gently_finish() # (this blocks!)
@@ -153,7 +153,7 @@ class AsynchronousRabbitConnector(object):
 
         # Make sure no more messages are accepted from publisher
         # while confirms are still accepted:
-        self.__statemachine.detail_asked_to_closed_by_publisher = True
+        self.__statemachine.detail_asked_to_force_close_by_publisher = True
         self.__statemachine.set_to_wanting_to_stop()
 
         # Asking the thread to finish:

@@ -325,7 +325,12 @@ class ConnectionBuilder(object):
 
         # If there was a force-finish, we do not reconnect.
         if self.statemachine.is_FORCE_FINISHED():
-            errormsg = 'Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.'
+            errormsg = 'Permanently failed to connect to RabbitMQ.'
+            if self.statemachine.detail_asked_to_gently_close_by_publisher:
+                errormsg += ' Tried all hosts until was force-closed by user.'
+            elif self.statemachine.detail_asked_to_force_close_by_publisher:
+                errormsg += ' Tried all hosts until a user close-down forced us to give up (e.g. the maximum waiting time was reached).'
+            errormsg += ' Giving up. No PID requests will be sent.'
             self.__give_up_reconnecting_and_raise_exception(errormsg)
         
         # If there is alternative URLs, try one of them:
