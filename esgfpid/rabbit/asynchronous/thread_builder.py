@@ -135,6 +135,9 @@ class ConnectionBuilder(object):
                 self.thread.continue_gently_closing_if_applicable()
                 self.thread._connection.ioloop.start()
 
+            except PIDServerException as e:
+                raise e
+
             except pika.exceptions.ProbableAuthenticationError as e:
 
                 time_passed = datetime.datetime.now() - self.__start_connect_time
