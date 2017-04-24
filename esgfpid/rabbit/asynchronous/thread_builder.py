@@ -325,13 +325,8 @@ class ConnectionBuilder(object):
 
         # If there was a force-finish, we do not reconnect.
         if self.statemachine.is_FORCE_FINISHED():
-            # TODO This is the same code as above. Make a give_up function from it?
-            self.statemachine.set_to_permanently_unavailable()
-            self.statemachine.detail_could_not_connect = True
             errormsg = 'Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.'
-            logerror(LOGGER, errormsg)
-            raise PIDServerException(errormsg+'\nProblems:\n'+self.__print_connection_errors())
-
+            self.__give_up_reconnecting_and_raise_exception(errormsg)
         
         # If there is alternative URLs, try one of them:
         if self.__node_manager.has_more_urls():
@@ -357,12 +352,14 @@ class ConnectionBuilder(object):
 
             # Give up after so many tries...
             else:
-                self.statemachine.set_to_permanently_unavailable()
-                self.statemachine.detail_could_not_connect = True
                 errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % self.__max_reconnection_tries+1)
-                logerror(LOGGER, errormsg)
-                raise PIDServerException(errormsg+'\nProblems:\n'+self.__print_connection_errors())
+                self.__give_up_reconnecting_and_raise_exception(errormsg)
 
+    def __give_up_reconnecting_and_raise_exception(self, error_message):
+        self.statemachine.set_to_permanently_unavailable()
+        self.statemachine.detail_could_not_connect = True
+        logerror(LOGGER, error_message)
+        raise PIDServerException(error_message+'\nProblems:\n'+self.__print_connection_errors())
 
     def __store_connection_error_info(self, errorname, host):
         errorname = str(errorname)
@@ -576,12 +573,8 @@ class ConnectionBuilder(object):
     '''
     def __wait_and_trigger_reconnection(self, connection, wait_seconds):
         if self.statemachine.is_FORCE_FINISHED():
-            # TODO This is the same code as above. Make a give_up function from it?
-            self.statemachine.set_to_permanently_unavailable()
-            self.statemachine.detail_could_not_connect = True
             errormsg = 'Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.'
-            logerror(LOGGER, errormsg)
-            raise PIDServerException(errormsg+'\nProblems:\n'+self.__print_connection_errors())
+            self.__give_up_reconnecting_and_raise_exception(errormsg)
         else:
             self.statemachine.set_to_waiting_to_be_available()
             loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
