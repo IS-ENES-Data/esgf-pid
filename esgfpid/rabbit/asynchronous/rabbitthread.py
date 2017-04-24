@@ -82,7 +82,6 @@ class RabbitThread(threading.Thread):
         State-machine.
         Shared with the main thread!
         Not thread-safe.
-        TODO Make sure read and write are coherent!
         '''
         self.__statemachine = statemachine
 

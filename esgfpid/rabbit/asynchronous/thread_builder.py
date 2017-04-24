@@ -211,8 +211,13 @@ class ConnectionBuilder(object):
             on_open_callback=self.on_connection_open,
             on_open_error_callback=self.on_connection_error,
             on_close_callback=self.on_connection_closed,
-            stop_ioloop_on_close=False # TODO Why not?
+            stop_ioloop_on_close=False # why? see below. 
         )
+        # Don't stop ioloop on connection close, because
+        # otherwise the thread would not accept more events/
+        # messages (and might end) after a connection is
+        # closed. We still want to accept messages and try
+        # to reconnect and send them then.
 
     ''' Callback, called by RabbitMQ.'''
     def on_connection_open(self, unused_connection):
@@ -458,6 +463,8 @@ class ConnectionBuilder(object):
         else:
             logerror(LOGGER,'Unexpected channel shutdown. Need to close connection to trigger all the necessary close down steps.')
             self.thread._connection.close() # This will reconnect!
+            # Note that this might lead to infinite reconnections (until user
+            # close), as'the reconnection-counter is reset when a channel is opened.
 
     '''
     An attempt to publish to a nonexistent exchange will close
@@ -480,7 +487,6 @@ class ConnectionBuilder(object):
         self.__prepare_channel_reopen('Channel reopen')
 
         # Reopen channel
-        # TODO Reihenfolge richtigen? Erst prepare, dann open?
         logdebug(LOGGER, 'Reopening channel...')
         self.statemachine.set_to_waiting_to_be_available()
         self.__please_open_rabbit_channel()
@@ -505,8 +511,7 @@ class ConnectionBuilder(object):
             loginfo(LOGGER, 'Connection to %s closed.', self.__node_manager.get_connection_parameters().host)
             self.make_permanently_closed_by_error(connection, reply_text)
         else:
-            #reopen_seconds = defaults.RABBIT_RECONNECTION_SECONDS
-            #self.__wait_and_trigger_reconnection(connection, reopen_seconds)
+            # This reconnects to next host_
             self.on_connection_error(connection, reply_text)
 
     def __was_permanent_error(self, reply_code, reply_text):
