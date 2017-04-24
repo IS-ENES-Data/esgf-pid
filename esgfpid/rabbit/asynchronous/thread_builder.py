@@ -75,11 +75,6 @@ class ConnectionBuilder(object):
         self.__wait_seconds_before_reconnect = defaults.RABBIT_RECONNECTION_SECONDS
 
         '''
-        Set of all tried hosts, for logging.
-        '''
-        self.__all_hosts_that_were_tried = set()
-
-        '''
         To see how much time it takes to connect. Once a connection is
         established or failed, we print the time delta to logs.
         '''
@@ -90,6 +85,11 @@ class ConnectionBuilder(object):
         is not found.
         '''
         self.__fallback_exchange_name = defaults.RABBIT_FALLBACK_EXCHANGE_NAME
+
+        '''
+        Collect the connection errors for the hosts for telling the user.
+        '''
+        self.__connection_errors = {}
 
     ####################
     ### Start ioloop ###
@@ -206,7 +206,6 @@ class ConnectionBuilder(object):
         self.__start_connect_time = datetime.datetime.now()
         logdebug(LOGGER, 'Connecting to RabbitMQ at %s... (%s)',
             params.host, get_now_utc_as_formatted_string())
-        self.__all_hosts_that_were_tried.add(params.host)
         loginfo(LOGGER, 'Opening connection to RabbitMQ...')
         self.thread._connection = pika.SelectConnection(
             parameters=params,
@@ -323,14 +322,16 @@ class ConnectionBuilder(object):
         time_passed_seconds = time_passed.total_seconds()
         logerror(LOGGER, 'Could not connect to %s: %s (connection failure after %s seconds)', oldhost, msg, time_passed_seconds)
 
+        self.__store_connection_error_info(msg, oldhost)
+
         # If there was a force-finish, we do not reconnect.
         if self.statemachine.is_FORCE_FINISHED():
             # TODO This is the same code as above. Make a give_up function from it?
             #self.statemachine.set_to_permanently_unavailable()
             #self.statemachine.detail_could_not_connect = True
-            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s until received a force-finish. Giving up. No PID requests will be sent.' % list(self.__all_hosts_that_were_tried))
+            errormsg = 'Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.'
             logerror(LOGGER, errormsg)
-            raise PIDServerException(errormsg)
+            raise PIDServerException(errormsg+'\nProblems:\n'+self.__print_connection_errors())
 
         
         # If there is alternative URLs, try one of them:
@@ -359,9 +360,38 @@ class ConnectionBuilder(object):
             else:
                 self.statemachine.set_to_permanently_unavailable()
                 self.statemachine.detail_could_not_connect = True
-                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s %s times. Giving up. No PID requests will be sent.' % (list(self.__all_hosts_that_were_tried) ,self.__max_reconnection_tries))
+                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % self.__max_reconnection_tries)
                 logerror(LOGGER, errormsg)
-                raise PIDServerException(errormsg)
+                raise PIDServerException(errormsg+'\nProblems:\n'+self.__print_connection_errors())
+
+
+    def __store_connection_error_info(self, errorname, host):
+        errorname = str(errorname)
+        if host not in self.__connection_errors:
+            self.__connection_errors[host] = {}
+        if errorname not in self.__connection_errors[host]:
+            self.__connection_errors[host][errorname] = 1
+        else: 
+            self.__connection_errors[host][errorname] += 1
+
+    def __print_connection_errors(self):
+        separate_messages_per_host = []
+ 
+        # For each host:
+        for host in self.__connection_errors:
+            all_errors_for_one_host = []
+ 
+            # For each error in this host:
+            for errortype in self.__connection_errors[host]:
+                num = self.__connection_errors[host][errortype]
+                message_for_one_error_type = ('%ix "%s"' % (num, errortype))
+                all_errors_for_one_host.append(message_for_one_error_type)
+ 
+            concat_errors = ', '.join(all_errors_for_one_host)
+            message_for_one_host = 'Host "%s": %s' % (host, concat_errors)
+            separate_messages_per_host.append(message_for_one_host)
+ 
+        return '\n'.join(separate_messages_per_host)
 
 
     #############################
@@ -551,9 +581,9 @@ class ConnectionBuilder(object):
             #self.statemachine.set_to_permanently_unavailable()
             #self.statemachine.detail_could_not_connect = True
             #max_tries = defaults.RABBIT_RECONNECTION_MAX_TRIES
-            errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s until received a force-finish. Giving up. No PID requests will be sent.' % list(self.__all_hosts_that_were_tried))
+            errormsg = 'Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.'
             logerror(LOGGER, errormsg)
-            raise PIDServerException(errormsg)
+            raise PIDServerException(errormsg+'\nProblems:\n'+self.__print_connection_errors())
         else:
             self.statemachine.set_to_waiting_to_be_available()
             loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
