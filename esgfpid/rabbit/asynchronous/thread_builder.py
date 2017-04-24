@@ -141,7 +141,8 @@ class ConnectionBuilder(object):
             except pika.exceptions.ProbableAuthenticationError as e:
 
                 time_passed = datetime.datetime.now() - self.__start_connect_time
-                logerror(LOGGER, 'Caught Authentication Exception after %s seconds during connection ("%s").', time_passed.total_seconds(), e.__class__.__name__)
+                errorname = self.__make_error_name(e, 'e.g. wrong user or password')
+                logerror(LOGGER, 'Caught Authentication Exception after %s seconds during connection ("%s").', time_passed.total_seconds(), errorname)
                 self.statemachine.set_to_waiting_to_be_available()
                 self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
 
@@ -151,7 +152,6 @@ class ConnectionBuilder(object):
                 # problem.
                 # So we need to manually trigger reconnection to the next
                 # host here, which we do by manually calling the callback.
-                errorname = 'ProbableAuthenticationError issued by pika'
                 self.on_connection_error(self.thread._connection, errorname)
 
                 # We start the ioloop, so it can handle the reconnection events,
@@ -161,20 +161,13 @@ class ConnectionBuilder(object):
             except Exception as e:
                 # This catches any error during connection startup and during the entire
                 # time the ioloop runs, blocks and waits for events.
-                logerror(LOGGER, 'Unexpected error during event listener\'s lifetime: %s: %s', e.__class__.__name__, e.message)
 
-                # As we will try to reconnect, set state to waiting to connect.
-                # If reconnection fails, it will be set to permanently unavailable.
+                time_passed = datetime.datetime.now() - self.__start_connect_time
+                errorname = self.__make_error_name(e)
+                logerror(LOGGER, 'Unexpected error during event listener\'s lifetime (after %s seconds): %s', time_passed.total_seconds(), errorname)
+
                 self.statemachine.set_to_waiting_to_be_available()
-
-                # In case this error is reached, it seems that no callback
-                # was called that handles the problem. Let's try to reconnect
-                # somewhere else.
-                errorname = 'Unexpected error ('+str(e.__class__.__name__)+': '+str(e.message)+')'
                 self.on_connection_error(self.thread._connection, errorname)
-
-                # We start the ioloop, so it can handle the reconnection events,
-                # or also receive events from the publisher in the meantime.
                 self.thread._connection.ioloop.start()
         
         else:
@@ -183,6 +176,14 @@ class ConnectionBuilder(object):
             # if the actual connection to RabbitMQ succeeded (yet) or not.
             logdebug(LOGGER, 'This cannot happen: Connection object is not ready.')
             logerror(LOGGER, 'Cannot happen. Cannot properly start the thread. Connection object is not ready.')
+
+    def __make_error_name(self, ex, custom_text=None):
+        errorname = ex.__class__.__name__
+        if not ex.message == '':
+            errorname += ': '+ex.message
+        if custom_text is not None:
+            errorname += ' ('+custom_text+')'
+        return errorname
 
     ########################################
     ### Chain of callback functions that ###
