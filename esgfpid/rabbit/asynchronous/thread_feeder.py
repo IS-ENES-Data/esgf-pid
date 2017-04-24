@@ -101,7 +101,7 @@ class RabbitFeeder(object):
             self.__log_publication_trigger()
             self.__publish_message_to_channel()
 
-        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE():
+        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE() or self.statemachine.is_FORCE_FINISHED():
             log_every_x_times(LOGGER, self.__logcounter_trigger, self.__LOGFREQUENCY, 'Received late trigger for feeding the rabbit (trigger %i).', self.__logcounter_trigger)
             self.__log_why_cannot_feed_the_rabbit_now()
 
@@ -119,7 +119,7 @@ class RabbitFeeder(object):
             logdebug(LOGGER, 'Cannot publish message to RabbitMQ yet, as the connection is not ready.')
         elif self.statemachine.is_NOT_STARTED_YET():
             logerror(LOGGER, 'Cannot publish message to RabbitMQ, as the thread is not running yet.')
-        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE():
+        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE() or self.statemachine.is_FORCE_FINISHED():
             if self.statemachine.detail_could_not_connect:
                 logtrace(LOGGER, 'Could not publish message to RabbitMQ, as the connection failed.')
                 if self.__have_not_warned_about_connection_fail_yet:

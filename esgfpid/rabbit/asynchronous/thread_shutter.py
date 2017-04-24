@@ -156,7 +156,7 @@ class ShutDowner(object):
             return False
 
     def __module_is_not_progressing_anymore(self):
-        if self.statemachine.is_PERMANENTLY_UNAVAILABLE() or self.statemachine.is_FORCE_FINISHED(): # TODO Do I have to check anything else?
+        if self.statemachine.is_PERMANENTLY_UNAVAILABLE() or self.statemachine.is_FORCE_FINISHED():
             logdebug(LOGGER, 'Gentle finish (iteration %i): The rabbit thread is not active anymore, so we might as well close it.', self.__close_decision_iterations)
             return True
         return False

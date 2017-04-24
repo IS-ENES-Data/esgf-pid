@@ -277,7 +277,7 @@ class ConnectionBuilder(object):
             self.__check_for_already_arrived_messages_and_publish_them()
 
         # It was force-closed in the meantime:
-        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE(): # state was set in shutter module's __close_down()
+        elif self.statemachine.is_PERMANENTLY_UNAVAILABLE() or self.statemachine.is_FORCE_FINISHED():
             if self.statemachine.get_detail_closed_by_publisher():
                 logdebug(LOGGER, 'Setup is finished now, but the module was already force-closed in the meantime.')
                 self.shutter.safety_finish('closed before connection was ready. reclosing.')
@@ -440,7 +440,7 @@ class ConnectionBuilder(object):
         logdebug(LOGGER, 'Channel was closed: %s (code %s)', reply_text, reply_code)
 
         # Channel closed because user wants to close:
-        if self.statemachine.is_PERMANENTLY_UNAVAILABLE():
+        if self.statemachine.is_PERMANENTLY_UNAVAILABLE() or self.statemachine.is_FORCE_FINISHED():
             if self.statemachine.get_detail_closed_by_publisher():
                 logdebug(LOGGER,'Channel close event due to close command by user. This is expected.')
 

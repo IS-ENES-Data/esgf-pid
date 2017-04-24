@@ -328,7 +328,7 @@ class AsynchronousRabbitConnector(object):
             self.__put_one_message_into_queue_of_unsent_messages(message)
             self.__trigger_one_publish_action()
 
-        elif self.__statemachine.is_AVAILABLE_BUT_WANTS_TO_STOP() or self.__statemachine.is_PERMANENTLY_UNAVAILABLE():
+        elif self.__statemachine.is_AVAILABLE_BUT_WANTS_TO_STOP() or self.__statemachine.is_PERMANENTLY_UNAVAILABLE() or self.__statemachine.is_FORCE_FINISHED():
             errormsg = 'Accepting no more messages'
             logdebug(LOGGER, errormsg+' (dropping %s).', message)
             logwarn(LOGGER, 'RabbitMQ module was closed and does not accept any more messages. Dropping message. Reason: %s', self.__statemachine.get_reason_shutdown())
@@ -355,7 +355,7 @@ class AsynchronousRabbitConnector(object):
             self.__put_all_messages_into_queue_of_unsent_messages(messages)
             self.__trigger_n_publish_actions(len(messages))
 
-        elif self.__statemachine.is_AVAILABLE_BUT_WANTS_TO_STOP() or self.__statemachine.is_PERMANENTLY_UNAVAILABLE():
+        elif self.__statemachine.is_AVAILABLE_BUT_WANTS_TO_STOP() or self.__statemachine.is_PERMANENTLY_UNAVAILABLE() or self.__statemachine.is_FORCE_FINISHED():
             errormsg = 'Accepting no more messages'
             logwarn(LOGGER, errormsg+' (dropping %i messages).', len(messages))
             if self.__statemachine.get_detail_closed_by_publisher():

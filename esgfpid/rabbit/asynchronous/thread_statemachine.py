@@ -84,8 +84,7 @@ class StateMachine(object):
         if self.__state == self.__PERMANENTLY_UNAVAILABLE or self.__state == self.__FORCE_FINISHED:
             # Including FORCE_FINISHED is kind of a dirty hack here,
             # but otherwise I might break to many things...
-            # TODO: Update wherever this function is used, and verify which state
-            # is really interesting there...
+            # This hack should not be necessary anymore.
             return True
         return False
 
