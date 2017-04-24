@@ -138,34 +138,33 @@ class ConnectionBuilder(object):
             except PIDServerException as e:
                 raise e
 
-            except pika.exceptions.ProbableAuthenticationError as e:
+            # It seems that some connection problems do not cause
+            # RabbitMQ to call any callback (on_connection_closed
+            # or on_connection_error) - it just silently swallows the
+            # problem.
+            # So we need to manually trigger reconnection to the next
+            # host here, which we do by manually calling the callback.
+            # We start the ioloop, so it can handle the reconnection events,
+            # or also receive events from the publisher in the meantime.
 
-                time_passed = datetime.datetime.now() - self.__start_connect_time
-                errorname = self.__make_error_name(e, 'e.g. wrong user or password')
-                logerror(LOGGER, 'Caught Authentication Exception after %s seconds during connection ("%s").', time_passed.total_seconds(), errorname)
-                self.statemachine.set_to_waiting_to_be_available()
-                self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
-
-                # It seems that ProbableAuthenticationErrors do not cause
-                # RabbitMQ to call any callback, either on_connection_closed
-                # or on_connection_error - it just silently swallows the
-                # problem.
-                # So we need to manually trigger reconnection to the next
-                # host here, which we do by manually calling the callback.
-                self.on_connection_error(self.thread._connection, errorname)
-
-                # We start the ioloop, so it can handle the reconnection events,
-                # or also receive events from the publisher in the meantime.
-                self.thread._connection.ioloop.start()
 
             except Exception as e:
                 # This catches any error during connection startup and during the entire
                 # time the ioloop runs, blocks and waits for events.
 
                 time_passed = datetime.datetime.now() - self.__start_connect_time
-                errorname = self.__make_error_name(e)
-                logerror(LOGGER, 'Unexpected error during event listener\'s lifetime (after %s seconds): %s', time_passed.total_seconds(), errorname)
+                time_passed_seconds = time_passed.total_seconds()
 
+                if isinstance(e, pika.exceptions.ProbableAuthenticationError):
+                    errorname = self.__make_error_name(e, 'e.g. wrong user or password')
+                    logerror(LOGGER, 'Could not connect: %s (connection failure after %s seconds)', errorname, time_passed_seconds)
+                    self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
+
+                else:
+                    errorname = self.__make_error_name(e)
+                    logerror(LOGGER, 'Unexpected error during event listener\'s lifetime (after %s seconds): %s', time_passed_seconds, errorname)
+
+                # Now trigger reconnection:
                 self.statemachine.set_to_waiting_to_be_available()
                 self.on_connection_error(self.thread._connection, errorname)
                 self.thread._connection.ioloop.start()
