@@ -158,7 +158,6 @@ class ConnectionBuilder(object):
                 # Some pika errors:
                 if isinstance(e, pika.exceptions.ProbableAuthenticationError):
                     errorname = self.__make_error_name(e, 'e.g. wrong user or password')
-                    self.statemachine.detail_authentication_exception = True # TODO WHAT FOR?
 
                 elif isinstance(e, pika.exceptions.ProbableAccessDeniedError):
                     errorname = self.__make_error_name(e, 'e.g. wrong virtual host name')
@@ -327,8 +326,8 @@ class ConnectionBuilder(object):
         # If there was a force-finish, we do not reconnect.
         if self.statemachine.is_FORCE_FINISHED():
             # TODO This is the same code as above. Make a give_up function from it?
-            #self.statemachine.set_to_permanently_unavailable()
-            #self.statemachine.detail_could_not_connect = True
+            self.statemachine.set_to_permanently_unavailable()
+            self.statemachine.detail_could_not_connect = True
             errormsg = 'Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.'
             logerror(LOGGER, errormsg)
             raise PIDServerException(errormsg+'\nProblems:\n'+self.__print_connection_errors())
@@ -578,9 +577,8 @@ class ConnectionBuilder(object):
     def __wait_and_trigger_reconnection(self, connection, wait_seconds):
         if self.statemachine.is_FORCE_FINISHED():
             # TODO This is the same code as above. Make a give_up function from it?
-            #self.statemachine.set_to_permanently_unavailable()
-            #self.statemachine.detail_could_not_connect = True
-            #max_tries = defaults.RABBIT_RECONNECTION_MAX_TRIES
+            self.statemachine.set_to_permanently_unavailable()
+            self.statemachine.detail_could_not_connect = True
             errormsg = 'Permanently failed to connect to RabbitMQ. Tried all hosts until received a force-finish. Giving up. No PID requests will be sent.'
             logerror(LOGGER, errormsg)
             raise PIDServerException(errormsg+'\nProblems:\n'+self.__print_connection_errors())
