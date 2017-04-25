@@ -362,7 +362,7 @@ class ConnectionBuilder(object):
 
             # Give up after so many tries...
             else:
-                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % self.__max_reconnection_tries+1)
+                errormsg = ('Permanently failed to connect to RabbitMQ. Tried all hosts %s times. Giving up. No PID requests will be sent.' % (self.__max_reconnection_tries+1))
                 self.__give_up_reconnecting_and_raise_exception(errormsg)
 
     def __give_up_reconnecting_and_raise_exception(self, error_message):
