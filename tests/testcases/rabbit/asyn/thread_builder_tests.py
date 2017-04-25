@@ -456,7 +456,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Check result:
         self.assertIn('Permanently failed to connect to RabbitMQ.', str(e.exception))
-        self.assertIn('Tried all hosts [] 2 times.', str(e.exception))
+        self.assertIn('Tried all hosts 3 times.', str(e.exception))
         self.assertIn('Giving up. No PID requests will be sent.', str(e.exception))
         mock_connection.add_timeout.assert_not_called()
         builder.thread.add_event_publish_message.assert_not_called()
