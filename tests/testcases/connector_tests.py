@@ -204,6 +204,12 @@ class ConnectorTestCase(unittest.TestCase):
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
         self.assertEquals(node_manager.get_num_left_trusted(), 1)
         self.assertEquals(node_manager.get_num_left_open(),0)
+        # Check: Were the right values passed?
+        node_manager.set_next_host()
+        curr = node_manager._NodeManager__current_node
+        self.assertEquals(curr['vhost'],'foo')
+        self.assertEquals(curr['port'],666)
+        self.assertEquals(curr['ssl_enabled'],True)
 
     '''
     Test the constructor, with only open nodes.
@@ -346,6 +352,11 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Check result: Did init work?
         self.assertIsInstance(testconnector, esgfpid.Connector)
+        # Check: Were the right values passed?
+        node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
+        node_manager.set_next_host()
+        curr = node_manager._NodeManager__current_node
+        self.assertEquals(curr['ssl_enabled'],True)
 
     def test_init_sslenabled_string_bool_false(self):
 
@@ -365,6 +376,11 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Check result: Did init work?
         self.assertIsInstance(testconnector, esgfpid.Connector)
+        # Check: Were the right values passed?
+        node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
+        node_manager.set_next_host()
+        curr = node_manager._NodeManager__current_node
+        self.assertEquals(curr['ssl_enabled'],False)
 
     def test_init_sslenabled_string_bool_other(self):
 
@@ -385,6 +401,34 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Check result: Error message ok?
         self.assertIn('Wrong type', str(e.exception))
+
+    def test_init_sslenabled_string_bool_other(self):
+
+        # Preparations: Connector args.
+        rabbit_creds = dict(
+            url = RABBIT_URL_TRUSTED,
+            user = RABBIT_USER_TRUSTED,
+            password = RABBIT_PASSWORD,
+            ssl_enabled = '',
+            vhost = '',
+            port = ''
+        )
+        args = TESTHELPERS.get_connector_args(
+            messaging_service_credentials = [rabbit_creds]
+        )
+
+        # Run code to be tested:
+        testconnector = esgfpid.Connector(**args)
+
+        # Check result: Did init work?
+        self.assertIsInstance(testconnector, esgfpid.Connector)
+        # Check: Were the right values passed?
+        node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
+        node_manager.set_next_host()
+        curr = node_manager._NodeManager__current_node
+        self.assertEquals(curr['ssl_enabled'],None)
+        self.assertEquals(curr['vhost'],None)
+        self.assertEquals(curr['port'],None)
 
     def test_init_port_no_int(self):
 
@@ -424,6 +468,13 @@ class ConnectorTestCase(unittest.TestCase):
 
         # Check result: Did init work?
         self.assertIsInstance(testconnector, esgfpid.Connector)
+        # Check: Were the right values passed?
+        node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
+        node_manager.set_next_host()
+        curr = node_manager._NodeManager__current_node
+        self.assertEquals(curr['ssl_enabled'],None)
+        self.assertEquals(curr['vhost'],None)
+        self.assertEquals(curr['port'],123)
 
     '''
     Test if the solr URL is passed to the consumer in the
