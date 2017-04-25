@@ -324,7 +324,7 @@ class ConnectionBuilder(object):
         oldhost = self.__node_manager.get_connection_parameters().host
         time_passed = datetime.datetime.now() - self.__start_connect_time
         time_passed_seconds = time_passed.total_seconds()
-        logerror(LOGGER, 'Could not connect to %s: %s (connection failure after %s seconds)', oldhost, msg, time_passed_seconds)
+        logerror(LOGGER, 'Could not connect to %s: "%s" (connection failure after %s seconds)', oldhost, msg, time_passed_seconds)
 
         self.__store_connection_error_info(msg, oldhost)
 
