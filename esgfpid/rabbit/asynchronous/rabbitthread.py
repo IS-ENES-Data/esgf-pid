@@ -395,6 +395,10 @@ class RabbitThread(threading.Thread):
     def change_exchange_name(self, new_name):
         self.__fallback_exchange = new_name
 
+    ''' Called by builder, in case the old exchange caused an error.'''
+    def reset_exchange_name(self, new_name):
+        self.__fallback_exchange = None
+
     ''' Called by shutter, in case a connectio is already closing/closed... '''
     def make_permanently_closed_by_user(self):
         return self.__builder.make_permanently_closed_by_user()
