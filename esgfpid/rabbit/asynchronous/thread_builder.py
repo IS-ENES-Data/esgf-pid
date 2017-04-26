@@ -480,7 +480,7 @@ class ConnectionBuilder(object):
 
         # New exchange name
         logdebug(LOGGER, 'Setting exchange name to fallback exchange "%s"', self.__fallback_exchange_name)
-        self.thread.set_exchange_name(self.__fallback_exchange_name)
+        self.thread.change_exchange_name(self.__fallback_exchange_name)
 
         # If this happened while sending message to the wrong exchange, we
         # have to trigger their resending...
@@ -509,7 +509,7 @@ class ConnectionBuilder(object):
             self.make_permanently_closed_by_user()
         elif self.__was_permanent_error(reply_code, reply_text):
             loginfo(LOGGER, 'Connection to %s closed.', self.__node_manager.get_connection_parameters().host)
-            self.make_permanently_closed_by_error(connection, reply_text)
+            self.__make_permanently_closed_by_error(connection, reply_text)
         else:
             # This reconnects to next host_
             self.on_connection_error(connection, reply_text)
@@ -552,7 +552,7 @@ class ConnectionBuilder(object):
         loginfo(LOGGER, 'Stopped listening for RabbitMQ events (%s).', get_now_utc_as_formatted_string())
         logdebug(LOGGER, 'Connection to messaging service closed by user. Will not reopen.')
 
-    def make_permanently_closed_by_error(self, connection, reply_text):
+    def __make_permanently_closed_by_error(self, connection, reply_text):
         # This changes the state of the state machine!
         # This needs to be called if there is a permanent
         # error and we don't want the library to reonnect,

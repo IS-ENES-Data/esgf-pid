@@ -392,7 +392,7 @@ class RabbitThread(threading.Thread):
             return self.__nodemanager.get_exchange_name()
 
     ''' Called by builder, in case the old exchange caused an error.'''
-    def set_exchange_name(self, new_name):
+    def change_exchange_name(self, new_name):
         self.__fallback_exchange = new_name
 
     ''' Called by shutter, in case a connectio is already closing/closed... '''
