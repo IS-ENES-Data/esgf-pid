@@ -59,6 +59,7 @@ class ConnectionBuilder(object):
         RabbitMQ hosts.
         '''
         self.__reconnect_counter = 0
+        self.__backup_reconnect_counter = 0
 
         '''
         To see how many times we should try reconnecting to the set 
@@ -247,11 +248,39 @@ class ConnectionBuilder(object):
         logdebug(LOGGER, 'Opening channel... done. Took %s seconds.' % time_passed.total_seconds())
         logtrace(LOGGER, 'Channel has number: %s.', channel.channel_number)
         self.thread._channel = channel
-        self.__reconnect_counter = 0
+        self.__reset_reconnect_counter()
         self.__add_on_channel_close_callback()
         self.__add_on_return_callback()
         self.__make_channel_confirm_delivery()
         self.__make_ready_for_publishing()
+
+    '''
+    Once we succeeded in building a connection, we reset the
+    reconnection counter, so after a connection was interrupted,
+    we can do the same number of reconnection attempts again.
+    This is called when a connection AND channel was successfully
+    build, i.e. in the on_channel_open workflow.
+    '''
+    def __reset_reconnect_counter(self):
+        logdebug(LOGGER, 'Resetting reconnection counter, because a channel was successfully opened.')
+        self.__backup_reconnect_counter = self.__reconnect_counter # we may need to undo this later...
+        self.__reconnect_counter = 0
+
+    '''
+    Sometimes we assume we were successful in connecting and set the
+    reconnection counter to zero.
+    But the connection was not successful, so we reconnect, and as the
+    reconnection counter was reset, we do so infinitely.
+
+    This occurs if we did succeed in opening a channel, but the
+    host we connected to lacks the required exchange. This is only
+    noticed when we try to send the first message. Then, the channel
+    is closed. So we call this in the on_channel_closed, but only
+    in specific situations.
+    '''
+    def __undo_resetting_reconnect_counter(self):
+        logdebug(LOGGER, 'Undo resetting reconnection counter, because the channel that was opened did not actually function.')
+        self.__reconnect_counter = self.__backup_reconnect_counter
 
     def __make_channel_confirm_delivery(self):
         logtrace(LOGGER, 'Set confirm delivery... (Issue Confirm.Select RPC command)')
@@ -452,8 +481,10 @@ class ConnectionBuilder(object):
         # Channel closed because even fallback exchange did not exist:
         elif reply_code == 404 and "NOT_FOUND - no exchange 'FALLBACK'" in reply_text:
             logerror(LOGGER,'Channel closed because FALLBACK exchange does not exist. Need to close connection to trigger all the necessary close down steps.')
+            self.__undo_resetting_reconnect_counter()
             self.thread.reset_exchange_name() # So next host is tried with normal exchange
             self.thread._connection.close() # This will reconnect!
+            # TODO: Put a different reply_code and text, so we won't treat this as a Normal Shutdown!
 
         # Channel closed because exchange did not exist:
         elif reply_code == 404:
@@ -463,9 +494,9 @@ class ConnectionBuilder(object):
         # Other unexpected channel close:
         else:
             logerror(LOGGER,'Unexpected channel shutdown. Need to close connection to trigger all the necessary close down steps.')
+            self.__undo_resetting_reconnect_counter()
             self.thread._connection.close() # This will reconnect!
-            # Note that this might lead to infinite reconnections (until user
-            # close), as'the reconnection-counter is reset when a channel is opened.
+            # TODO: Put a different reply_code and text, so we won't treat this as a Normal Shutdown!
 
     '''
     An attempt to publish to a nonexistent exchange will close
