@@ -400,7 +400,7 @@ class ConnectionBuilder(object):
         problem_message = self.__connection_errors_to_string()
         logerror(LOGGER, error_message)
         logdebug(LOGGER, problem_message)
-        self.__make_permanently_closed_by_error(None, 'give up reconnecting') # Stops ioloop, so thread may stop!
+        self.__make_permanently_closed_by_error(None, self.thread.ERROR_TEXT_CONNECTION_PERMANENT_ERROR) # Stops ioloop, so thread may stop!
         raise PIDServerException(error_message+'\nProblems:\n'+problem_message)
 
     def __store_connection_error_info(self, errorname, host):
