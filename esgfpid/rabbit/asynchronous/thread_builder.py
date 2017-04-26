@@ -398,7 +398,7 @@ class ConnectionBuilder(object):
         self.statemachine.set_to_permanently_unavailable()
         self.statemachine.detail_could_not_connect = True
         logerror(LOGGER, error_message)
-        raise PIDServerException(error_message+'\nProblems:\n'+self.__print_connection_errors())
+        raise PIDServerException(error_message+'\nProblems:\n'+self.__connection_errors_to_string())
 
     def __store_connection_error_info(self, errorname, host):
         errorname = str(errorname)
@@ -409,7 +409,7 @@ class ConnectionBuilder(object):
         else: 
             self.__connection_errors[host][errorname] += 1
 
-    def __print_connection_errors(self):
+    def __connection_errors_to_string(self, sep='\n'):
         separate_messages_per_host = []
  
         # For each host:
@@ -423,10 +423,10 @@ class ConnectionBuilder(object):
                 all_errors_for_one_host.append(message_for_one_error_type)
  
             concat_errors = ', '.join(all_errors_for_one_host)
-            message_for_one_host = 'Host "%s": %s' % (host, concat_errors)
+            message_for_one_host = 'Server "%s": %s' % (host, concat_errors)
             separate_messages_per_host.append(message_for_one_host)
  
-        return '\n'.join(separate_messages_per_host)
+        return sep.join(separate_messages_per_host)
 
     def __get_whole_host_name(self):
         params = self.__node_manager.get_connection_parameters()
