@@ -350,7 +350,7 @@ class ConnectionBuilder(object):
     '''
     def on_connection_error(self, connection, msg):
 
-        oldhost = self.__node_manager.get_connection_parameters().host
+        oldhost = self.__get_whole_host_name()
         time_passed = datetime.datetime.now() - self.__start_connect_time
         time_passed_seconds = time_passed.total_seconds()
         logerror(LOGGER, 'Could not connect to %s: "%s" (connection failure after %s seconds)', oldhost, msg, time_passed_seconds)
@@ -371,7 +371,7 @@ class ConnectionBuilder(object):
         if self.__node_manager.has_more_urls():
             logdebug(LOGGER, 'Connection failure: %s fallback URLs left to try.', self.__node_manager.get_num_left_urls())
             self.__node_manager.set_next_host()
-            newhost = self.__node_manager.get_connection_parameters().host
+            newhost = self.__get_whole_host_name()
             loginfo(LOGGER, 'Connection failure: Trying to connect (now) to %s.', newhost)
             reopen_seconds = 0
             self.__wait_and_trigger_reconnection(connection, reopen_seconds)
@@ -427,6 +427,19 @@ class ConnectionBuilder(object):
             separate_messages_per_host.append(message_for_one_host)
  
         return '\n'.join(separate_messages_per_host)
+
+    def __get_whole_host_name(self):
+        params = self.__node_manager.get_connection_parameters()
+        name = params.host
+        vhost = params.virtual_host
+        if vhost =='/':
+            pass
+        elif vhost.startswith('/'):
+            name += vhost
+        else:
+            name += '/'+vhost
+        name += ':'+str(params.port)
+        return name
 
 
     #############################
