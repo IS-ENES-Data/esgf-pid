@@ -558,7 +558,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Check result
         builder.thread._connection.close.assert_not_called()
-        builder.thread.set_exchange_name.assert_called_with(esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
+        builder.thread.change_exchange_name.assert_called_with(esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
         builder.thread._connection.channel.assert_called()
 
     '''
