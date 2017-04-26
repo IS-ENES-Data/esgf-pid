@@ -474,7 +474,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Make sure the is_FORCE_FINISH returns False the first time and true the second time...
         builder.statemachine.is_FORCE_FINISHED = mock.MagicMock()
-        builder.statemachine.is_FORCE_FINISHED.side_effect = [False, True, True]
+        builder.statemachine.is_FORCE_FINISHED.side_effect = [False, True, True, True]
 
         # Mock the connection
         mock_connection = mock.MagicMock()
@@ -488,7 +488,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # Check result:
         self.assertIn('until received a force-finish. Giving up', str(e.exception))
         builder.statemachine.is_FORCE_FINISHED.assert_called()
-        self.assertEquals(builder.statemachine.is_FORCE_FINISHED.call_count, 3)
+        self.assertEquals(builder.statemachine.is_FORCE_FINISHED.call_count, 4)
         # Reconnect was called:
         mock_connection.add_timeout.assert_not_called()
         # This was called inside reconnect:
