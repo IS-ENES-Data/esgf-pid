@@ -388,7 +388,6 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # Check result:
         # Reconnect was not called:
         mock_connection.add_timeout.assert_not_called()
-        builder.thread._connection.ioloop.stop.assert_not_called()
         connpatch.assert_not_called()
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
@@ -491,8 +490,6 @@ class ThreadBuilderTestCase(unittest.TestCase):
         self.assertEquals(builder.statemachine.is_FORCE_FINISHED.call_count, 4)
         # Reconnect was called:
         mock_connection.add_timeout.assert_not_called()
-        # This was called inside reconnect:
-        builder.thread._connection.ioloop.stop.assert_not_called()
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
         self.assertFalse(builder.statemachine.is_AVAILABLE())
