@@ -398,6 +398,7 @@ class ConnectionBuilder(object):
         self.statemachine.set_to_permanently_unavailable()
         self.statemachine.detail_could_not_connect = True
         logerror(LOGGER, error_message)
+        self.__make_permanently_closed_by_error(None, 'give up reconnecting') # Stops ioloop, so thread may stop!
         raise PIDServerException(error_message+'\nProblems:\n'+self.__connection_errors_to_string())
 
     def __store_connection_error_info(self, errorname, host):
