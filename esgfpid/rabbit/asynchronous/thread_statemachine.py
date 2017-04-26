@@ -17,9 +17,9 @@ class StateMachine(object):
 
         # More detail
         self.__detail_closed_by_publisher = False # this needs a setter, as it depends on the others!
-        self.detail_asked_to_closed_by_publisher = False
+        self.detail_asked_to_force_close_by_publisher = False
+        self.detail_asked_to_gently_close_by_publisher = False
         self.detail_could_not_connect = False
-        self.detail_authentication_exception = False
 
     #
     # Setters
@@ -84,8 +84,7 @@ class StateMachine(object):
         if self.__state == self.__PERMANENTLY_UNAVAILABLE or self.__state == self.__FORCE_FINISHED:
             # Including FORCE_FINISHED is kind of a dirty hack here,
             # but otherwise I might break to many things...
-            # TODO: Update wherever this function is used, and verify which state
-            # is really interesting there...
+            # This hack should not be necessary anymore.
             return True
         return False
 
@@ -100,11 +99,9 @@ class StateMachine(object):
     are not accepted anymore.
     '''
     def get_reason_shutdown(self):
-        if self.detail_authentication_exception:
-            return 'Could not authenticate'
-        elif self.detail_could_not_connect:
+        if self.detail_could_not_connect:
             return 'Could not connect'
-        elif self.__detail_closed_by_publisher or self.detail_asked_to_closed_by_publisher:
+        elif self.__detail_closed_by_publisher or self.detail_asked_to_gently_close_by_publisher or self.detail_asked_to_force_close_by_publisher:
             return 'Was closed by publisher'
             # The former two are more important, so only if no
             # authentication exception or could-not-connect occurred,
@@ -117,7 +114,7 @@ class StateMachine(object):
     #
 
     def set_detail_closed_by_publisher(self):
-        if self.detail_could_not_connect or self.detail_authentication_exception:
+        if self.detail_could_not_connect:
             # If the connection was already closed because of these,
             # it was not really closed by publisher!!
             pass

@@ -82,7 +82,6 @@ class RabbitThread(threading.Thread):
         State-machine.
         Shared with the main thread!
         Not thread-safe.
-        TODO Make sure read and write are coherent!
         '''
         self.__statemachine = statemachine
 
@@ -212,6 +211,13 @@ class RabbitThread(threading.Thread):
         logdebug(LOGGER, 'Asking rabbit thread to finish...')
         self.__add_event(self.__shutter.finish_gently)
         self.__wait_for_thread_to_finish_gently()
+        # This waiting is necessary, because after finishing gently
+        # the main thread needs to join the rabbit thread, which
+        # only makes sense if finishing gently is done.
+        # If we separated the finish_gently command and the join()
+        # command, the main thread could do other stuff in the mean-
+        # time, but we'd have to trust the user to call both, to
+        # avoid missing the join.
 
     '''
     Allows the main thread to retrieve all unconfirmed messages.
@@ -386,8 +392,12 @@ class RabbitThread(threading.Thread):
             return self.__nodemanager.get_exchange_name()
 
     ''' Called by builder, in case the old exchange caused an error.'''
-    def set_exchange_name(self, new_name):
+    def change_exchange_name(self, new_name):
         self.__fallback_exchange = new_name
+
+    ''' Called by builder, in case the old exchange caused an error.'''
+    def reset_exchange_name(self, new_name):
+        self.__fallback_exchange = None
 
     ''' Called by shutter, in case a connectio is already closing/closed... '''
     def make_permanently_closed_by_user(self):

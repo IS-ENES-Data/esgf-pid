@@ -205,14 +205,14 @@ class Connector(object):
             self.__check_presence_and_type('password', credentials, basestring) # If you want open nodes to be enabled again, remove this!
             
             # Optional:
-            self.__check_type_if_exists('password', credentials, basestring)
-            self.__check_type_if_exists('vhost', credentials, basestring)
-            self.__check_type_if_exists('port', credentials, int)
-            self.__check_type_if_exists('ssl_enabled', credentials, bool)
+            self.__check_and_adapt_type_if_exists('password', credentials, basestring)
+            self.__check_and_adapt_type_if_exists('vhost', credentials, basestring)
+            self.__check_and_adapt_type_if_exists('port', credentials, int)
+            self.__check_and_adapt_type_if_exists('ssl_enabled', credentials, bool)
 
     def __check_presence_and_type(self, attname, credentials, desiredtype):
         self.__check_presence(attname, credentials)
-        self.__check_type_if_exists(attname, credentials, desiredtype)
+        self.__check_and_adapt_type_if_exists(attname, credentials, desiredtype)
 
     def __check_presence(self, attname, credentials):
         if attname not in credentials:
@@ -222,15 +222,48 @@ class Connector(object):
             errmsg = 'Missing %s for messaging service "%s"!' % (attname, rabbitname_for_errmsg)
             raise esgfpid.exceptions.ArgumentError(errmsg)
 
-    def __check_type_if_exists(self, attname, credentials, desiredtype):
+    def __check_and_adapt_type_if_exists(self, attname, credentials, desiredtype):
         if attname in credentials:
-            if not isinstance(credentials[attname], desiredtype):
-                if type(credentials[attname]) == type([]) and len(credentials[attname]) == 1:
-                    credentials[attname] = credentials[attname][0]
-                else:
-                    errmsg = 'Wrong type of messaging service %s. Expected %s, got %s.' % (attname, desiredtype, type(credentials[attname]))
+
+            # Empty string to None:
+            if credentials[attname] == '':
+                credentials[attname] = None
+
+            # List to object:
+            if type(credentials[attname]) == type([]) and len(credentials[attname]) == 1:
+                credentials[attname] = credentials[attname][0]
+
+            # Don't check if None:
+            if credentials[attname] is None:
+                pass
+
+            # Check type:
+            elif not isinstance(credentials[attname], desiredtype):
+
+                # Try conversion:
+                try:
+                    credentials[attname] = self.__try_conversion(credentials[attname], desiredtype)
+
+                except ValueError as e:
+                    errmsg = ('Wrong type of messaging service %s (%s). Expected %s, got %s, conversion failed.' % 
+                        (attname, credentials[attname], desiredtype, type(credentials[attname])))
                     raise esgfpid.exceptions.ArgumentError(errmsg)
 
+    def __try_conversion(self, value, desiredtype):
+        if desiredtype == bool:
+            if isinstance(value, basestring):
+                if str.lower(value) == 'true':
+                    return True
+                elif str.lower(value) == 'false':
+                    return False
+            raise ValueError()
+        if desiredtype == basestring:
+            #return str(value)
+            raise ValueError('Not transforming booleans')
+        if desiredtype == int:
+            return int(value)
+        else:
+            return desiredtype(value)
 
     '''
     These are not (only) needed during initialisation, but

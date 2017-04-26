@@ -388,7 +388,6 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # Check result:
         # Reconnect was not called:
         mock_connection.add_timeout.assert_not_called()
-        builder.thread._connection.ioloop.stop.assert_not_called()
         connpatch.assert_not_called()
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
@@ -456,7 +455,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Check result:
         self.assertIn('Permanently failed to connect to RabbitMQ.', str(e.exception))
-        self.assertIn('Tried all hosts [] 2 times.', str(e.exception))
+        self.assertIn('Tried all hosts 3 times.', str(e.exception))
         self.assertIn('Giving up. No PID requests will be sent.', str(e.exception))
         mock_connection.add_timeout.assert_not_called()
         builder.thread.add_event_publish_message.assert_not_called()
@@ -474,7 +473,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Make sure the is_FORCE_FINISH returns False the first time and true the second time...
         builder.statemachine.is_FORCE_FINISHED = mock.MagicMock()
-        builder.statemachine.is_FORCE_FINISHED.side_effect = [False, True]
+        builder.statemachine.is_FORCE_FINISHED.side_effect = [False, True, True, True]
 
         # Mock the connection
         mock_connection = mock.MagicMock()
@@ -488,11 +487,9 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # Check result:
         self.assertIn('until received a force-finish. Giving up', str(e.exception))
         builder.statemachine.is_FORCE_FINISHED.assert_called()
-        self.assertEquals(builder.statemachine.is_FORCE_FINISHED.call_count, 2)
+        self.assertEquals(builder.statemachine.is_FORCE_FINISHED.call_count, 4)
         # Reconnect was called:
         mock_connection.add_timeout.assert_not_called()
-        # This was called inside reconnect:
-        builder.thread._connection.ioloop.stop.assert_not_called()
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
         self.assertFalse(builder.statemachine.is_AVAILABLE())
@@ -558,7 +555,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Check result
         builder.thread._connection.close.assert_not_called()
-        builder.thread.set_exchange_name.assert_called_with(esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
+        builder.thread.change_exchange_name.assert_called_with(esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME)
         builder.thread._connection.channel.assert_called()
 
     '''

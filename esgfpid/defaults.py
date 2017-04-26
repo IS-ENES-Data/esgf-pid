@@ -1,4 +1,4 @@
-
+# Default value for the esgfpid library
 
 # List of prefixes
 ACCEPTED_PREFIXES = ['21.14100','21.14foo']
@@ -9,6 +9,7 @@ LOG_INFO_TO_DEBUG=False # info messages are printed as "debug" to not appear on 
 LOG_DEBUG_TO_INFO=False # debug messages are printed as "info" to appear on publisher console. Should be False, except for during tests.
 LOG_TRACE_TO_DEBUG=False # Print extremely detailed log messages of rabbit module as "DEBUG" messages. Should be False, except for during tests.
 LOG_SHOW_TO_INFO=False # So I can selectively show some log messages to Katharina without having to modify the whole code. Deprecated.
+RABBIT_LOG_MESSAGE_INCREMENT = 10
 
 # Solr:
 SOLR_HTTPS_VERIFY_DEFAULT=False
@@ -40,5 +41,3 @@ RABBIT_SYN_MESSAGE_TIMEOUT_MILLISEC=10
 RABBIT_ASYN_FINISH_MAX_TRIES=10 # How many times to recheck if all messages are published+confirmed (on finish)
 RABBIT_ASYN_FINISH_WAIT_SECONDS=0.5 # How much time to wait until you recheck (on finish)
 
-# Other
-RABBIT_LOG_MESSAGE_INCREMENT = 10
