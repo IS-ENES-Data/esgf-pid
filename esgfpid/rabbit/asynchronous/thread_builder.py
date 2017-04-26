@@ -401,8 +401,12 @@ class ConnectionBuilder(object):
         logerror(LOGGER, error_message)
         logdebug(LOGGER, problem_message)
         self.__make_permanently_closed_by_error(None, self.thread.ERROR_TEXT_CONNECTION_PERMANENT_ERROR) # Stops ioloop, so thread may stop!
-        raise PIDServerException(error_message+'\nProblems:\n'+problem_message)
-
+        if not (hasattr(defaults, 'IS_TEST_RUN') and defaults.IS_TEST_RUN==True):
+            raise PIDServerException(error_message+'\nProblems:\n'+problem_message)
+        else:
+            msg = 'PIDServerException would have been raised in real life.'
+            logerror(LOGGER, msg)
+            
     def __store_connection_error_info(self, errorname, host):
         errorname = str(errorname)
         if host not in self.__connection_errors:
