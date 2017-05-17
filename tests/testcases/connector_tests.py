@@ -204,7 +204,6 @@ class ConnectorTestCase(unittest.TestCase):
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
         self.assertEquals(node_manager.get_num_left_trusted(), 1)
         self.assertEquals(node_manager.get_num_left_open(),0)
-
         # Check: Were the right values passed?
         node_manager.set_next_host()
         curr = node_manager._NodeManager__current_node

@@ -92,37 +92,6 @@ class ConnectionBuilder(object):
         '''
         self.__connection_errors = {}
 
-        '''
-        To see how many times we should try reconnecting to the set 
-        of RabbitMQ hosts. Note that if there is 3 hosts, and we try 2
-        times, this means 6 connection tries in total.
-        '''
-        self.__max_reconnection_tries = defaults.RABBIT_RECONNECTION_MAX_TRIES
-
-        '''
-        How many seconds to wait before reconnecting after having tried
-        all hosts. (There is no waiting time trying to connect to a different
-        host after one fails).
-        '''
-        self.__wait_seconds_before_reconnect = defaults.RABBIT_RECONNECTION_SECONDS
-
-        '''
-        Set of all tried hosts, for logging.
-        '''
-        self.__all_hosts_that_were_tried = set()
-
-        '''
-        To see how much time it takes to connect. Once a connection is
-        established or failed, we print the time delta to logs.
-        '''
-        self.__start_connect_time = None
-
-        '''
-        Name of the fallback exchange to try if the normal exchange
-        is not found.
-        '''
-        self.__fallback_exchange_name = defaults.RABBIT_FALLBACK_EXCHANGE_NAME
-
     ####################
     ### Start ioloop ###
     ####################
@@ -178,6 +147,7 @@ class ConnectionBuilder(object):
             # host here, which we do by manually calling the callback.
             # We start the ioloop, so it can handle the reconnection events,
             # or also receive events from the publisher in the meantime.
+
 
             except Exception as e:
                 # This catches any error during connection startup and during the entire
@@ -385,6 +355,7 @@ class ConnectionBuilder(object):
         time_passed = datetime.datetime.now() - self.__start_connect_time
         time_passed_seconds = time_passed.total_seconds()
         logerror(LOGGER, 'Could not connect to %s: "%s" (connection failure after %s seconds)', oldhost, msg, time_passed_seconds)
+
         self.__store_connection_error_info(msg, oldhost)
 
         # If there was a force-finish, we do not reconnect.
@@ -405,6 +376,7 @@ class ConnectionBuilder(object):
             loginfo(LOGGER, 'Connection failure: Trying to connect (now) to %s.', newhost)
             reopen_seconds = 0
             self.__wait_and_trigger_reconnection(connection, reopen_seconds)
+
 
         # If there is no URLs, reset the node manager to
         # start at the first nodes again...

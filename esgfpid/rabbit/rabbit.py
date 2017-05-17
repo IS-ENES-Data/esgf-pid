@@ -230,6 +230,5 @@ class RabbitMessageSender(object):
                     port=cred['port'],
                     ssl_enabled=cred['ssl_enabled']
                 )
-            
-        return node_manager
 
+        return node_manager

@@ -171,6 +171,7 @@ class NodeManager(object):
         if 'ssl_enabled' in node_info_dict and node_info_dict['ssl_enabled'] is not None:
             ssl_enabled = node_info_dict['ssl_enabled']
 
+
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_PIKA_SOCKET_TIMEOUT
         connection_attempts = esgfpid.defaults.RABBIT_PIKA_CONNECTION_ATTEMPTS
