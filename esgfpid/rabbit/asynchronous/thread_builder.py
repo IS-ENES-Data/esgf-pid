@@ -206,7 +206,6 @@ class ConnectionBuilder(object):
         self.__start_connect_time = datetime.datetime.now()
         logdebug(LOGGER, 'Connecting to RabbitMQ at %s... (%s)',
             params.host, get_now_utc_as_formatted_string())
-        self.__all_hosts_that_were_tried.add(params.host)
         loginfo(LOGGER, 'Opening connection to RabbitMQ...')
         self.thread._connection = pika.SelectConnection(
             parameters=params,
