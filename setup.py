@@ -48,11 +48,11 @@ except(IOError, ImportError):
 
 setup(
     name='esgfpid',
-    version='0.7.8',
+    version='0.7.9',
     author='Merret Buurman, German Climate Computing Centre (DKRZ)',
     author_email='buurman@dkrz.de',
     url='https://github.com/IS-ENES-Data/esgf-pid',
-    download_url='https://github.com/IS-ENES-Data/esgf-pid/archive/0.7.8.tar.gz',
+    download_url='https://github.com/IS-ENES-Data/esgf-pid/archive/0.7.9.tar.gz',
     description='Library for sending PID requests to a rabbit messaging queue during ESGF publication.',
     long_description=long_description,
     packages=packages + test_packages,
