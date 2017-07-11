@@ -47,6 +47,21 @@ class RabbitUtilsTestCase(unittest.TestCase):
         self.assertEquals(received_key, 'roukey', 'Wrong routing key: %s' % received_key)
         self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
+    def test_get_message_and_routing_key_string_singlequtoes_ok(self):
+        
+        # Test variables:
+        passed_message = "{'bla':'foo', 'ROUTING_KEY':'roukey'}"
+        LOGGER.info('Message: %s' % passed_message)
+
+        # Run code to be checked:
+        received_key, received_message = rutils.get_routing_key_and_string_message_from_message_if_possible(passed_message)
+
+        # Check result:
+        received_message = received_message.replace("'", '"')
+        expected_message = str(passed_message).replace("'", '"')
+        self.assertEquals(received_key, 'roukey', 'Wrong routing key: %s' % received_key)
+        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+
     def test_get_message_and_routing_key_string_no_key(self):
         
         # Test variables:
