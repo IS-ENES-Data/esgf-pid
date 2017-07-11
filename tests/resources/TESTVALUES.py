@@ -6,7 +6,7 @@ import tests.mocks.solrmock
 import tests.mocks.rabbitmock
 import tests.utils as utils
 import Queue
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+from esgfpid.utils import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Errata
 ERRATA_SEVERAL = ['123456','654321']

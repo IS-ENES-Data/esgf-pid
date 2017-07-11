@@ -59,7 +59,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         # Check result:
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
-        expected_key = esgfpid.defaults.RABBIT_DEFAULT_ROUTING_KEY
+        expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
         self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
         self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
@@ -85,7 +85,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         # Check result:
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
-        expected_key = esgfpid.defaults.RABBIT_DEFAULT_ROUTING_KEY
+        expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
         self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
         self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
@@ -116,7 +116,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         # Check result:
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
-        expected_key = esgfpid.defaults.RABBIT_DEFAULT_ROUTING_KEY
+        expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
         self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
         self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
@@ -132,7 +132,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         # Check result:
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
-        expected_key = esgfpid.defaults.RABBIT_DEFAULT_ROUTING_KEY
+        expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
         self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
         self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
@@ -148,7 +148,7 @@ class RabbitUtilsTestCase(unittest.TestCase):
         # Check result:
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
-        expected_key = esgfpid.defaults.RABBIT_DEFAULT_ROUTING_KEY
+        expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
         self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
         self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 

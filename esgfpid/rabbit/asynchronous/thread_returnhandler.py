@@ -1,7 +1,6 @@
 import logging
 import pika
 import json
-import esgfpid.defaults as defaults
 import esgfpid.assistant.messages
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 
@@ -34,7 +33,7 @@ class UnacceptedMessagesHandler(object):
         # Was it the first or second time it comes back?
         if returned_frame.reply_text == 'NO_ROUTE':
             loginfo(LOGGER, 'The message was returned because it could not be assigned to any queue. No binding for routing key "%s".', returned_frame.routing_key)
-            if returned_frame.routing_key.startswith(defaults.RABBIT_EMERGENCY_ROUTING_KEY):
+            if returned_frame.routing_key.startswith(esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY):
                 self.__log_about_double_return(returned_frame, body)
             else:
                 self.__resend_message(returned_frame, props, body)
@@ -60,7 +59,7 @@ class UnacceptedMessagesHandler(object):
             logerror(LOGGER, 'Could not resend message: %s: %s', e.__class__.__name__, e.message)
 
     def __add_emergency_routing_key(self, body_json):
-        emergency_routing_key = defaults.RABBIT_EMERGENCY_ROUTING_KEY
+        emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY
         key_for_routing_key = esgfpid.assistant.messages.JSON_KEY_ROUTING_KEY
 
         # If there was no routing key, set the original one to 'None'

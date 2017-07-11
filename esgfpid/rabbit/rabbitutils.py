@@ -74,16 +74,16 @@ def get_routing_key_and_string_message_from_message_if_possible(msg):
             logtrace(LOGGER, 'Routing key extracted from message.')
         except (KeyError, TypeError) as e:
             logdebug(LOGGER, 'No routing key in message.')
-            routing_key = esgfpid.defaults.RABBIT_DEFAULT_ROUTING_KEY
+            routing_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
             pass # There is no routing key in the message
     else:
-        routing_key = esgfpid.defaults.RABBIT_DEFAULT_ROUTING_KEY
+        routing_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
 
     return routing_key, msg_string
 
 
 def add_emergency_routing_key(body_json):
-    emergency_routing_key = esgfpid.defaults.RABBIT_EMERGENCY_ROUTING_KEY
+    emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY
 
     # If it already HAS the emergency routing key, do not adapt the routing key
     # (This means the message already came back a second time...)

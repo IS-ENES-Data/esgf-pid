@@ -3,7 +3,7 @@ import logging
 import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
 
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+from esgfpid.utils import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 from esgfpid.assistant.publish import DatasetPublicationAssistant
 from esgfpid.exceptions import SolrSwitchedOff
 

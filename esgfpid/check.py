@@ -241,7 +241,7 @@ class RabbitChecker(object):
         #print('Called fallback method') # remove
         exchange_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
         queue_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
-        routing_key = esgfpid.defaults.ROUTING_KEY_BASIS
+        routing_key = esgfpid.utils.ROUTING_KEY_BASIS
         routing_key = routing_key.replace('HASH', '*')
         routing_key = routing_key+'.#'
         routing_key = routing_key.replace('..', '.')

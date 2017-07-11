@@ -7,7 +7,7 @@ from tests.utils import compare_json_return_errormessage as error_message
 # Import of code to be tested:
 import esgfpid.assistant.publish
 from esgfpid.exceptions import ArgumentError
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+from esgfpid.utils import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Logging
 LOGGER = logging.getLogger(__name__)

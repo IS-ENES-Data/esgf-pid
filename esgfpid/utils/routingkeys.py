@@ -1,6 +1,5 @@
 
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
-
+ROUTING_KEY_BASIS = 'cmip6.publisher.HASH.'
 
 ROUTING_KEYS = dict(
     publi_file = ROUTING_KEY_BASIS+'publication.file.orig',
@@ -19,3 +18,6 @@ ROUTING_KEY_SUFFIX_TRUSTED = 'trusted'
 ROUTING_KEY_SUFFIX_UNSURE_IF_TRUSTED = 'untrusted-unsure'
 ROUTING_KEY_SUFFIX_UNTRUSTED_AS_FALLBACK = 'untrusted-fallback'
 ROUTING_KEY_SUFFIX_UNTRUSTED = 'untrusted-only'
+
+RABBIT_DEFAULT_ROUTING_KEY=ROUTING_KEY_BASIS+'fallback' # Default, if none is included in message
+RABBIT_EMERGENCY_ROUTING_KEY='UNROUTABLE' # If the message was returned as unroutable by the sender

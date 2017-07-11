@@ -7,7 +7,7 @@ from tests.utils import compare_json_return_errormessage as error_message
 import tests.utils
 
 import esgfpid.assistant.unpublish
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+from esgfpid.utils import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())

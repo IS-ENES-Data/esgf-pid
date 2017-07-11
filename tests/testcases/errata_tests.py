@@ -6,7 +6,7 @@ import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
 
 from esgfpid.assistant.errata import ErrataAssistant
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+from esgfpid.utils import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 
 # Logging

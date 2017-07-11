@@ -4,7 +4,7 @@ import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
 
 import esgfpid.assistant.datacart
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+from esgfpid.utils import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Logging
 LOGGER = logging.getLogger(__name__)
