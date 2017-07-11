@@ -1,5 +1,6 @@
 import esgfpid.utils
 from esgfpid.utils import ROUTING_KEYS
+from esgfpid.utils import adapt_routing_key_replace_prefix
 import esgfpid.config
 
 '''
@@ -40,7 +41,7 @@ def publish_file(**args):
     routing_key = ROUTING_KEYS['publi_file']
     if args['is_replica'] == True: # Publish Assistant parses this to boolean!
         routing_key = ROUTING_KEYS['publi_file_rep']
-    routing_key = routing_key.replace('PREFIX', esgfpid.config.PREFIX)
+    routing_key = adapt_routing_key_replace_prefix(routing_key)
     message[JSON_KEY_ROUTING_KEY] = routing_key
     return message
 
@@ -72,7 +73,7 @@ def publish_dataset(**args):
     routing_key = ROUTING_KEYS['publi_ds']
     if args['is_replica'] == True: # Publish Assistant parses this to boolean!
         routing_key = ROUTING_KEYS['publi_ds_rep']
-    routing_key = routing_key.replace('PREFIX', esgfpid.config.PREFIX)
+    routing_key = adapt_routing_key_replace_prefix(routing_key)
     message[JSON_KEY_ROUTING_KEY] = routing_key
 
     return message
@@ -91,7 +92,7 @@ def unpublish_allversions_consumer_must_find_versions(**args):
     if 'consumer_solr_url' in args and args['consumer_solr_url'] is not None:
         message['consumer_solr_url'] = args['consumer_solr_url']
     routing_key = ROUTING_KEYS['unpubli_all']
-    routing_key = routing_key.replace('PREFIX', esgfpid.config.PREFIX)
+    routing_key = adapt_routing_key_replace_prefix(routing_key)
     message[JSON_KEY_ROUTING_KEY] = routing_key
     return message
 
@@ -110,7 +111,7 @@ def unpublish_one_version(**args):
     if 'version_number' in args:
         message['version_number'] = args['version_number']
     routing_key = ROUTING_KEYS['unpubli_one']
-    routing_key = routing_key.replace('PREFIX', esgfpid.config.PREFIX)
+    routing_key = adapt_routing_key_replace_prefix(routing_key)
     message[JSON_KEY_ROUTING_KEY] = routing_key
     return message
 
@@ -126,7 +127,7 @@ def add_errata_ids_message(**args):
         version_number = args['version_number']
     )
     routing_key = ROUTING_KEYS['err_add']
-    routing_key = routing_key.replace('PREFIX', esgfpid.config.PREFIX)
+    routing_key = adapt_routing_key_replace_prefix(routing_key)
     message[JSON_KEY_ROUTING_KEY] = routing_key
     return message
 
@@ -142,7 +143,7 @@ def remove_errata_ids_message(**args):
         version_number = args['version_number']
     )    
     routing_key = ROUTING_KEYS['err_rem']
-    routing_key = routing_key.replace('PREFIX', esgfpid.config.PREFIX)
+    routing_key = adapt_routing_key_replace_prefix(routing_key)
     message[JSON_KEY_ROUTING_KEY] = routing_key
 
     return message
@@ -157,6 +158,6 @@ def make_data_cart_message(**args):
         operation = 'shopping_cart'
     )
     routing_key = ROUTING_KEYS['data_cart']
-    routing_key = routing_key.replace('PREFIX', esgfpid.config.PREFIX)
+    routing_key = adapt_routing_key_replace_prefix(routing_key)
     message[JSON_KEY_ROUTING_KEY] = routing_key
     return message

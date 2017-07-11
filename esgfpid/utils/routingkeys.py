@@ -19,7 +19,7 @@ and filtered using some instructions.
 
 '''
 
-
+import esgfpid.config
 
 '''
 This is the Rabbit instruction. It tells the RabbitMQ system
@@ -47,6 +47,14 @@ ROUTING_KEYS = dict(
     err_rem = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.errata-rem',
     data_cart = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.datacart'
 )
+
+def _sanitize_prefix(prefix):
+    return prefix.replace('.', '')
+
+def adapt_routing_key_replace_prefix(routing_key):
+    sanitized_prefix = _sanitize_prefix(esgfpid.config.PREFIX)
+    return routing_key.replace('PREFIX', sanitized_prefix)
+
 
 
 '''
