@@ -4,7 +4,6 @@ import copy
 import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
 
-from esgfpid.utils import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 import esgfpid.exceptions
 import esgfpid.assistant.messages as messages
 
@@ -12,10 +11,15 @@ import esgfpid.assistant.messages as messages
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+# Test resources:
+from resources.TESTVALUES import *
+
 class MessageCreationTestcase(unittest.TestCase):
 
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
+        esgfpid.config.PREFIX = PREFIX_NO_HDL
+
 
     def tearDown(self):
         LOGGER.info('#############################')
@@ -58,7 +62,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.file.orig'
+        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-file-orig'
         expected['aggregation_level'] = 'file'
         expected['operation'] = 'publish'
         # Rename some:
@@ -81,7 +85,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.file.replica'
+        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-file-repli'
         expected['aggregation_level'] = 'file'
         expected['operation'] = 'publish'
         # Rename some:
@@ -103,7 +107,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.dataset.orig'
+        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-ds-orig'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'publish'
         # Rename some:
@@ -129,7 +133,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'publication.dataset.replica'
+        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-ds-repli'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'publish'
         # Rename some:
@@ -172,7 +176,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'unpublication.all'
+        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.unpubli-allvers'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'unpublish_all_versions'
         # Rename some:
@@ -198,7 +202,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'unpublication.one'
+        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.unpubli-onevers'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'unpublish_one_version'
         # Rename some:
@@ -227,7 +231,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'errata.add'
+        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.errata-add'
         expected['operation'] = 'add_errata_ids'
         expected['drs_id'] = 'drs_foo'
         expected['version_number'] = 'vers_foo'
@@ -256,7 +260,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = ROUTING_KEY_BASIS+'errata.remove'
+        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.errata-rem'
         expected['operation'] = 'remove_errata_ids'
         expected['drs_id'] = 'drs_foo'
         expected['version_number'] = 'vers_foo'

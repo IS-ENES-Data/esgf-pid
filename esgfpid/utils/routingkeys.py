@@ -13,11 +13,22 @@ ROUTING_KEYS = dict(
     shop_cart = ROUTING_KEY_BASIS+'cart.datasets'
 )
 
+ROUTING_KEY_INTERFIX_UNSURE_IF_TRUSTED = 'untrusted-unsure'
+ROUTING_KEY_INTERFIX_UNTRUSTED_AS_FALLBACK = 'untrusted-fallback'
+ROUTING_KEY_INTERFIX_UNTRUSTED = 'untrusted-only'
 
-ROUTING_KEY_SUFFIX_TRUSTED = 'trusted'
-ROUTING_KEY_SUFFIX_UNSURE_IF_TRUSTED = 'untrusted-unsure'
-ROUTING_KEY_SUFFIX_UNTRUSTED_AS_FALLBACK = 'untrusted-fallback'
-ROUTING_KEY_SUFFIX_UNTRUSTED = 'untrusted-only'
+def adapt_routing_key_for_untrusted(routing_key):
+    routing_key = routing_key.replace('fresh', 'fresh-'+ROUTING_KEY_INTERFIX_UNTRUSTED)
+    return routing_key
 
-RABBIT_DEFAULT_ROUTING_KEY=ROUTING_KEY_BASIS+'fallback' # Default, if none is included in message
-RABBIT_EMERGENCY_ROUTING_KEY='UNROUTABLE' # If the message was returned as unroutable by the sender
+def adapt_routing_key_for_untrusted_fallback(routing_key):
+    routing_key = routing_key.replace('fresh', 'fresh-'+ROUTING_KEY_INTERFIX_UNTRUSTED_AS_FALLBACK)
+    return routing_key
+
+def adapt_routing_key_for_untrusted_unsure(routing_key):
+    routing_key = routing_key.replace('fresh', 'fresh-'+ROUTING_KEY_INTERFIX_UNSURE_IF_TRUSTED)
+    return routing_key
+
+RABBIT_DEFAULT_ROUTING_KEY='fallback.fallback.fallback.fallback' # Default, if none is included in message
+RABBIT_EMERGENCY_ROUTING_KEY='UNROUTABLE.UNROUTABLE.UNROUTABLE.UNROUTABLE' # If the message was returned as unroutable by the sender
+

@@ -204,7 +204,7 @@ class RabbitFeeder(object):
             # Getting message info:
             properties = self.nodemanager.get_properties_for_message_publications()
             routing_key, msg_string = rabbitutils.get_routing_key_and_string_message_from_message_if_possible(message)
-            routing_key = routing_key+'.'+self.thread.get_open_word_for_routing_key()
+            routing_key = self.nodemanager.adapt_routing_key_for_untrusted(routing_key)
             
             # Logging
             logtrace(LOGGER, 'Publishing message %i (key %s) (body %s)...', self.__delivery_number+1, routing_key, msg_string) # +1 because it will be incremented after the publish.

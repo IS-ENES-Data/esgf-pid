@@ -14,6 +14,7 @@ import esgfpid.defaults
 import esgfpid.exceptions
 import esgfpid.coupling
 import esgfpid.utils
+import esgfpid.config
 from esgfpid.utils import loginfo, logdebug, logwarn
 
 LOGGER = logging.getLogger(__name__)
@@ -274,6 +275,8 @@ class Connector(object):
         self.__thredds_service_path = args['thredds_service_path']
         self.__data_node = args['data_node'] # may be None, only needed for some assistants.
         self.__consumer_solr_url = args['consumer_solr_url'] # may be None
+
+        esgfpid.config.PREFIX = self.prefix
 
     def __throw_error_if_prefix_not_in_list(self):
         if self.prefix is None:

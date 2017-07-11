@@ -6,7 +6,6 @@ import tests.mocks.solrmock
 import tests.mocks.rabbitmock
 import tests.utils as utils
 import Queue
-from esgfpid.utils import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Errata
 ERRATA_SEVERAL = ['123456','654321']
@@ -572,7 +571,7 @@ def get_rabbit_message_publication_dataset():
         "files" : [FILEHANDLE_HDL],
         "is_replica" : False,
         "data_node" : DATA_NODE,
-        "ROUTING_KEY" : ROUTING_KEY_BASIS+'publication.dataset.orig',
+        "ROUTING_KEY" : PREFIX_NO_HDL+'.HASH.fresh.publi-ds-orig',
         "consumer_solr_url" : SOLR_URL_CONSUMER
     }
     return expected_rabbit_task
@@ -593,7 +592,7 @@ def get_rabbit_message_publication_file():
         "checksum_type": CHECKSUMTYPE,
         "file_version": FILEVERSION,
         "parent_dataset": DATASETHANDLE_HDL,
-        "ROUTING_KEY": ROUTING_KEY_BASIS+'publication.file.orig',
+        "ROUTING_KEY" : PREFIX_NO_HDL+'.HASH.fresh.publi-file-orig',
     }
     return expected_rabbit_task
 
@@ -604,7 +603,7 @@ def get_rabbit_message_unpub_one():
         "operation": "unpublish_one_version",
         "message_timestamp":"anydate",
         "data_node": DATA_NODE,
-        "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+        "ROUTING_KEY" : PREFIX_NO_HDL+'.HASH.fresh.unpubli-onevers',
         "drs_id":DRS_ID,
         "version_number":int(DS_VERSION)
     }
@@ -617,6 +616,6 @@ def get_rabbit_message_unpub_all():
         "message_timestamp": "anydate",
         "drs_id": DRS_ID,
         "data_node": DATA_NODE,
-        "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all',
+        "ROUTING_KEY" : PREFIX_NO_HDL+'.HASH.fresh.unpubli-allvers',
     }
     return expected_rabbit_task

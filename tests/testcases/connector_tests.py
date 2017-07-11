@@ -7,7 +7,6 @@ from tests.utils import compare_json_return_errormessage as error_message
 # Import of code to be tested:
 import esgfpid.assistant.publish
 from esgfpid.exceptions import ArgumentError
-from esgfpid.utils import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Logging
 LOGGER = logging.getLogger(__name__)
@@ -719,7 +718,7 @@ class ConnectorTestCase(unittest.TestCase):
             "message_timestamp":"anydate",
             "aggregation_level":"dataset",
             "data_node": DATA_NODE,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.unpubli-onevers',
             "drs_id":DRS_ID,
             "version_number": int(DS_VERSION)
         }
@@ -759,7 +758,7 @@ class ConnectorTestCase(unittest.TestCase):
             "message_timestamp":"anydate",
             "aggregation_level":"dataset",
             "data_node": DATA_NODE,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.unpubli-onevers',
             "drs_id":DRS_ID,
             "version_number": int(DS_VERSION)
         }
@@ -799,7 +798,7 @@ class ConnectorTestCase(unittest.TestCase):
             "data_node": DATA_NODE,
             "aggregation_level":"dataset",
             "drs_id":DRS_ID,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all'
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.unpubli-allvers',
         }
         received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
         is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
@@ -824,7 +823,7 @@ class ConnectorTestCase(unittest.TestCase):
             "data_node": DATA_NODE,
             "aggregation_level":"dataset",
             "drs_id":DRS_ID,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all'
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.unpubli-allvers',
         }
         received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
         is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
@@ -870,7 +869,7 @@ class ConnectorTestCase(unittest.TestCase):
             "data_node": DATA_NODE,
             "aggregation_level":"dataset",
             "drs_id":DRS_ID,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all',
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.unpubli-allvers',
             "consumer_solr_url":SOLR_URL_CONSUMER
         }        
         received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
@@ -901,7 +900,7 @@ class ConnectorTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":ERRATA_SEVERAL,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.errata-add',
             "drs_id":DRS_ID,
             "version_number":DS_VERSION
         }
@@ -929,7 +928,7 @@ class ConnectorTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":[ERRATA],
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.errata-add',
             "drs_id":DRS_ID,
             "version_number":DS_VERSION
         }
@@ -957,7 +956,7 @@ class ConnectorTestCase(unittest.TestCase):
             "operation": "remove_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":[ERRATA],
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.remove',
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.errata-rem',
             "drs_id":DRS_ID,
             "version_number":DS_VERSION
         }
@@ -993,14 +992,14 @@ class ConnectorTestCase(unittest.TestCase):
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
             "data_cart_content":content1,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.datacart'
         }
         expected_rabbit_task2 = {
             "handle": expected_handle_both_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
             "data_cart_content":content2,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'cart.datasets'
+            "ROUTING_KEY":PREFIX_NO_HDL+'.HASH.fresh.datacart'
         }
         received_rabbit_msg1 = TESTHELPERS.get_received_message_from_rabbitmock(testconnector, 0)
         received_rabbit_msg2 = TESTHELPERS.get_received_message_from_rabbitmock(testconnector, 1)
