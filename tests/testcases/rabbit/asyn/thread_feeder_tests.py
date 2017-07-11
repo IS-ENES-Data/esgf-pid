@@ -32,6 +32,7 @@ class ThreadFeederTestCase(unittest.TestCase):
             nodemanager)
 
         statemachine.set_to_available()
+        nodemanager.set_next_host() # otherwise, we cannot call its method inside the publish method
         return feeder, thread
 
     # Tests
@@ -56,6 +57,65 @@ class ThreadFeederTestCase(unittest.TestCase):
         # Message not waiting in queue anymore:
         self.assertNotIn(msg, thread.messages)
 
+    def test_routing_key_ok(self):
+
+        # Preparation:
+        msg = '{"foo":"bar", "ROUTING_KEY":"myprefix.HASH.fresh.mydescription"}'
+        feeder, thread = self.make_feeder()
+        thread.messages.append(msg)
+
+        # Run code to be tested:
+        feeder.publish_message()
+
+        # Check result:
+        # Publish was called:
+        thread._channel.basic_publish.assert_called_once()
+        # Message not waiting in queue anymore:
+        self.assertNotIn(msg, thread.messages)
+        # Correct routing key:
+        rk = thread._channel.basic_publish.call_args[1]["routing_key"]
+        self.assertEquals(rk, 'myprefix.HASH.fresh.mydescription')
+
+    def test_routing_key_untrusted_ok(self):
+
+        # Preparation:
+        msg = '{"foo":"bar", "ROUTING_KEY":"myprefix.HASH.fresh.mydescription"}'
+        feeder, thread = self.make_feeder()
+        feeder.nodemanager._NodeManager__current_node['is_open']=True
+        thread.messages.append(msg)
+
+        # Run code to be tested:
+        feeder.publish_message()
+
+        # Check result:
+        # Publish was called:
+        thread._channel.basic_publish.assert_called_once()
+        # Message not waiting in queue anymore:
+        self.assertNotIn(msg, thread.messages)
+        # Correct routing key:
+        rk = thread._channel.basic_publish.call_args[1]["routing_key"]
+        self.assertEquals(rk, 'myprefix.HASH.fresh-untrusted-fallback.mydescription')
+
+    def test_routing_key_untrusted_ok(self):
+
+        # Preparation:
+        msg = '{"foo":"bar", "ROUTING_KEY":"myprefix.HASH.fresh.mydescription"}'
+        feeder, thread = self.make_feeder()
+        feeder.nodemanager._NodeManager__current_node['is_open']=True
+        feeder.nodemanager._NodeManager__has_trusted=False
+        thread.messages.append(msg)
+
+        # Run code to be tested:
+        feeder.publish_message()
+
+        # Check result:
+        # Publish was called:
+        thread._channel.basic_publish.assert_called_once()
+        # Message not waiting in queue anymore:
+        self.assertNotIn(msg, thread.messages)
+        # Correct routing key:
+        rk = thread._channel.basic_publish.call_args[1]["routing_key"]
+        self.assertEquals(rk, 'myprefix.HASH.fresh-untrusted-only.mydescription')
 
     def test_send_message_empty(self):
 

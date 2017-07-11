@@ -6,7 +6,6 @@ import tests.mocks.solrmock
 import tests.mocks.rabbitmock
 import tests.utils as utils
 import Queue
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 # Errata
 ERRATA_SEVERAL = ['123456','654321']
@@ -36,6 +35,7 @@ TEST_RABBIT_CREDS_TRUSTED = dict(
 # Misc
 PREFIX_NO_HDL = '21.14foo'
 PREFIX_WITH_HDL = 'hdl:'+PREFIX_NO_HDL
+PREFIX_FOR_ROUTINGKEY = esgfpid.utils.routingkeys._sanitize_prefix(PREFIX_NO_HDL)
 
 # Files
 SUFFIX_FILE = 'xyz123abc'
@@ -155,9 +155,6 @@ class MockThread2(object):
 
     def get_num_unpublished(self):
         return len(self.messages)
-
-    def get_open_word_for_routing_key(self):
-        return 'foo'
 
     def put_one_message_into_queue_of_unsent_messages(self, msg):
         self.messages.append(msg)
@@ -572,7 +569,7 @@ def get_rabbit_message_publication_dataset():
         "files" : [FILEHANDLE_HDL],
         "is_replica" : False,
         "data_node" : DATA_NODE,
-        "ROUTING_KEY" : ROUTING_KEY_BASIS+'publication.dataset.orig',
+        "ROUTING_KEY" : PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-ds-orig',
         "consumer_solr_url" : SOLR_URL_CONSUMER
     }
     return expected_rabbit_task
@@ -593,7 +590,7 @@ def get_rabbit_message_publication_file():
         "checksum_type": CHECKSUMTYPE,
         "file_version": FILEVERSION,
         "parent_dataset": DATASETHANDLE_HDL,
-        "ROUTING_KEY": ROUTING_KEY_BASIS+'publication.file.orig',
+        "ROUTING_KEY" : PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-file-orig',
     }
     return expected_rabbit_task
 
@@ -604,7 +601,7 @@ def get_rabbit_message_unpub_one():
         "operation": "unpublish_one_version",
         "message_timestamp":"anydate",
         "data_node": DATA_NODE,
-        "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+        "ROUTING_KEY" : PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-onevers',
         "drs_id":DRS_ID,
         "version_number":int(DS_VERSION)
     }
@@ -617,6 +614,6 @@ def get_rabbit_message_unpub_all():
         "message_timestamp": "anydate",
         "drs_id": DRS_ID,
         "data_node": DATA_NODE,
-        "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.all',
+        "ROUTING_KEY" : PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-allvers',
     }
     return expected_rabbit_task

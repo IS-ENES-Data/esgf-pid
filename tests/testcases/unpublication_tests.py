@@ -7,7 +7,6 @@ from tests.utils import compare_json_return_errormessage as error_message
 import tests.utils
 
 import esgfpid.assistant.unpublish
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -199,7 +198,7 @@ class UnpublicationTestCase(unittest.TestCase):
             "message_timestamp": "anydate",
             "data_node": DATA_NODE,
             "handle": DATASETHANDLE_HDL,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-onevers',
             "drs_id": DRS_ID,
             "version_number": DS_VERSION
         }
@@ -209,7 +208,7 @@ class UnpublicationTestCase(unittest.TestCase):
             "message_timestamp": "anydate",
             "data_node": DATA_NODE,
             "handle": DATASETHANDLE_HDL2,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'unpublication.one',
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-onevers',
             "drs_id": DRS_ID,
             "version_number": DS_VERSION2
         }

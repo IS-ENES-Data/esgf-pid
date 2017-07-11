@@ -1,5 +1,5 @@
 import esgfpid.utils
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+from esgfpid.utils import ROUTING_KEYS
 
 '''
 The messages module creates the JSON messages to be sent to the rabbit.
@@ -9,24 +9,13 @@ otherwise it is redundant.
 
 JSON_KEY_ROUTING_KEY = 'ROUTING_KEY'
 
-ROUTING_KEYS = dict(
-    publi_file = ROUTING_KEY_BASIS+'publication.file.orig',
-    publi_file_rep = ROUTING_KEY_BASIS+'publication.file.replica',
-    publi_ds = ROUTING_KEY_BASIS+'publication.dataset.orig',
-    publi_ds_rep = ROUTING_KEY_BASIS+'publication.dataset.replica',
-    unpubli_all = ROUTING_KEY_BASIS+'unpublication.all',
-    unpubli_one = ROUTING_KEY_BASIS+'unpublication.one',
-    err_add = ROUTING_KEY_BASIS+'errata.add',
-    err_rem = ROUTING_KEY_BASIS+'errata.remove',
-    shop_cart = ROUTING_KEY_BASIS+'cart.datasets'
-)
 
 def publish_file(**args):
 
     # Check args:
     mandatory_args = ['file_handle', 'is_replica', 'file_size', 'file_name', 'checksum',
                       'data_url', 'parent_dataset', 'timestamp', 'checksum_type',
-                    'file_version', 'data_node']
+                      'file_version', 'data_node']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
     # Message:
@@ -51,7 +40,6 @@ def publish_file(**args):
     if args['is_replica'] == True: # Publish Assistant parses this to boolean!
         routing_key = ROUTING_KEYS['publi_file_rep']
     message[JSON_KEY_ROUTING_KEY] = routing_key
-
     return message
 
 def publish_dataset(**args):
@@ -87,10 +75,8 @@ def publish_dataset(**args):
     return message
 
 def unpublish_allversions_consumer_must_find_versions(**args):
-
     mandatory_args = ['drs_id', 'data_node', 'timestamp']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-
     message = dict(
         operation = 'unpublish_all_versions',
         aggregation_level = 'dataset',
@@ -98,20 +84,17 @@ def unpublish_allversions_consumer_must_find_versions(**args):
         drs_id = args['drs_id'],
         data_node=args['data_node']
     )
-
     # Optional:
     if 'consumer_solr_url' in args and args['consumer_solr_url'] is not None:
         message['consumer_solr_url'] = args['consumer_solr_url']
-
-    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['unpubli_all']
+    routing_key = ROUTING_KEYS['unpubli_all']
+    message[JSON_KEY_ROUTING_KEY] = routing_key
     return message
 
 
 def unpublish_one_version(**args):
-
     mandatory_args = ['data_node', 'timestamp', 'dataset_handle', 'drs_id']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-
     message = dict(
         operation = 'unpublish_one_version',
         aggregation_level = 'dataset',
@@ -122,16 +105,13 @@ def unpublish_one_version(**args):
     )
     if 'version_number' in args:
         message['version_number'] = args['version_number']
-
-    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['unpubli_one']
-
+    routing_key = ROUTING_KEYS['unpubli_one']
+    message[JSON_KEY_ROUTING_KEY] = routing_key
     return message
 
 def add_errata_ids_message(**args):
-
     mandatory_args = ['dataset_handle', 'timestamp', 'errata_ids', 'drs_id', 'version_number']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-  
     message = dict(
         handle = args['dataset_handle'],
         message_timestamp = args['timestamp'],
@@ -140,16 +120,13 @@ def add_errata_ids_message(**args):
         drs_id = args['drs_id'],
         version_number = args['version_number']
     )
-
-    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['err_add']
-
+    routing_key = ROUTING_KEYS['err_add']
+    message[JSON_KEY_ROUTING_KEY] = routing_key
     return message
 
 def remove_errata_ids_message(**args):
-
     mandatory_args = ['dataset_handle', 'timestamp', 'errata_ids', 'drs_id', 'version_number']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-    
     message = dict(
         handle = args['dataset_handle'],
         message_timestamp = args['timestamp'],
@@ -157,9 +134,9 @@ def remove_errata_ids_message(**args):
         operation = 'remove_errata_ids',
         drs_id = args['drs_id'],
         version_number = args['version_number']
-    )
-    
-    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['err_rem']
+    )    
+    routing_key = ROUTING_KEYS['err_rem']
+    message[JSON_KEY_ROUTING_KEY] = routing_key
 
     return message
 
@@ -172,5 +149,6 @@ def make_data_cart_message(**args):
         data_cart_content = args['data_cart_content'],
         operation = 'shopping_cart'
     )
-    message[JSON_KEY_ROUTING_KEY] = ROUTING_KEYS['shop_cart']
+    routing_key = ROUTING_KEYS['data_cart']
+    message[JSON_KEY_ROUTING_KEY] = routing_key
     return message

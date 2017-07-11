@@ -6,6 +6,7 @@ import esgfpid.defaults
 import esgfpid.exceptions
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from naturalsorting import natural_keys
+import esgfpid.utils
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -340,33 +341,34 @@ class NodeManager(object):
         return self.__exchange_name
 
     '''
-    Return the flag word for open nodes.
+    Adapt the routing key (if necessary) to indicate 
+    that a message comes from an untrusted node.
 
-    This flag is appended to the routing key so that
-    we can route messages from the untrusted nodes to
-    other queues.
+    The middle part (the RabbitMQ instruction part)
+    of the key is adapted so it is visible that the
+    node is an untrusted one.
 
     Note: The binding has to be done in the RabbitMQ exit 
     node (by the consumer).
 
-    :return: String to flag messages that are sent to open nodes.
+    :return: The adapted routing key, in case the node
+             is untrusted.
     '''
-    def get_open_word_for_routing_key(self):
+    def adapt_routing_key_for_untrusted(self, routing_key):
 
         # Message is published via an open node:
         if self.__current_node['is_open'] == True:
             if self.__has_trusted:
-                return 'untrusted-fallback'
+                return esgfpid.utils.adapt_routing_key_for_untrusted_fallback(routing_key)
             else:
-                return 'untrusted-only'
+                return esgfpid.utils.adapt_routing_key_for_untrusted(routing_key)
 
         # Message is published via a trusted node:
         elif self.__current_node['is_open'] == False:
-            return 'trusted'
-
+            return routing_key
         else:
             logerror(LOGGER, 'Problem: Unsure whether the current node is open or not!')
-            return 'untrusted-unsure'
+            return esgfpid.utils.adapt_routing_key_for_untrusted_fallback(routing_key)
 
     '''
     Reset the list of available RabbitMQ instances to

@@ -40,7 +40,7 @@ class ThreadReturnerTestCase(unittest.TestCase):
 
         # Preparation:
         routing_key = 'foobar'
-        emergency_routing_key = esgfpid.defaults.RABBIT_EMERGENCY_ROUTING_KEY
+        emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY
         body = '{"foo":"bar", "ROUTING_KEY":"%s"}' % routing_key
         handler, thread = self.make_returnhandler()
         # <Basic.Return(['exchange=rabbitsender_integration_tests', 'reply_code=312', 'reply_text=NO_ROUTE', 'routing_key=cmip6.publisher.HASH.cart.datasets'])>"
@@ -61,7 +61,7 @@ class ThreadReturnerTestCase(unittest.TestCase):
 
         # Preparation:
         routing_key = 'foobar'
-        emergency_routing_key = esgfpid.defaults.RABBIT_EMERGENCY_ROUTING_KEY
+        emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY
         body = '{"foo":"bar", "ROUTING_KEY":"%s", "original_routing_key":"%s"}' % (emergency_routing_key, routing_key)
         handler, thread = self.make_returnhandler()
         # <Basic.Return(['exchange=rabbitsender_integration_tests', 'reply_code=312', 'reply_text=NO_ROUTE', 'routing_key=cmip6.publisher.HASH.cart.datasets'])>"
@@ -80,7 +80,7 @@ class ThreadReturnerTestCase(unittest.TestCase):
 
         # Preparation:
         routing_key = 'foobar'
-        emergency_routing_key = esgfpid.defaults.RABBIT_EMERGENCY_ROUTING_KEY
+        emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY
         body = '{"foo":"bar", "ROUTING_KEY":"%s"}' % routing_key
         handler, thread = self.make_returnhandler()
         # <Basic.Return(['exchange=rabbitsender_integration_tests', 'reply_code=312', 'reply_text=NO_ROUTE', 'routing_key=cmip6.publisher.HASH.cart.datasets'])>"
@@ -101,7 +101,7 @@ class ThreadReturnerTestCase(unittest.TestCase):
     def test_send_message_no_key(self):
 
         # Preparation:
-        emergency_routing_key = esgfpid.defaults.RABBIT_EMERGENCY_ROUTING_KEY
+        emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY
         body = '{"foo":"bar"}'
         handler, thread = self.make_returnhandler()
         # <Basic.Return(['exchange=rabbitsender_integration_tests', 'reply_code=312', 'reply_text=NO_ROUTE', 'routing_key=cmip6.publisher.HASH.cart.datasets'])>"
@@ -122,7 +122,7 @@ class ThreadReturnerTestCase(unittest.TestCase):
     def test_send_message_error(self):
 
         # Preparation:
-        emergency_routing_key = esgfpid.defaults.RABBIT_EMERGENCY_ROUTING_KEY
+        emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY
         body = '{"foo":"bar"}'
         handler, thread = self.make_returnhandler(error=pika.exceptions.ChannelClosed)
         # <Basic.Return(['exchange=rabbitsender_integration_tests', 'reply_code=312', 'reply_text=NO_ROUTE', 'routing_key=cmip6.publisher.HASH.cart.datasets'])>"

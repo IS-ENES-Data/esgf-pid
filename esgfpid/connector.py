@@ -136,6 +136,7 @@ class Connector(object):
         self.__define_defaults_for_optional_args(args)
         self.__store_some_args(args)
         self.__throw_error_if_prefix_not_in_list()
+        esgfpid.utils.routingkeys.add_prefix_to_routing_keys(self.prefix)
         self.__coupler = esgfpid.coupling.Coupler(**args)
         loginfo(LOGGER, 'Created PID connector.')
 

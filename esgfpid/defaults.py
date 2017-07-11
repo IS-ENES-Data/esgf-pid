@@ -1,4 +1,4 @@
-# Default value for the esgfpid library
+# Default values for the esgfpid library
 
 # List of prefixes
 ACCEPTED_PREFIXES = ['21.14100','21.14101','21.14102','21.14103', '21.14foo']
@@ -17,9 +17,6 @@ SOLR_QUERY_DISTRIB=False
 
 # Rabbit
 RABBIT_IS_ASYNCHRONOUS = True
-ROUTING_KEY_BASIS = 'cmip6.publisher.HASH.'
-RABBIT_DEFAULT_ROUTING_KEY=ROUTING_KEY_BASIS+'fallback' # Default, if none is included in message
-RABBIT_EMERGENCY_ROUTING_KEY='UNROUTABLE' # If the message was returned as unroutable by the sender
 _persistent = 2
 _nonpersistent = 1
 RABBIT_DELIVERY_MODE = _persistent # 'delivery_mode': See https://pika.readthedocs.org/en/0.9.6/examples/comparing_publishing_sync_async.html#comparing-message-publishing-with-blockingconnection-and-selectconnection

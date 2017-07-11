@@ -6,7 +6,7 @@ import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
 
 from esgfpid.assistant.errata import ErrataAssistant
-from esgfpid.defaults import ROUTING_KEY_BASIS as ROUTING_KEY_BASIS
+
 
 
 # Logging
@@ -74,7 +74,7 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":[ERRATA],
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.errata-add',
             "drs_id":DRS_ID,
             "version_number":DS_VERSION
         }
@@ -105,7 +105,7 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":[ERRATA],
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.errata-add',
             "drs_id":DRS_ID,
             "version_number":DS_VERSION
         }
@@ -136,7 +136,7 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "add_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":ERRATA_SEVERAL,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.add',
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.errata-add',
             "drs_id":DRS_ID,
             "version_number":DS_VERSION
         }
@@ -184,7 +184,7 @@ class ErrataTestCase(unittest.TestCase):
             "operation": "remove_errata_ids",
             "message_timestamp":"anydate",
             "errata_ids":ERRATA_SEVERAL,
-            "ROUTING_KEY": ROUTING_KEY_BASIS+'errata.remove',
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.errata-rem',
             "drs_id":DRS_ID,
             "version_number":DS_VERSION
         }

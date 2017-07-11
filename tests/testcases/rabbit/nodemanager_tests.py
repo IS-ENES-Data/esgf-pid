@@ -501,7 +501,7 @@ class NodemanagerTestCase(unittest.TestCase):
     Test getter for the routing key suffix (1/3).
     '''
     @unittest.skipIf(globalvar.RABBIT_OPEN_NOT_ALLOWED, '(this test uses open rabbit nodes)')
-    def test_open_word_open_only(self):
+    def test_adapting_routing_key_open_only(self):
 
         # Test variables:
         # Make a node manager with only open nodes
@@ -516,19 +516,20 @@ class NodemanagerTestCase(unittest.TestCase):
         #print(str(mynodemanager._NodeManager__current_node))
 
         # Run code to be tested:
-        word = mynodemanager.get_open_word_for_routing_key()
+        routing_key = 'foo.fresh.foo'
+        routing_key = mynodemanager.adapt_routing_key_for_untrusted(routing_key)
 
         # Check result:
-        # Check if get_open_word_for_routing_key() returns
-        # the correct routing key suffix. If there is only open
+        # Check if adapt_routing_key_for_untrusted() returns
+        # the correct routing key. If there is only open
         # nodes, it must indicate that it's open nodes only.
-        self.assertEquals('untrusted-only', word)
+        self.assertEquals('foo.fresh-untrusted-only.foo', routing_key)
 
 
     '''
     Test getter for the routing key suffix (2/3).
     '''
-    def test_open_word_trusted_only(self):
+    def test_adapting_routing_key_trusted_only(self):
 
         # Test variables:
         # Make a node manager with only open nodes
@@ -543,14 +544,15 @@ class NodemanagerTestCase(unittest.TestCase):
         #print(str(mynodemanager._NodeManager__current_node))
 
         # Run code to be tested
-        word = mynodemanager.get_open_word_for_routing_key()
+        routing_key = 'foo.fresh.foo'
+        routing_key = mynodemanager.adapt_routing_key_for_untrusted(routing_key)
 
         # Check result:
-        # Check if get_open_word_for_routing_key() returns
-        # the correct routing key suffix.
+        # Check if adapt_routing_key_for_untrusted() returns
+        # the correct routing key.
         # If there is trusted nodes, and a trusted node is
-        # currently set, it must indicate that it's trusted.
-        self.assertEquals('trusted', word)
+        # currently set, it must not change the routing key.
+        self.assertEquals('foo.fresh.foo', routing_key)
 
 
     '''
