@@ -13,3 +13,9 @@ ROUTING_KEYS = dict(
     err_rem = ROUTING_KEY_BASIS+'errata.remove',
     shop_cart = ROUTING_KEY_BASIS+'cart.datasets'
 )
+
+
+ROUTING_KEY_SUFFIX_TRUSTED = 'trusted'
+ROUTING_KEY_SUFFIX_UNSURE_IF_TRUSTED = 'untrusted-unsure'
+ROUTING_KEY_SUFFIX_UNTRUSTED_AS_FALLBACK = 'untrusted-fallback'
+ROUTING_KEY_SUFFIX_UNTRUSTED = 'untrusted-only'

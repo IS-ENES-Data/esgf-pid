@@ -6,6 +6,7 @@ import esgfpid.defaults
 import esgfpid.exceptions
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
 from naturalsorting import natural_keys
+from esgfpid.utils.routingkeys import *
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -356,17 +357,16 @@ class NodeManager(object):
         # Message is published via an open node:
         if self.__current_node['is_open'] == True:
             if self.__has_trusted:
-                return 'untrusted-fallback'
+                return ROUTING_KEY_SUFFIX_UNTRUSTED_AS_FALLBACK
             else:
-                return 'untrusted-only'
+                return ROUTING_KEY_SUFFIX_UNTRUSTED
 
         # Message is published via a trusted node:
         elif self.__current_node['is_open'] == False:
-            return 'trusted'
-
+            return ROUTING_KEY_SUFFIX_TRUSTED
         else:
             logerror(LOGGER, 'Problem: Unsure whether the current node is open or not!')
-            return 'untrusted-unsure'
+            return ROUTING_KEY_SUFFIX_UNSURE_IF_TRUSTED
 
     '''
     Reset the list of available RabbitMQ instances to
