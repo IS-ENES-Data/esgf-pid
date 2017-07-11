@@ -198,7 +198,7 @@ class UnpublicationTestCase(unittest.TestCase):
             "message_timestamp": "anydate",
             "data_node": DATA_NODE,
             "handle": DATASETHANDLE_HDL,
-            "ROUTING_KEY": PREFIX_NO_HDL+'.HASH.fresh.unpubli-onevers',
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-onevers',
             "drs_id": DRS_ID,
             "version_number": DS_VERSION
         }
@@ -208,7 +208,7 @@ class UnpublicationTestCase(unittest.TestCase):
             "message_timestamp": "anydate",
             "data_node": DATA_NODE,
             "handle": DATASETHANDLE_HDL2,
-            "ROUTING_KEY": PREFIX_NO_HDL+'.HASH.fresh.unpubli-onevers',
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-onevers',
             "drs_id": DRS_ID,
             "version_number": DS_VERSION2
         }

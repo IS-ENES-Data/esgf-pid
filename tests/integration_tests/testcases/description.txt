@@ -1,0 +1,58 @@
+
+# CASE "normal_slow"
+# We connect, send and finish gently.
+# Between these things, we leave enough time for the
+# tasks to finish without overlap.
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "normal_accum"
+# We connect, send and finish gently.
+# We send messages right after connecting, so messages
+# should accumulate before the connection is ready.
+# But we leave time before closing.
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "normal_quick"
+# We connect, send and finish gently.
+# We do all of this quickly.
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "reconnect_once_ok"
+# The first connection fails, the second succeeds.
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "exch_missing_fallback_ok"
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "exch_missing_fallback_missing"
+# FAIL: 0.7.6, 2017-04-27
+
+# CASE "reconnect_all_fail_give_up"
+# All connections fail.
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "gentle_close_quick"
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "force_close_quick"
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "event_before_ioloop"
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "interactive_interrupt_noother"
+# Needs human interaction!
+# Interrupting RabbitMQ... No alternative.
+
+# CASE "interactive_interrupt_oneoother"
+# Needs human interaction!
+# Interrupting RabbitMQ... One alternative.
+
+# CASE "double_unroutable"
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "unroutable"
+# Passed: 0.7.6, 2017-04-27
+
+# CASE "routing_key_missing"
+# Passed: 0.7.6, 2017-04-27

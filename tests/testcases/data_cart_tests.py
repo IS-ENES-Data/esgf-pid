@@ -114,7 +114,7 @@ class DataCartTestCase(unittest.TestCase):
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
             "data_cart_content":{'foo':'foo', 'bar':'bar'},
-            "ROUTING_KEY": PREFIX_NO_HDL+'.HASH.fresh.datacart'
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.datacart'
         }
         received_rabbit_task = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler)
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
@@ -146,7 +146,7 @@ class DataCartTestCase(unittest.TestCase):
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
             "data_cart_content": content,
-            "ROUTING_KEY": PREFIX_NO_HDL+'.HASH.fresh.datacart'
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.datacart'
         }
         received_rabbit_task = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler)
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
@@ -187,21 +187,21 @@ class DataCartTestCase(unittest.TestCase):
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
             "data_cart_content":content1,
-            "ROUTING_KEY": PREFIX_NO_HDL+'.HASH.fresh.datacart'
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.datacart'
         }
         expected_rabbit_task2 = {
             "handle": expected_handle_all_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
             "data_cart_content":content2,
-            "ROUTING_KEY": PREFIX_NO_HDL+'.HASH.fresh.datacart'
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.datacart'
         }
         expected_rabbit_task3 = {
             "handle": expected_handle_all_cases,
             "operation": "shopping_cart",
             "message_timestamp":"anydate",
             "data_cart_content":content3,
-            "ROUTING_KEY": PREFIX_NO_HDL+'.HASH.fresh.datacart'
+            "ROUTING_KEY": PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.datacart'
         }
         # Check if all the messages are correct:
         received_rabbit_task1 = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler, 0)

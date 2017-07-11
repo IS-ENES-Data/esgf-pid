@@ -498,7 +498,7 @@ class PublishTestCase(unittest.TestCase):
         received_rabbit_task = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler, 0)
         expected_rabbit_task = TESTHELPERS.get_rabbit_message_publication_dataset()
         expected_rabbit_task['is_replica'] = True
-        expected_rabbit_task['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-ds-repli'
+        expected_rabbit_task['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-ds-repli'
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 
@@ -506,7 +506,7 @@ class PublishTestCase(unittest.TestCase):
         received_rabbit_task = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler, 1)
         expected_rabbit_task = TESTHELPERS.get_rabbit_message_publication_file()
         expected_rabbit_task['is_replica'] = True
-        expected_rabbit_task['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-file-repli'
+        expected_rabbit_task['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-file-repli'
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 
@@ -528,7 +528,7 @@ class PublishTestCase(unittest.TestCase):
         received_rabbit_task = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler, 0)
         expected_rabbit_task = TESTHELPERS.get_rabbit_message_publication_dataset()
         expected_rabbit_task['is_replica'] = True
-        expected_rabbit_task['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-ds-repli'
+        expected_rabbit_task['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-ds-repli'
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 
@@ -536,7 +536,7 @@ class PublishTestCase(unittest.TestCase):
         received_rabbit_task = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler, 1)
         expected_rabbit_task = TESTHELPERS.get_rabbit_message_publication_file()
         expected_rabbit_task['is_replica'] = True
-        expected_rabbit_task['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-file-repli'
+        expected_rabbit_task['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-file-repli'
         same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
         self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
 

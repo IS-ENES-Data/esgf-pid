@@ -62,7 +62,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-file-orig'
+        expected['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-file-orig'
         expected['aggregation_level'] = 'file'
         expected['operation'] = 'publish'
         # Rename some:
@@ -85,7 +85,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-file-repli'
+        expected['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-file-repli'
         expected['aggregation_level'] = 'file'
         expected['operation'] = 'publish'
         # Rename some:
@@ -107,7 +107,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-ds-orig'
+        expected['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-ds-orig'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'publish'
         # Rename some:
@@ -133,7 +133,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.publi-ds-repli'
+        expected['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-ds-repli'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'publish'
         # Rename some:
@@ -176,7 +176,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.unpubli-allvers'
+        expected['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-allvers'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'unpublish_all_versions'
         # Rename some:
@@ -202,7 +202,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.unpubli-onevers'
+        expected['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-onevers'
         expected['aggregation_level'] = 'dataset'
         expected['operation'] = 'unpublish_one_version'
         # Rename some:
@@ -231,7 +231,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.errata-add'
+        expected['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.errata-add'
         expected['operation'] = 'add_errata_ids'
         expected['drs_id'] = 'drs_foo'
         expected['version_number'] = 'vers_foo'
@@ -260,7 +260,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
         # Check result:
         expected = copy.deepcopy(args_dict)
-        expected['ROUTING_KEY'] = PREFIX_NO_HDL+'.HASH.fresh.errata-rem'
+        expected['ROUTING_KEY'] = PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.errata-rem'
         expected['operation'] = 'remove_errata_ids'
         expected['drs_id'] = 'drs_foo'
         expected['version_number'] = 'vers_foo'

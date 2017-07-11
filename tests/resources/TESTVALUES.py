@@ -35,6 +35,7 @@ TEST_RABBIT_CREDS_TRUSTED = dict(
 # Misc
 PREFIX_NO_HDL = '21.14foo'
 PREFIX_WITH_HDL = 'hdl:'+PREFIX_NO_HDL
+PREFIX_FOR_ROUTINGKEY = esgfpid.utils.routingkeys._sanitize_prefix(PREFIX_NO_HDL)
 
 # Files
 SUFFIX_FILE = 'xyz123abc'
@@ -568,7 +569,7 @@ def get_rabbit_message_publication_dataset():
         "files" : [FILEHANDLE_HDL],
         "is_replica" : False,
         "data_node" : DATA_NODE,
-        "ROUTING_KEY" : PREFIX_NO_HDL+'.HASH.fresh.publi-ds-orig',
+        "ROUTING_KEY" : PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-ds-orig',
         "consumer_solr_url" : SOLR_URL_CONSUMER
     }
     return expected_rabbit_task
@@ -589,7 +590,7 @@ def get_rabbit_message_publication_file():
         "checksum_type": CHECKSUMTYPE,
         "file_version": FILEVERSION,
         "parent_dataset": DATASETHANDLE_HDL,
-        "ROUTING_KEY" : PREFIX_NO_HDL+'.HASH.fresh.publi-file-orig',
+        "ROUTING_KEY" : PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.publi-file-orig',
     }
     return expected_rabbit_task
 
@@ -600,7 +601,7 @@ def get_rabbit_message_unpub_one():
         "operation": "unpublish_one_version",
         "message_timestamp":"anydate",
         "data_node": DATA_NODE,
-        "ROUTING_KEY" : PREFIX_NO_HDL+'.HASH.fresh.unpubli-onevers',
+        "ROUTING_KEY" : PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-onevers',
         "drs_id":DRS_ID,
         "version_number":int(DS_VERSION)
     }
@@ -613,6 +614,6 @@ def get_rabbit_message_unpub_all():
         "message_timestamp": "anydate",
         "drs_id": DRS_ID,
         "data_node": DATA_NODE,
-        "ROUTING_KEY" : PREFIX_NO_HDL+'.HASH.fresh.unpubli-allvers',
+        "ROUTING_KEY" : PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-allvers',
     }
     return expected_rabbit_task
