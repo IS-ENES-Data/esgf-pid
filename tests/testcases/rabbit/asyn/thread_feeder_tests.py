@@ -32,7 +32,7 @@ class ThreadFeederTestCase(unittest.TestCase):
             nodemanager)
 
         statemachine.set_to_available()
-        nodemanager.set_next_host() # otherwise, we cannot adapt the routing key
+        nodemanager.set_next_host() # otherwise, we cannot call its method inside the publish method
         return feeder, thread
 
     # Tests
