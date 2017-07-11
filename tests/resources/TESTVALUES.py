@@ -155,9 +155,6 @@ class MockThread2(object):
     def get_num_unpublished(self):
         return len(self.messages)
 
-    def get_open_word_for_routing_key(self):
-        return 'foo'
-
     def put_one_message_into_queue_of_unsent_messages(self, msg):
         self.messages.append(msg)
         self.put_back.append(msg)
