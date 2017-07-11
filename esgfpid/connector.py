@@ -14,7 +14,6 @@ import esgfpid.defaults
 import esgfpid.exceptions
 import esgfpid.coupling
 import esgfpid.utils
-import esgfpid.config
 from esgfpid.utils import loginfo, logdebug, logwarn
 
 LOGGER = logging.getLogger(__name__)
@@ -137,6 +136,7 @@ class Connector(object):
         self.__define_defaults_for_optional_args(args)
         self.__store_some_args(args)
         self.__throw_error_if_prefix_not_in_list()
+        esgfpid.utils.routingkeys.add_prefix_to_routing_keys(self.prefix)
         self.__coupler = esgfpid.coupling.Coupler(**args)
         loginfo(LOGGER, 'Created PID connector.')
 
@@ -275,8 +275,6 @@ class Connector(object):
         self.__thredds_service_path = args['thredds_service_path']
         self.__data_node = args['data_node'] # may be None, only needed for some assistants.
         self.__consumer_solr_url = args['consumer_solr_url'] # may be None
-
-        esgfpid.config.PREFIX = self.prefix
 
     def __throw_error_if_prefix_not_in_list(self):
         if self.prefix is None:

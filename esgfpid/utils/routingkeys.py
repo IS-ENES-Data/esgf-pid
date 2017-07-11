@@ -19,7 +19,6 @@ and filtered using some instructions.
 
 '''
 
-import esgfpid.config
 
 '''
 This is the Rabbit instruction. It tells the RabbitMQ system
@@ -49,11 +48,19 @@ ROUTING_KEYS = dict(
 )
 
 def _sanitize_prefix(prefix):
+    prefix = prefix
+    if 'hdl:' in prefix:
+        prefix = prefix.replace('hdl:','')
     return prefix.replace('.', '')
 
-def adapt_routing_key_replace_prefix(routing_key):
-    sanitized_prefix = _sanitize_prefix(esgfpid.config.PREFIX)
+def _adapt_routing_key_replace_prefix(routing_key, sanitized_prefix):
     return routing_key.replace('PREFIX', sanitized_prefix)
+
+def add_prefix_to_routing_keys(prefix):
+    sanitized_prefix = _sanitize_prefix(prefix)
+    for k,v in ROUTING_KEYS.iteritems():
+        ROUTING_KEYS[k] = _adapt_routing_key_replace_prefix(v, sanitized_prefix)
+
 
 
 
