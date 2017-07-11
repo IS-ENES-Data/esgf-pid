@@ -1,16 +1,16 @@
 
-ROUTING_KEY_BASIS = 'cmip6.publisher.HASH.'
+RABBIT_INSTRUCTION = 'fresh'
 
 ROUTING_KEYS = dict(
-    publi_file = 'PREFIX.HASH.fresh.publi-file-orig',
-    publi_file_rep = 'PREFIX.HASH.fresh.publi-file-repli',
-    publi_ds = 'PREFIX.HASH.fresh.publi-ds-orig',
-    publi_ds_rep = 'PREFIX.HASH.fresh.publi-ds-repli',
-    unpubli_all = 'PREFIX.HASH.fresh.unpubli-allvers',
-    unpubli_one = 'PREFIX.HASH.fresh.unpubli-onevers',
-    err_add = 'PREFIX.HASH.fresh.errata-add',
-    err_rem = 'PREFIX.HASH.fresh.errata-rem',
-    data_cart = 'PREFIX.HASH.fresh.datacart'
+    publi_file = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.publi-file-orig',
+    publi_file_rep = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.publi-file-repli',
+    publi_ds = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.publi-ds-orig',
+    publi_ds_rep = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.publi-ds-repli',
+    unpubli_all = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.unpubli-allvers',
+    unpubli_one = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.unpubli-onevers',
+    err_add = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.errata-add',
+    err_rem = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.errata-rem',
+    data_cart = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.datacart'
 )
 
 ROUTING_KEY_INTERFIX_UNSURE_IF_TRUSTED = 'untrusted-unsure'
@@ -29,6 +29,6 @@ def adapt_routing_key_for_untrusted_unsure(routing_key):
     routing_key = routing_key.replace('fresh', 'fresh-'+ROUTING_KEY_INTERFIX_UNSURE_IF_TRUSTED)
     return routing_key
 
-RABBIT_DEFAULT_ROUTING_KEY='fallback.fallback.fallback.fallback' # Default, if none is included in message
-RABBIT_EMERGENCY_ROUTING_KEY='UNROUTABLE.UNROUTABLE.UNROUTABLE.UNROUTABLE' # If the message was returned as unroutable by the sender
+RABBIT_DEFAULT_ROUTING_KEY='fallback.fallback.'+RABBIT_INSTRUCTION+'.fallback' # Default, if none is included in message
+RABBIT_EMERGENCY_ROUTING_KEY='UNROUTABLE.UNROUTABLE.'+RABBIT_INSTRUCTION+'.UNROUTABLE' # If the message was returned as unroutable by the sender
 
