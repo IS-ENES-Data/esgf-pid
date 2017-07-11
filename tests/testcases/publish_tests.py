@@ -19,7 +19,6 @@ class PublishTestCase(unittest.TestCase):
 
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
-        esgfpid.config.PREFIX = PREFIX_NO_HDL
 
     def tearDown(self):
         LOGGER.info('#############################')

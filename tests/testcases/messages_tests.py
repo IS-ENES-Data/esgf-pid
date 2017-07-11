@@ -18,8 +18,7 @@ class MessageCreationTestcase(unittest.TestCase):
 
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
-        esgfpid.config.PREFIX = PREFIX_NO_HDL
-
+        esgfpid.utils.routingkeys.add_prefix_to_routing_keys(PREFIX_WITH_HDL)
 
     def tearDown(self):
         LOGGER.info('#############################')
