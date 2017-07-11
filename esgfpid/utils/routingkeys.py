@@ -35,7 +35,7 @@ RABBIT_INSTRUCTION = 'fresh'
 These are the templates for the routing keys, based on the
 message's content.
 '''
-ROUTING_KEYS = dict(
+ROUTING_KEYS_TEMPLATES = dict(
     publi_file = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.publi-file-orig',
     publi_file_rep = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.publi-file-repli',
     publi_ds = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.publi-ds-orig',
@@ -47,19 +47,30 @@ ROUTING_KEYS = dict(
     data_cart = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.datacart'
 )
 
+'''
+This is where the routing keys will be stored, when the
+real prefix has been added.
+'''
+ROUTING_KEYS = dict()
+
+'''
+Helper: Remove all dots from the prefix so that it can
+be used for routing keys. Dots in routing keys are word
+separators.
+'''
 def _sanitize_prefix(prefix):
     prefix = prefix
     if 'hdl:' in prefix:
         prefix = prefix.replace('hdl:','')
     return prefix.replace('.', '')
 
-def _adapt_routing_key_replace_prefix(routing_key, sanitized_prefix):
-    return routing_key.replace('PREFIX', sanitized_prefix)
-
+'''
+Add the (sanitized) prefix to all routing keys.
+'''
 def add_prefix_to_routing_keys(prefix):
     sanitized_prefix = _sanitize_prefix(prefix)
-    for k,v in ROUTING_KEYS.iteritems():
-        ROUTING_KEYS[k] = _adapt_routing_key_replace_prefix(v, sanitized_prefix)
+    for k,v in ROUTING_KEYS_TEMPLATES.iteritems():
+        ROUTING_KEYS[k] = v.replace('PREFIX', sanitized_prefix)
 
 
 
