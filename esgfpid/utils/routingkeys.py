@@ -2,15 +2,15 @@
 ROUTING_KEY_BASIS = 'cmip6.publisher.HASH.'
 
 ROUTING_KEYS = dict(
-    publi_file = ROUTING_KEY_BASIS+'publication.file.orig',
-    publi_file_rep = ROUTING_KEY_BASIS+'publication.file.replica',
-    publi_ds = ROUTING_KEY_BASIS+'publication.dataset.orig',
-    publi_ds_rep = ROUTING_KEY_BASIS+'publication.dataset.replica',
-    unpubli_all = ROUTING_KEY_BASIS+'unpublication.all',
-    unpubli_one = ROUTING_KEY_BASIS+'unpublication.one',
-    err_add = ROUTING_KEY_BASIS+'errata.add',
-    err_rem = ROUTING_KEY_BASIS+'errata.remove',
-    shop_cart = ROUTING_KEY_BASIS+'cart.datasets'
+    publi_file = 'PREFIX.HASH.fresh.publi-file-orig',
+    publi_file_rep = 'PREFIX.HASH.fresh.publi-file-repli',
+    publi_ds = 'PREFIX.HASH.fresh.publi-ds-orig',
+    publi_ds_rep = 'PREFIX.HASH.fresh.publi-ds-repli',
+    unpubli_all = 'PREFIX.HASH.fresh.unpubli-allvers',
+    unpubli_one = 'PREFIX.HASH.fresh.unpubli-onevers',
+    err_add = 'PREFIX.HASH.fresh.errata-add',
+    err_rem = 'PREFIX.HASH.fresh.errata-rem',
+    data_cart = 'PREFIX.HASH.fresh.datacart'
 )
 
 ROUTING_KEY_INTERFIX_UNSURE_IF_TRUSTED = 'untrusted-unsure'
