@@ -2,7 +2,6 @@ import unittest
 import logging
 import tests.utils as utils
 from tests.utils import compare_json_return_errormessage as error_message
-
 import esgfpid.assistant.datacart
 
 # Logging

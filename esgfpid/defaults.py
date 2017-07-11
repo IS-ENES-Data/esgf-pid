@@ -1,4 +1,4 @@
-# Default value for the esgfpid library
+# Default values for the esgfpid library
 
 # List of prefixes
 ACCEPTED_PREFIXES = ['21.14100','21.14101','21.14102','21.14103', '21.14foo']

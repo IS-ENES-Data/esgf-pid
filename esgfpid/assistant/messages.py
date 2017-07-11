@@ -16,7 +16,7 @@ def publish_file(**args):
     # Check args:
     mandatory_args = ['file_handle', 'is_replica', 'file_size', 'file_name', 'checksum',
                       'data_url', 'parent_dataset', 'timestamp', 'checksum_type',
-                    'file_version', 'data_node']
+                      'file_version', 'data_node']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
 
     # Message:
@@ -78,10 +78,8 @@ def publish_dataset(**args):
     return message
 
 def unpublish_allversions_consumer_must_find_versions(**args):
-
     mandatory_args = ['drs_id', 'data_node', 'timestamp']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-
     message = dict(
         operation = 'unpublish_all_versions',
         aggregation_level = 'dataset',
@@ -89,7 +87,6 @@ def unpublish_allversions_consumer_must_find_versions(**args):
         drs_id = args['drs_id'],
         data_node=args['data_node']
     )
-
     # Optional:
     if 'consumer_solr_url' in args and args['consumer_solr_url'] is not None:
         message['consumer_solr_url'] = args['consumer_solr_url']
@@ -100,10 +97,8 @@ def unpublish_allversions_consumer_must_find_versions(**args):
 
 
 def unpublish_one_version(**args):
-
     mandatory_args = ['data_node', 'timestamp', 'dataset_handle', 'drs_id']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-
     message = dict(
         operation = 'unpublish_one_version',
         aggregation_level = 'dataset',
@@ -120,10 +115,8 @@ def unpublish_one_version(**args):
     return message
 
 def add_errata_ids_message(**args):
-
     mandatory_args = ['dataset_handle', 'timestamp', 'errata_ids', 'drs_id', 'version_number']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-  
     message = dict(
         handle = args['dataset_handle'],
         message_timestamp = args['timestamp'],
@@ -138,10 +131,8 @@ def add_errata_ids_message(**args):
     return message
 
 def remove_errata_ids_message(**args):
-
     mandatory_args = ['dataset_handle', 'timestamp', 'errata_ids', 'drs_id', 'version_number']
     esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
-    
     message = dict(
         handle = args['dataset_handle'],
         message_timestamp = args['timestamp'],
