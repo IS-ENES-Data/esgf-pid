@@ -199,11 +199,11 @@ class RabbitMessageSender(object):
             if 'priority' not in cred:
                 cred['priority'] = None
             if 'vhost' not in cred:
-                cred['vhost'] = ""
+                cred['vhost'] = None
             if 'port' not in cred:
-                cred['port'] = 15672
+                cred['port'] = None
             if 'ssl_enabled' not in cred:
-                cred['ssl_enabled'] = False
+                cred['ssl_enabled'] = None
 
             # Open node:
             if cred['password'] == 'jzlnL78ZpExV#_QHz':
