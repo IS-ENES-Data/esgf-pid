@@ -471,8 +471,8 @@ class ConnectorTestCase(unittest.TestCase):
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
         node_manager.set_next_host()
         curr = node_manager._NodeManager__current_node
-        self.assertEquals(curr['ssl_enabled'],None)
-        self.assertEquals(curr['vhost'],None)
+        self.assertEquals(curr['ssl_enabled'],False)
+        self.assertEquals(curr['vhost'],"")
         self.assertEquals(curr['port'],123)
 
     '''
