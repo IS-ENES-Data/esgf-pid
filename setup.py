@@ -35,7 +35,7 @@ test_packages = [
     'tests/utils'
 ]
 
-# Load description from README.md
+# Load description from README.md   
 # Note: The package maintainer needs pypandoc and pygments to properly convert
 # the Markdown-formatted README into RestructuredText before uploading to PyPi
 # See https://bitbucket.org/pypa/pypi/issues/148/support-markdown-for-readmes
