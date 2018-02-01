@@ -217,8 +217,7 @@ class UtilsTestCase(unittest.TestCase):
 
     def test_get_now_utc_as_string(self):
         received = esgfpid.utils.get_now_utc_as_formatted_string() #2016-07-07T15:25:18.258224+00:00
-        self.assertIn('2017-', received, 'Unexpected time: %s' % received)
-        # TODO: This has to be adapted every year. Replace by regex!
+        self.assertIn('%s-' % datetime.datetime.now().year, received, 'Unexpected time: %s' % received)
         self.assertIn('T', received, 'Unexpected time: %s' % received)
         self.assertIn('+00:00', received, 'Unexpected time: %s' % received)
 

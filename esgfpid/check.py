@@ -1,5 +1,6 @@
 import pika
 import logging
+import socket
 from esgfpid.utils import check_presence_of_mandatory_args
 from esgfpid.utils import add_missing_optional_args_with_value_none
 import esgfpid.defaults
@@ -162,11 +163,11 @@ class RabbitChecker(object):
             self.__add_error_message_authentication_error()
             raise ValueError('Connection failed, please try next.')
 
-        except pika.exceptions.ConnectionClosed:
+        except (pika.exceptions.ConnectionClosed, socket.gaierror):
             self.__loginfo(' .. checking connection (%s)... FAILED.' % self.__current_rabbit_host)
             self.__add_error_message_connection_closed()
             raise ValueError('Connection failed, please try next.')
-
+        
         if connection is None or not connection.is_open:
             self.__loginfo(' .. checking connection (%s)... FAILED.' % self.__current_rabbit_host)
             self.__add_error_message_connection_problem()

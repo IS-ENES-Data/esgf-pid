@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 # Dependencies for using the library:
 dependencies = [
-    'pika',
+    'pika==0.11.2',
     'requests'
 ]
 
@@ -35,7 +35,7 @@ test_packages = [
     'tests/utils'
 ]
 
-# Load description from README.md
+# Load description from README.md   
 # Note: The package maintainer needs pypandoc and pygments to properly convert
 # the Markdown-formatted README into RestructuredText before uploading to PyPi
 # See https://bitbucket.org/pypa/pypi/issues/148/support-markdown-for-readmes
@@ -48,7 +48,7 @@ except(IOError, ImportError):
 
 setup(
     name='esgfpid',
-    version='0.7.10',
+    version='0.7.11',
     author='Merret Buurman, German Climate Computing Centre (DKRZ)',
     author_email='buurman@dkrz.de',
     url='https://github.com/IS-ENES-Data/esgf-pid',

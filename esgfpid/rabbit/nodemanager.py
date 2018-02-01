@@ -160,15 +160,14 @@ class NodeManager(object):
         credentials = node_info_dict['credentials']
 
         # Optional ones
-        # If not specified, use "None", which results in pika using its
-        # defaults.
-        vhost = None
+        # If not specified, fill in defaults.
+        vhost = ""
         if 'vhost' in node_info_dict and node_info_dict['vhost'] is not None:
             vhost = node_info_dict['vhost']
-        port = None
+        port = 15672
         if 'port' in node_info_dict and node_info_dict['port'] is not None:
             port = node_info_dict['port']
-        ssl_enabled = None
+        ssl_enabled = False
         if 'ssl_enabled' in node_info_dict and node_info_dict['ssl_enabled'] is not None:
             ssl_enabled = node_info_dict['ssl_enabled']
 
