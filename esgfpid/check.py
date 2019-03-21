@@ -89,20 +89,21 @@ class RabbitChecker(object):
     def check_and_inform(self):
         self.__loginfo('Checking config for PID module (rabbit messaging queue) ...')
         success = self.__iterate_over_all_hosts()
+        msg = None
         if success:
             self.__loginfo('Config for PID module (rabbit messaging queue).. ok.')
             self.__loginfo('Successful connection to PID messaging queue at "%s".' % self.__current_rabbit_host)
             self.__define_fallback_exchange() # remove!
         else:
             self.__loginfo('Config for PID module (rabbit messaging queue) .. FAILED!')
-            self.__assemble_and_print_error_message()
+            msg = self.__assemble_error_message()
 
             if self.channel_ok:
                 self.__define_fallback_exchange()
 
         if self.connection is not None:
             self.connection.close()
-        return success
+        return msg
 
     def __iterate_over_all_hosts(self):
         success = False
@@ -274,10 +275,9 @@ class RabbitChecker(object):
     # Inform at the end
     #
 
-    def __assemble_and_print_error_message(self):
+    def __assemble_error_message(self):
         self.__add_error_message_general()
-        error_message_string = utils.format_error_message(self.__error_messages)
-        self.__logwarn(error_message_string)
+        return utils.format_error_message(self.__error_messages)
 
     def __loginfo(self, msg):
         if self.__print_success_to_console == True:
