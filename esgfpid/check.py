@@ -11,6 +11,39 @@ import esgfpid.exceptions
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+
+'''
+Check whether the RabbitMQ instances of a connector
+object are available and reachable.
+
+
+Example result:
+*************************************************************************************
+*** PROBLEM IN SETTING UP                                                         ***
+*** RABBIT MESSAGING QUEUE (PID MODULE)                                           ***
+*** CONNECTION TO THE PID MESSAGING QUEUE FAILED DEFINITIVELY:                    ***
+***  - host "myrabbit.de": Connection failure (wrong host or port?).              ***
+***  - host "myrabbit.de": Virtual host "foobarrr" does not exist.                ***
+***  - host "myrabbit.de": Authentication failure (user foobar, password foobar). ***
+***  - host "myrabbit.de": Connection failure (wrong host or port?).              ***
+*** PLEASE NOTIFY handle@dkrz.de AND INCLUDE THIS ERROR MESSAGE.                  ***
+*************************************************************************************
+
+
+:param connector: Connector object, readily configured with RabbitMQ
+    instance(s).
+:param print_to_console: Optional. Boolean. If True, human-readable messages
+    about the failed actions will be printed to screen (actual print method.)
+:param print_success_to_console: Optional. Boolean. If True, human-readable
+    messages about the successful actions will be printed to screen (actual
+    print method.)
+:param send_message: Optional. Boolean. If True, a test message will be sent to
+    a RabbitMQ instance after successful connection.
+:param prefix: Optional. String. If send_message is True, a prefix is needed to
+    send a test message.
+:return: String message, or None. If the check passed, returns None. Otherwise,
+    returns a detailed, printable string problem message - see example above.
+'''
 def check_pid_queue_availability(**args):
     rabbit_checker = RabbitChecker(**args)
     return rabbit_checker.check_and_inform()
@@ -163,6 +196,15 @@ class RabbitChecker(object):
             self.__add_error_message_authentication_error()
             raise ValueError('Connection failed, please try next.')
 
+        except pika.exceptions.ProbableAccessDeniedError as e:
+            self.__loginfo(' .. checking access (%s)... FAILED.' % self.__current_rabbit_host)
+            vh = self.__nodemanager.get_connection_parameters().virtual_host
+            if ('vhost %s not found' % vh) in str(e):
+                self.__add_error_message_access_denied()
+            else:
+                self.__add_error_message_access_denied_unclear()
+            raise ValueError('Access failed, please try next.')
+
         except (pika.exceptions.ConnectionClosed, socket.gaierror):
             self.__loginfo(' .. checking connection (%s)... FAILED.' % self.__current_rabbit_host)
             self.__add_error_message_connection_closed()
@@ -197,6 +239,15 @@ class RabbitChecker(object):
 
     def __add_error_message_channel_closed(self):
         msg = ' - host "%s": Channel failure.' % self.__current_rabbit_host
+        self.__error_messages.append(msg)
+
+    def __add_error_message_access_denied(self):
+        vh = self.__nodemanager.get_connection_parameters().virtual_host
+        msg = ' - host "%s": Virtual host "%s" does not exist.' % (self.__current_rabbit_host, vh)
+        self.__error_messages.append(msg)
+
+    def __add_error_message_access_denied_unclear(self):
+        msg = ' - host "%s": Access denied.' % (self.__current_rabbit_host)
         self.__error_messages.append(msg)
 
     def __add_error_message_no_exchange(self):
