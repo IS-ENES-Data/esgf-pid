@@ -149,6 +149,9 @@ class RabbitChecker(object):
 
             except ValueError as e:
 
+                self.__loginfo(' .. giving this node a lower priority..')
+                self.__nodemanager.set_priority_low_for_current()
+
                 if self.__nodemanager.has_more_urls(): # stay in loop, try next host
                     utils.logtrace(LOGGER, 'Left URLs: %s', self.__nodemanager.get_num_left_urls())
                     self.__nodemanager.set_next_host()
