@@ -345,7 +345,7 @@ class Connector(object):
     Please see documentation of solr module (:func:`~check.check_pid_queue_availability`).
     '''
     def check_pid_queue_availability(self, **args):
-        rabbit_checker = esgfpid.check.RabbitChecker(connector = self, **args)
+        rabbit_checker = esgfpid.check.RabbitChecker(connector = self, prefix = self.prefix, **args)
         return rabbit_checker.check_and_inform()
 
     def unpublish_one_version(self, **args):
