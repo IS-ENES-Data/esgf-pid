@@ -342,7 +342,7 @@ class Connector(object):
 
 
     '''
-    Please see documentation of solr module (:func:`~check.RabbitChecker.check_and_inform`).
+    Please see documentation of solr module (:func:`~check.check_pid_queue_availability`).
     '''
     def check_pid_queue_availability(self, **args):
         rabbit_checker = esgfpid.check.RabbitChecker(connector = self, **args)

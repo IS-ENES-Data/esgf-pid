@@ -95,6 +95,12 @@ class RabbitChecker(object):
     # Perform the checks
     #
 
+    '''
+    Check whether the RabbitMQ instances that were passed to the connector
+    are still available and reachable.
+    All the necessary args have to be passed on init of the RabbitChecker
+    object.
+    '''
     def check_and_inform(self):
         self.__loginfo('Checking config for PID module (rabbit messaging queue) ...')
         success = self.__iterate_over_all_hosts()
