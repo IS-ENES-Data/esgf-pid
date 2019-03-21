@@ -56,7 +56,7 @@ class RabbitChecker(object):
 
     def __init__(self, **args):
         mandatory_args = ['connector']
-        optional_args = ['print_to_console', 'print_success_to_console']
+        optional_args = ['prefix', 'send_message', 'print_to_console', 'print_success_to_console']
         check_presence_of_mandatory_args(args, mandatory_args)
         add_missing_optional_args_with_value_none(args, optional_args)
         self.__define_all_attributes()
@@ -73,6 +73,8 @@ class RabbitChecker(object):
         self.__nodemanager = None
         self.__current_rabbit_host = None
         self.__exchange_name = None
+        self.__prefix = None
+        self.__send_message = False
 
     def __fill_all_attributes(self, args):
         self.__nodemanager = args['connector']._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
@@ -80,6 +82,13 @@ class RabbitChecker(object):
             self.__print_errors_to_console = True
         if args['print_success_to_console'] is not None and args['print_success_to_console'] == True:
             self.__print_success_to_console = True
+        if args['send_message'] is not None and args['send_message'] == True:
+            self.__send_message = True
+        if args['prefix'] is not None:
+            self.__prefix = args['prefix']
+
+        if self.__send_message and (self.__prefix is None):
+            raise ValueError('Can only send test message if you specify a prefix!')
 
 
     #
@@ -131,6 +140,9 @@ class RabbitChecker(object):
                 self.channel_ok = True
                 self.__check_exchange_existence(self.channel)
 
+                if self.__send_message:
+                    self.__check_send_print_message(self.channel)
+
                 success = True
 
                 break # success, leave loop
@@ -167,6 +179,29 @@ class RabbitChecker(object):
                     (self.__exchange_name, self.__current_rabbit_host))
         else:
             pass # No exchange name was given
+
+    def __check_send_print_message(self, channel):
+        props = pika.BasicProperties(
+            delivery_mode = 2
+        )
+        rkey = '%s.HASH.fresh.preflightcheck' % self.__prefix
+        body = 'PLEASE PRINT: Testing pre-flight check...'
+        self.__loginfo(' .. checking message ...')
+        self.__loginfo(' .. RKEY %s ...' % rkey)
+        res = channel.basic_publish(
+            exchange=self.__nodemanager.get_exchange_name(),
+            routing_key=rkey,
+            body=body,
+            properties=props,
+            mandatory=True
+        )
+        if res:
+            self.__loginfo(' .. checking message ... ok (%s).' % res)
+        else:
+            self.__loginfo(' .. checking message ... failed.')
+            self.__add_error_message_message_fail(rkey)
+            raise ValueError('Could not send message to messaging service host %s' %
+                    (self.__current_rabbit_host))
 
 
     def __check_opening_channel(self, connection):
@@ -237,6 +272,10 @@ class RabbitChecker(object):
         self.__error_messages.insert(1,'RABBIT MESSAGING QUEUE (PID MODULE)')
         self.__error_messages.insert(2, 'CONNECTION TO THE PID MESSAGING QUEUE FAILED DEFINITIVELY:')
         self.__error_messages.append('PLEASE NOTIFY handle@dkrz.de AND INCLUDE THIS ERROR MESSAGE.')
+
+    def __add_error_message_message_fail(self, rkey):
+        msg = ' - host "%s": Message failure with routing key "%s".' % (self.__current_rabbit_host, rkey)
+        self.__error_messages.append(msg)
 
     def __add_error_message_channel_closed(self):
         msg = ' - host "%s": Channel failure.' % self.__current_rabbit_host
