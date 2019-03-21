@@ -93,13 +93,13 @@ class RabbitChecker(object):
         if success:
             self.__loginfo('Config for PID module (rabbit messaging queue).. ok.')
             self.__loginfo('Successful connection to PID messaging queue at "%s".' % self.__current_rabbit_host)
-            self.__define_fallback_exchange() # remove!
+            #self.__define_fallback_exchange()
         else:
             self.__loginfo('Config for PID module (rabbit messaging queue) .. FAILED!')
             msg = self.__assemble_error_message()
 
-            if self.channel_ok:
-                self.__define_fallback_exchange()
+            #if self.channel_ok:
+            #    self.__define_fallback_exchange()
 
         if self.connection is not None:
             self.connection.close()
@@ -264,7 +264,7 @@ class RabbitChecker(object):
         self.__error_messages.append(msg)
 
     def __add_error_message_connection_closed(self):
-        msg = ' - host "%s": Connection failure.' % self.__current_rabbit_host
+        msg = ' - host "%s": Connection failure (wrong host or port?).' % self.__current_rabbit_host
         self.__error_messages.append(msg)
 
     def __add_error_message_connection_problem(self):
@@ -290,6 +290,7 @@ class RabbitChecker(object):
         utils.logwarn(LOGGER, msg)
 
     def __define_fallback_exchange(self):
+        # TODO Maybe add passive check.
         #print('Called fallback method') # remove
         exchange_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
         queue_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
