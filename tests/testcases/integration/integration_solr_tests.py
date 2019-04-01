@@ -4,7 +4,7 @@ import logging
 import json
 import requests
 import esgfpid.solr.solr
-import tests.mocks.responsemock
+import tests.resources.responsemock
 
 
 # Logging:

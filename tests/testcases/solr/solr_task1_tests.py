@@ -4,7 +4,7 @@ import logging
 import json
 import esgfpid.solr.solr
 import esgfpid.solr.tasks.filehandles_same_dataset as task
-import tests.mocks.responsemock
+import tests.resources.responsemock
 import tests.utils
 import tests.resources
 
