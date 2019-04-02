@@ -49,7 +49,7 @@ class MockPikaBlockingConnection(object):
     def __init__(self, params):
         self.is_open = True # This mocks the original API
         self.host = params.host # This mocks the original API
-        #self.raise_channel_closed = False
+        self.raise_channel_closed = False
 
         #if params.host == 'please.raise.auth.error':
         #    raise pika.exceptions.ProbableAuthenticationError()
@@ -59,11 +59,11 @@ class MockPikaBlockingConnection(object):
         #    pass
 
     def channel(self): # This mocks the original API
-        return MockChannel()
-        #if self.raise_channel_closed:
-        #    raise pika.exceptions.ChannelClosed()
-        #else:
-        #    return MockChannel()
+        #return MockChannel()
+        if self.raise_channel_closed:
+            raise pika.exceptions.ChannelClosed()
+        else:
+            return MockChannel()
 
     def close(self): # This mocks the original API
         self.is_open = False

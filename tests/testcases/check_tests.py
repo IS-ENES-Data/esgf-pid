@@ -3,7 +3,7 @@ import mock
 import logging
 import pika.exceptions as pikaexceptions
 import tests.utils.captureconsoleoutput
-import tests.mocks.pikamock
+#import tests.resources.pikamock
 import tests.resources.error_messages
 import esgfpid.utils
 import esgfpid.check
@@ -79,7 +79,7 @@ class CheckTestCase(unittest.TestCase):
         '''
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.pikamock.MockPikaBlockingConnection(mock.MagicMock())
+        mock_response = tests.resources.pikamock.MockPikaBlockingConnection(mock.MagicMock())
         connection_patch.return_value = mock_response
 
         # Test variables:
@@ -92,19 +92,22 @@ class CheckTestCase(unittest.TestCase):
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
-            esgfpid.check.check_pid_queue_availability(
+            returned_msg = esgfpid.check.check_pid_queue_availability(
                 connector = testconnector,
                 print_to_console = True,
                 print_success_to_console = True
             )
 
         # Expected message:
-        expected_message = tests.resources.error_messages.expected_message_ok
+        expected_message = tests.resources.error_messages.expected_message_ok1
+        expected_return = tests.resources.error_messages.expected_message_ok2
 
         # Check result:
         output = out.getvalue().strip()
         self.assertEquals(expected_message, output,
-            'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     #
     # Connection failures
@@ -128,19 +131,22 @@ class CheckTestCase(unittest.TestCase):
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
-            esgfpid.check.check_pid_queue_availability(
+            returned_msg = esgfpid.check.check_pid_queue_availability(
                 connector = testconnector,
                 print_to_console = True,
                 print_success_to_console = True
             )
 
         # Expected message:
-        expected_message = tests.resources.error_messages.expected_message_connection_failed_only
+        expected_message = tests.resources.error_messages.expected_message_connection_failed_only1
+        expected_return = tests.resources.error_messages.expected_message_connection_failed_only2
 
         # Check result:
         output = out.getvalue().strip()
         self.assertEquals(expected_message, output,
-            'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
     def test_run_check_connection_failed_unknown(self, connection_patch):
@@ -161,19 +167,24 @@ class CheckTestCase(unittest.TestCase):
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
-            esgfpid.check.check_pid_queue_availability(
+            returned_msg = esgfpid.check.check_pid_queue_availability(
                 connector = testconnector,
                 print_to_console = True,
                 print_success_to_console = True
             )
 
+
         # Expected message:
-        expected_message = tests.resources.error_messages.expected_message_connection_failed_unknown
+        expected_message = tests.resources.error_messages.expected_message_connection_failed_unknown1
+        expected_return = tests.resources.error_messages.expected_message_connection_failed_unknown2
+
         
         # Check result:
         output = out.getvalue().strip()
         self.assertEquals(expected_message, output,
-            'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
 
     '''Test if the correct error message gets printed by the check method on connection failure.'''
@@ -206,19 +217,22 @@ class CheckTestCase(unittest.TestCase):
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
-            esgfpid.check.check_pid_queue_availability(
+            returned_msg = esgfpid.check.check_pid_queue_availability(
                 connector = testconnector,
                 print_to_console = True,
                 print_success_to_console = True
             )
 
         # Expected message:
-        expected_message = tests.resources.error_messages.expected_message_connection_failed_several
+        expected_message = tests.resources.error_messages.expected_message_connection_failed_several1
+        expected_return = tests.resources.error_messages.expected_message_connection_failed_several2
 
         # Check result:
         output = out.getvalue().strip()
         self.assertEquals(expected_message, output,
-            'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
     def test_run_check_first_connection_failed(self, connection_patch):
@@ -252,27 +266,29 @@ class CheckTestCase(unittest.TestCase):
         # Define the replacement for the patched method:
         def different_mock_response_depending_on_host(params):
             if params.host == 'tomato.salad-with-spam.fr':
-                return tests.mocks.pikamock.MockPikaBlockingConnection(mock.MagicMock())
+                return tests.resources.pikamock.MockPikaBlockingConnection(mock.MagicMock())
             else:
                 raise pika.exceptions.ConnectionClosed      
         connection_patch.side_effect = different_mock_response_depending_on_host
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
-            esgfpid.check.check_pid_queue_availability(
+            returned_msg = esgfpid.check.check_pid_queue_availability(
                 connector = testconnector,
                 print_to_console = True,
                 print_success_to_console = True
             )
 
         # Expected message:
-        expected_message = tests.resources.error_messages.expected_message_first_connection_failed_then_ok
+        expected_message = tests.resources.error_messages.expected_message_first_connection_failed_then_ok1
+        expected_return = tests.resources.error_messages.expected_message_first_connection_failed_then_ok2
 
         # Check result:
         output = out.getvalue().strip()
         self.assertEquals(expected_message, output,
-            'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
-
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
 
     #
@@ -283,7 +299,7 @@ class CheckTestCase(unittest.TestCase):
     def test_run_check_auth_error(self, connection_patch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.pikamock.MockPikaBlockingConnection(mock.MagicMock())
+        mock_response = tests.resources.pikamock.MockPikaBlockingConnection(mock.MagicMock())
         connection_patch.return_value = mock_response
         connection_patch.side_effect = pikaexceptions.ProbableAuthenticationError
 
@@ -296,26 +312,29 @@ class CheckTestCase(unittest.TestCase):
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
-            esgfpid.check.check_pid_queue_availability(
+            returned_msg =  esgfpid.check.check_pid_queue_availability(
                 connector = testconnector,
                 print_to_console = True,
                 print_success_to_console = True
             )
 
         # Expected message:
-        expected_message = tests.resources.error_messages.expected_message_authentication_failed_only
+        expected_message = tests.resources.error_messages.expected_message_authentication_failed_only1
+        expected_return = tests.resources.error_messages.expected_message_authentication_failed_only2
 
         # Check result:
         output = out.getvalue().strip()
         self.assertEquals(expected_message, output,
-            'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
     def test_run_check_auth_error_three_urls(self, connection_patch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.pikamock.MockPikaBlockingConnection(mock.MagicMock())
+        mock_response = tests.resources.pikamock.MockPikaBlockingConnection(mock.MagicMock())
         connection_patch.return_value = mock_response
         connection_patch.side_effect = pikaexceptions.ProbableAuthenticationError
 
@@ -343,19 +362,22 @@ class CheckTestCase(unittest.TestCase):
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
-            esgfpid.check.check_pid_queue_availability(
+            returned_msg = esgfpid.check.check_pid_queue_availability(
                 connector = testconnector,
                 print_to_console = True,
                 print_success_to_console = True
             )
 
         # Expected message:
-        expected_message = tests.resources.error_messages.expected_message_authentication_failed_several
+        expected_message = tests.resources.error_messages.expected_message_authentication_failed_several1
+        expected_return = tests.resources.error_messages.expected_message_authentication_failed_several2
 
         # Check result:
         output = out.getvalue().strip()
         self.assertEquals(expected_message, output,
-            'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     #
     # Channel error
@@ -365,7 +387,7 @@ class CheckTestCase(unittest.TestCase):
     def test_run_check_channel_error(self, connection_patch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.pikamock.MockPikaBlockingConnection(mock.MagicMock())
+        mock_response = tests.resources.pikamock.MockPikaBlockingConnection(mock.MagicMock())
         mock_response.raise_channel_closed = True
         connection_patch.return_value = mock_response
 
@@ -378,19 +400,22 @@ class CheckTestCase(unittest.TestCase):
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
-            esgfpid.check.check_pid_queue_availability(
+            returned_msg = esgfpid.check.check_pid_queue_availability(
                 connector = testconnector,
                 print_to_console = True,
                 print_success_to_console = True
             )
 
         # Expected message:
-        expected_message = tests.resources.error_messages.expected_message_channel_closed_only
+        expected_message = tests.resources.error_messages.expected_message_channel_closed_only1
+        expected_return = tests.resources.error_messages.expected_message_channel_closed_only2
 
         # Check result:
         output = out.getvalue().strip()
         self.assertEquals(expected_message, output,
-            'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
     def test_run_check_channel_error_first(self, connection_patch):
@@ -423,7 +448,7 @@ class CheckTestCase(unittest.TestCase):
 
         # Define the replacement for the patched method:
         def different_mock_response_depending_on_host(params):
-            conn = tests.mocks.pikamock.MockPikaBlockingConnection(mock.MagicMock())
+            conn = tests.resources.pikamock.MockPikaBlockingConnection(mock.MagicMock())
             if params.host == 'tomato.salad-with-spam.fr':
                 conn.raise_channel_closed = False
             else:
@@ -433,16 +458,19 @@ class CheckTestCase(unittest.TestCase):
 
         # Run code to be tested and capture stout:
         with tests.utils.captureconsoleoutput.captured_output() as (out, err):
-            esgfpid.check.check_pid_queue_availability(
+            returned_msg = esgfpid.check.check_pid_queue_availability(
                 connector = testconnector,
                 print_to_console = True,
                 print_success_to_console = True
             )
 
         # Expected message:
-        expected_message = tests.resources.error_messages.expected_message_first_channel_closed_then_ok
+        expected_message = tests.resources.error_messages.expected_message_first_channel_closed_then_ok1
+        expected_return = tests.resources.error_messages.expected_message_first_channel_closed_then_ok2
 
         # Check result:
         output = out.getvalue().strip()
         self.assertEquals(expected_message, output,
-            'Wrong error message.\n\nWe expected:\n\n'+expected_message+'\n\nWe got:\n\n'+output+'\n')
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))

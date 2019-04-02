@@ -15,6 +15,7 @@ import esgfpid.exceptions
 import esgfpid.coupling
 import esgfpid.utils
 from esgfpid.utils import loginfo, logdebug, logwarn
+import esgfpid.check
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -338,6 +339,14 @@ class Connector(object):
         )
         logdebug(LOGGER, 'Creating publication assistant.. done')
         return assistant
+
+
+    '''
+    Please see documentation of solr module (:func:`~check.check_pid_queue_availability`).
+    '''
+    def check_pid_queue_availability(self, **args):
+        rabbit_checker = esgfpid.check.RabbitChecker(connector = self, prefix = self.prefix, **args)
+        return rabbit_checker.check_and_inform()
 
     def unpublish_one_version(self, **args):
         '''

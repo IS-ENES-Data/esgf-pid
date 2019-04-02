@@ -1,9 +1,9 @@
 import mock
 import copy
 import esgfpid
-import tests.mocks.responsemock
-import tests.mocks.solrmock
-import tests.mocks.rabbitmock
+import tests.resources.responsemock
+#import tests.resources.solrmock
+#import tests.resources.rabbitmock
 import tests.utils as utils
 import Queue
 

@@ -4,7 +4,7 @@ import logging
 import json
 import requests
 import esgfpid.solr.solr
-import tests.mocks.responsemock
+import tests.resources.responsemock
 
 
 # Logging:
@@ -67,7 +67,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
     def test_send_query_ok_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.responsemock.MockSolrResponse(success=True)
+        mock_response = tests.resources.responsemock.MockSolrResponse(success=True)
         getpatch.return_value = mock_response
 
         # Test variables
@@ -85,7 +85,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
     def test_send_query_200_empty_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.responsemock.MockSolrResponse(success=True, content='NONE')
+        mock_response = tests.resources.responsemock.MockSolrResponse(success=True, content='NONE')
         getpatch.return_value = mock_response
 
         # Test variables
@@ -101,7 +101,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
 
         # Define the replacement for the patched method:
         broken_json = '{"responseHeader":{}, "response":{}, "facet_counts": {}'
-        mock_response = tests.mocks.responsemock.MockSolrResponse(success=True, content=broken_json)
+        mock_response = tests.resources.responsemock.MockSolrResponse(success=True, content=broken_json)
         getpatch.return_value = mock_response
 
         # Test variables
@@ -130,7 +130,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
     def test_send_query_http_404_patched(self, getpatch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.responsemock.MockSolrResponse(notfound=True)
+        mock_response = tests.resources.responsemock.MockSolrResponse(notfound=True)
         getpatch.return_value = mock_response
 
         # Test variables
@@ -159,7 +159,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
     def test_send_query_patched_5000(self, getpatch):
 
         # Define the replacement for the patched method:
-        mock_response = tests.mocks.responsemock.MockSolrResponse(status_code=5000)
+        mock_response = tests.resources.responsemock.MockSolrResponse(status_code=5000)
         getpatch.return_value = mock_response
 
         # Test variables

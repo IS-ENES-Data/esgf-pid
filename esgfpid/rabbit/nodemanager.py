@@ -11,6 +11,10 @@ import esgfpid.utils
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
+
+DEFAULT_PRIO = 'zzz_default'
+LAST_PRIO = 'zzzz_last'
+
 '''
 This class is responsible for keeping track of RabbitMQ
 instances and providing tha access info to the library.
@@ -52,12 +56,13 @@ class NodeManager(object):
         self.__trusted_nodes_archive = {}
         self.__open_nodes_archive = {}
         # Each of these dictionaries has the priorities as keys (integers
-        # stored as strings, or 'zzzz_last', if no prio was given).
+        # stored as strings, or 'zzz_default', if no prio was given, or
+        # 'zzzz_last' if the host had failed in the pre-flight check).
         # For each priority, there is a list of node-info-dictionaries:
         # self.__trusted_nodes = {
         #     "1":         [node_info1, node_info2],
         #     "2":         [node_info3],
-        #     "zzzz_last": [node_info4]
+        #     "zzz_default": [node_info4]
         # }
 
         # Current node
@@ -120,6 +125,62 @@ class NodeManager(object):
         else:
             raise esgfpid.exceptions.ArgumentError('Cannot add this RabbitMQ node. Missing info. Required: username, password, host and exchange_name. Provided: '+str(kwargs))
 
+    def __compare_nodes(self, cand1, cand2):
+        copy1 = copy.deepcopy(cand1)
+        copy2 = copy.deepcopy(cand2)
+        # These cannot be compared by "==".
+        # They are created from the other info, so neglecting
+        # them in this comparison is ok!
+        copy1['credentials'] = None
+        copy2['credentials'] = None
+        copy1['params'] = None
+        copy2['params'] = None
+        return copy1 == copy2
+
+
+    def set_priority_low_for_current(self):
+        # We do not change the priority stored ass attribute in the
+        # dicts, BUT we change the priority under which it is stored in
+        # the list of nodes to be used.
+
+        current_prio = self.__current_node['priority']
+
+        if current_prio == LAST_PRIO:
+            logdebug(LOGGER, 'Node already has lowest priority.')
+            return # nothing to change!
+
+        # Deal with open or trusted node:
+        if self.__current_node['is_open']:
+            where_to_look = self.__open_nodes_archive
+        else:
+            where_to_look = self.__trusted_nodes_archive
+
+        # Go over all nodes of that prio to find the current one...
+        list_candidates = where_to_look[current_prio]
+        loginfo(LOGGER, 'Nodes of current prio (%s): %s', current_prio, list_candidates)
+
+        for i in xrange(len(list_candidates)):
+            candidate = list_candidates[i]
+            if self.__compare_nodes(candidate,self.__current_node):
+                logtrace(LOGGER, 'Found current node in archive.')
+
+                # Add to lowest prio:
+                try:
+                    where_to_look[LAST_PRIO].append(candidate)
+                    logdebug(LOGGER, 'Added this host to list of lowest prio hosts...')
+
+                except KeyError:
+                    where_to_look[LAST_PRIO] = [candidate]
+                    logdebug(LOGGER, 'Added this host to (newly-created) list of lowest prio hosts...')
+
+                # Remove from current prio:
+                list_candidates.pop(i)
+                loginfo(LOGGER, 'Removed this host from list of hosts with prio %s!', current_prio)
+                if len(list_candidates)==0:
+                    where_to_look.pop(current_prio)
+                    loginfo(LOGGER, 'Removed the current priority %s!', current_prio)
+                break
+
     def __store_node_info_by_priority(self, node_info, store_where):
         try:
             store_where[node_info['priority']].append(node_info)
@@ -153,7 +214,24 @@ class NodeManager(object):
         if 'priority' in node_info_dict and node_info_dict['priority'] is not None:
             node_info_dict['priority'] = str(node_info_dict['priority'])
         else:
-            node_info_dict['priority'] = 'zzzz_last'
+            node_info_dict['priority'] = DEFAULT_PRIO
+
+        # Mandatories:
+        host = node_info_dict['host']
+        credentials = node_info_dict['credentials']
+
+        # Optional ones
+        # If not specified, fill in defaults.
+        vhost = ""
+        if 'vhost' in node_info_dict and node_info_dict['vhost'] is not None:
+            vhost = node_info_dict['vhost']
+        port = 15672
+        if 'port' in node_info_dict and node_info_dict['port'] is not None:
+            port = node_info_dict['port']
+        ssl_enabled = False
+        if 'ssl_enabled' in node_info_dict and node_info_dict['ssl_enabled'] is not None:
+            ssl_enabled = node_info_dict['ssl_enabled']
+
 
         # Mandatories:
         host = node_info_dict['host']

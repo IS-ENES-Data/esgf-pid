@@ -27,3 +27,5 @@ IGNORE
 /docs/build
 /docs/build/
 
+# Virtualenv
+/venv
