@@ -67,7 +67,7 @@ class NodemanagerTestCase(unittest.TestCase):
         # Check whether the correct priorities are set:
         mynodemanager.set_next_host()
         node = mynodemanager._NodeManager__current_node
-        self.assertEquals(node['priority'], 'zzzz_last')
+        self.assertEquals(node['priority'], 'zzz_default')
         self.assertFalse(node['is_open'])
         self.assertIsInstance(node['credentials'], pika.PlainCredentials)
         self.assertIsInstance(node['params'], pika.ConnectionParameters)
@@ -92,7 +92,7 @@ class NodemanagerTestCase(unittest.TestCase):
         # Check whether the correct priorities are set:
         mynodemanager.set_next_host()
         node = mynodemanager._NodeManager__current_node
-        self.assertEquals(node['priority'], 'zzzz_last')
+        self.assertEquals(node['priority'], 'zzz_default')
         self.assertFalse(node['is_open'])
         self.assertIsInstance(node['credentials'], pika.PlainCredentials)
         self.assertIsInstance(node['params'], pika.ConnectionParameters)
