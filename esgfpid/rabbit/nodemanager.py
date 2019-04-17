@@ -202,6 +202,7 @@ class NodeManager(object):
             # Go over all nodes of that prio to find the current one...
             # Then move it to a different prio:
             moved = self.__move_to_other_prio(list_candidates, where_to_look)
+            if moved: return # changed successfully!
 
         except KeyError as e:
             errmsg = 'No node of prio %s found. Nodes: %s.' % (current_prio, where_to_look)
@@ -214,7 +215,7 @@ class NodeManager(object):
                 return # nothing to change!
 
         # This is extremely unlikely - in fact I don't see how it could occur:
-        if (not moved) or (not last_already):
+        if (not moved) and (not last_already):
             errmsg = 'Could not find this node\'s priority (%s), nor the last-priority (%s). Somehow this node\'s priority was changed weirdly.' % (current_prio, LAST_PRIO)
             logwarn(LOGGER, errmsg)
             logwarn(LOGGER, 'All nodes: %s' % where_to_look)
