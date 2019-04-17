@@ -597,3 +597,77 @@ class NodemanagerTestCase(unittest.TestCase):
         # Check result
         self.assertIsInstance(props, pika.BasicProperties)
 
+
+
+    '''
+    Test setting the priority to the lowest value, once.
+    '''
+    def test_change_prio(self):
+
+        # Test variables:
+        mynodemanager = esgfpid.rabbit.nodemanager.NodeManager()
+        mynodemanager.add_trusted_node(**TESTHELPERS.get_args_for_nodemanager())
+        mynodemanager.set_next_host()
+
+        # Run code to be tested:
+        old_prio = mynodemanager._get_prio_where_current_is_stored()
+        mynodemanager.set_priority_low_for_current()
+        new_prio = mynodemanager._get_prio_where_current_is_stored()
+
+        # Check result
+        self.assertEquals(old_prio, 'zzz_default', 'Default prio is %s, expected zzz_default' % old_prio)
+        self.assertEquals(new_prio, 'zzzz_last',   'Prio after changing prio is %s, expected zzzz_last' % new_prio)
+
+
+    '''
+    Test setting the priority to the lowest value, twice.
+    This tests whether the function can handle nodes that "already"
+    have been set to the lowest prio.
+    '''
+    def test_change_prio_twice(self):
+
+        # Test variables:
+        mynodemanager = esgfpid.rabbit.nodemanager.NodeManager()
+        mynodemanager.add_trusted_node(**TESTHELPERS.get_args_for_nodemanager())
+        mynodemanager.set_next_host()
+
+        # Run code to be tested:
+        old_prio = mynodemanager._get_prio_where_current_is_stored()
+        mynodemanager.set_priority_low_for_current()
+        new_prio1 = mynodemanager._get_prio_where_current_is_stored()
+        mynodemanager.set_priority_low_for_current()
+        new_prio2 = mynodemanager._get_prio_where_current_is_stored()
+
+        # Check result
+        new_prio = mynodemanager._NodeManager__current_node['priority']
+        self.assertEquals(old_prio, 'zzz_default', 'Default prio is %s, expected zzz_default' % old_prio)
+        self.assertEquals(new_prio1, 'zzzz_last',   'Prio after changing prio is %s, expected zzzz_last' % new_prio1)
+        self.assertEquals(new_prio2, 'zzzz_last',   'Prio after changing prio is %s, expected zzzz_last' % new_prio2)
+
+    '''
+    Test setting the priority to a weird nonexisting value
+    This is only to test the code that should catch this - I doubt
+    that this could ever ever every happen.
+    '''
+    def test_change_prio_weird_prio(self):
+
+        # Test variables:
+        mynodemanager = esgfpid.rabbit.nodemanager.NodeManager()
+        mynodemanager.add_trusted_node(**TESTHELPERS.get_args_for_nodemanager())
+        mynodemanager.set_next_host()
+        # Change the prio to a weird value, to check if the functions still work:
+        mynodemanager._NodeManager__trusted_nodes_archive['dummy_prio'] = [mynodemanager._NodeManager__current_node]
+        del mynodemanager._NodeManager__trusted_nodes_archive['zzz_default']
+
+        # Run code to be tested:
+        old_prio = mynodemanager._get_prio_where_current_is_stored()
+        mynodemanager.set_priority_low_for_current()
+        new_prio1 = mynodemanager._get_prio_where_current_is_stored()
+        mynodemanager.set_priority_low_for_current()
+        new_prio2 = mynodemanager._get_prio_where_current_is_stored()
+
+        # Check result
+        new_prio = mynodemanager._NodeManager__current_node['priority']
+        self.assertEquals(old_prio, 'dummy_prio', 'Default prio is %s, expected dummy_prio' % old_prio)
+        self.assertEquals(new_prio1, 'zzzz_last',  'Prio after changing prio is %s, expected zzzz_last' % new_prio1)
+        self.assertEquals(new_prio2, 'zzzz_last',  'Prio after changing prio is %s, expected zzzz_last' % new_prio2)

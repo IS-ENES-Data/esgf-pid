@@ -493,3 +493,25 @@ class NodeManager(object):
         self.__trusted_nodes = copy.deepcopy(self.__trusted_nodes_archive)
         self.__open_nodes = copy.deepcopy(self.__open_nodes_archive)
         self.set_next_host()
+
+    def _get_prio_stored_for_current(self):
+        # Currently only used in unit test
+        return self.__current_node['priority']
+
+    def _get_prio_where_current_is_stored(self):
+        # Currently only used in unit test
+
+        if self.__current_node['is_open']:
+            where_to_look = self.__open_nodes_archive
+        else:
+            where_to_look = self.__trusted_nodes_archive
+
+        if not type(where_to_look) == type(dict()):
+            raise ValueError('%s is not a dict!')
+
+        for prio, nodes in where_to_look.iteritems():
+            for candidate in nodes:
+                if self.__compare_nodes(self.__current_node, candidate):
+                    return prio
+
+        raise ValueError('Node not found, so could not know currently active prio!')
