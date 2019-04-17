@@ -44,7 +44,8 @@ ROUTING_KEYS_TEMPLATES = dict(
     unpubli_one = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.unpubli-onevers',
     err_add = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.errata-add',
     err_rem = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.errata-rem',
-    data_cart = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.datacart'
+    data_cart = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.datacart',
+    pre_flight = 'PREFIX.HASH.'+RABBIT_INSTRUCTION+'.preflightcheck'
 )
 
 '''
