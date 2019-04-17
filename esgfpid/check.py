@@ -190,7 +190,6 @@ class RabbitChecker(object):
         rkey = utils.routingkeys.ROUTING_KEYS_TEMPLATES['pre_flight']
         body = 'PLEASE PRINT: Testing pre-flight check...'
         self.__loginfo(' .. checking message ...')
-        self.__loginfo(' .. RKEY %s ...' % rkey)
         res = channel.basic_publish(
             exchange=self.__nodemanager.get_exchange_name(),
             routing_key=rkey,
@@ -199,7 +198,7 @@ class RabbitChecker(object):
             mandatory=True
         )
         if res:
-            self.__loginfo(' .. checking message ... ok (%s).' % res)
+            self.__loginfo(' .. checking message ... ok.')
         else:
             self.__loginfo(' .. checking message ... failed.')
             self.__add_error_message_message_fail(rkey)
