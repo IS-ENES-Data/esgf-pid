@@ -219,7 +219,15 @@ class NodeManager(object):
             logwarn(LOGGER, errmsg)
             logwarn(LOGGER, 'All nodes: %s' % where_to_look)
 
+            # No matter where the node is stored, move it to "last" prio:
+            for prio,nodes in where_to_look:
+                logtrace(LOGGER, 'Looking in prio "%s"...' % prio)
+                moved = self.__move_to_other_prio(nodes, where_to_look)
+                if moved: return # changed successfully!
 
+            errmsg = 'Node definitely not found, cannot change prio.'
+            logwarn(LOGGER, errmsg)
+            raise ValueError(errmsg)
 
 
 
