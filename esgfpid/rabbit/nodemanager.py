@@ -189,8 +189,6 @@ class NodeManager(object):
         # dicts, BUT we change the priority under which it is stored in
         # the list of nodes to be used.
 
-        current_prio = self.__current_node['priority']
-
         # Deal with open or trusted node:
         if self.__current_node['is_open']:
             where_to_look = self.__open_nodes_archive
@@ -200,6 +198,7 @@ class NodeManager(object):
         # Find all nodes of same prio:
         moved = False
         try:
+            current_prio = self.__current_node['priority']
             moved = self.__move_to_last_prio(current_prio, where_to_look)
             if moved: return # changed successfully!
 
