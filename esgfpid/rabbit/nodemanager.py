@@ -220,7 +220,8 @@ class NodeManager(object):
             logwarn(LOGGER, 'All nodes: %s' % where_to_look)
 
             # No matter where the node is stored, move it to "last" prio:
-            for prio,nodes in where_to_look:
+            for prio, nodes in where_to_look.iteritems():
+
                 logtrace(LOGGER, 'Looking in prio "%s"...' % prio)
                 moved = self.__move_to_last_prio(prio, where_to_look)
                 if moved: return # changed successfully!
