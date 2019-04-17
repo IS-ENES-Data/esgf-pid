@@ -73,7 +73,6 @@ class RabbitChecker(object):
         self.__nodemanager = None
         self.__current_rabbit_host = None
         self.__exchange_name = None
-        self.__prefix = None
         self.__send_message = False
 
     def __fill_all_attributes(self, args):
@@ -87,12 +86,6 @@ class RabbitChecker(object):
 
         if args['send_message'] is not None and args['send_message'] == True:
             self.__send_message = True
-
-        if args['prefix'] is not None:
-            self.__prefix = args['prefix']
-
-        if self.__send_message and (self.__prefix is None):
-            raise ValueError('Can only send test message if you specify a prefix!')
 
 
     #
@@ -197,10 +190,10 @@ class RabbitChecker(object):
         props = pika.BasicProperties(
             delivery_mode = 2
         )
-        rkey = '%s.HASH.fresh.preflightcheck' % self.__prefix
+
+        rkey = utils.routingkeys.ROUTING_KEYS_TEMPLATES['pre_flight']
         body = 'PLEASE PRINT: Testing pre-flight check...'
         self.__loginfo(' .. checking message ...')
-        self.__loginfo(' .. RKEY %s ...' % rkey)
         res = channel.basic_publish(
             exchange=self.__nodemanager.get_exchange_name(),
             routing_key=rkey,
@@ -209,7 +202,7 @@ class RabbitChecker(object):
             mandatory=True
         )
         if res:
-            self.__loginfo(' .. checking message ... ok (%s).' % res)
+            self.__loginfo(' .. checking message ... ok.')
         else:
             self.__loginfo(' .. checking message ... failed.')
             self.__add_error_message_message_fail(rkey)

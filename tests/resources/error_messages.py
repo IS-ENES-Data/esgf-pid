@@ -14,6 +14,21 @@ Successful connection to PID messaging queue at "this.is.my.only.host".'''
 
 expected_message_ok2 = None # no message returned when success occurs!
 
+expected_message_plus_testmsg_ok1 = '''Checking config for PID module (rabbit messaging queue) ...
+ .. checking authentication and connection ...
+ .. checking authentication and connection (this.is.my.only.host)... ok.
+ .. checking authentication and connection ... ok.
+ .. checking channel ...
+ .. checking channel ... ok.
+ .. checking exchange ...
+ .. checking exchange ... ok.
+ .. checking message ...
+ .. checking message ... ok.
+Config for PID module (rabbit messaging queue).. ok.
+Successful connection to PID messaging queue at "this.is.my.only.host".'''
+
+expected_message_plus_testmsg_ok2 = None # no message returned when success occurs!
+
 expected_message_first_connection_failed_then_ok1 = '''Checking config for PID module (rabbit messaging queue) ...
  .. checking authentication and connection ...
  .. checking connection (this.is.my.favourite.host)... FAILED.
@@ -156,4 +171,6 @@ expected_message_first_channel_closed_then_ok1 = '''Checking config for PID modu
 Config for PID module (rabbit messaging queue).. ok.
 Successful connection to PID messaging queue at "tomato.salad-with-spam.fr".'''
 
+
 expected_message_first_channel_closed_then_ok2 = None
+

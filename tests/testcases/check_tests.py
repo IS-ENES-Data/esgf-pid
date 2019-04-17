@@ -3,7 +3,7 @@ import mock
 import logging
 import pika.exceptions as pikaexceptions
 import tests.utils.captureconsoleoutput
-#import tests.resources.pikamock
+import tests.resources.pikamock
 import tests.resources.error_messages
 import esgfpid.utils
 import esgfpid.check
@@ -101,6 +101,46 @@ class CheckTestCase(unittest.TestCase):
         # Expected message:
         expected_message = tests.resources.error_messages.expected_message_ok1
         expected_return = tests.resources.error_messages.expected_message_ok2
+
+        # Check result:
+        output = out.getvalue().strip()
+        self.assertEquals(expected_message, output,
+            'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
+        self.assertEquals(expected_return, returned_msg,
+            'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
+
+
+    @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
+    def test_run_check_with_msg_ok(self, connection_patch):
+        ''' This checks if the entire function works fine in case
+        the rabbit is reacked (connection and channel ok), and if it prints 
+        the correct message.
+        '''
+
+        # Define the replacement for the patched method:
+        mock_response = tests.resources.pikamock.MockPikaBlockingConnection(mock.MagicMock())
+        connection_patch.return_value = mock_response
+
+        # Test variables:
+        rabbit1 = dict(
+            user = 'johndoe',
+            password = 'abc123yx',
+            url = 'this.is.my.only.host')
+        testconnector = TESTHELPERS.get_connector(messaging_service_credentials=[rabbit1])
+
+
+        # Run code to be tested and capture stout:
+        with tests.utils.captureconsoleoutput.captured_output() as (out, err):
+            returned_msg = esgfpid.check.check_pid_queue_availability(
+                connector = testconnector,
+                print_to_console = True,
+                print_success_to_console = True,
+                send_message = True
+            )
+
+        # Expected message:
+        expected_message = tests.resources.error_messages.expected_message_plus_testmsg_ok1
+        expected_return = tests.resources.error_messages.expected_message_plus_testmsg_ok2
 
         # Check result:
         output = out.getvalue().strip()

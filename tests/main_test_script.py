@@ -315,5 +315,5 @@ if __name__ == '__main__':
     sys.exit(not test_result.wasSuccessful())
 
     # Run with:
-    # python -m coverage run main_test_script.py
+    # python -m coverage run main_test_script.py -u
     # python -m coverage html

@@ -137,27 +137,26 @@ class NodeManager(object):
         copy2['params'] = None
         return copy1 == copy2
 
+    def __is_this_node_in_last_prio_already(self, where_to_look):
+        try:
+            list_candidates = where_to_look[LAST_PRIO]
+        except KeyError as e:
+            errmsg = 'No node of last prio (%s) exists.' % LAST_PRIO
+            logwarn(LOGGER, errmsg)
+            return False
 
-    def set_priority_low_for_current(self):
-        # We do not change the priority stored ass attribute in the
-        # dicts, BUT we change the priority under which it is stored in
-        # the list of nodes to be used.
+        for i in xrange(len(list_candidates)):
+            candidate = list_candidates[i]
+            if self.__compare_nodes(candidate,self.__current_node):
+                logtrace(LOGGER, 'Found current node in archive (in list of last-prio nodes).')
+                return True
 
-        current_prio = self.__current_node['priority']
+        return False
 
-        if current_prio == LAST_PRIO:
-            logdebug(LOGGER, 'Node already has lowest priority.')
-            return # nothing to change!
+    def __move_to_last_prio(self, current_prio, all_nodes):
 
-        # Deal with open or trusted node:
-        if self.__current_node['is_open']:
-            where_to_look = self.__open_nodes_archive
-        else:
-            where_to_look = self.__trusted_nodes_archive
-
-        # Go over all nodes of that prio to find the current one...
-        list_candidates = where_to_look[current_prio]
-        loginfo(LOGGER, 'Nodes of current prio (%s): %s', current_prio, list_candidates)
+        list_candidates = all_nodes[current_prio]
+        loginfo(LOGGER, 'Nodes of prio "%s": %s', current_prio, list_candidates)
 
         for i in xrange(len(list_candidates)):
             candidate = list_candidates[i]
@@ -166,20 +165,70 @@ class NodeManager(object):
 
                 # Add to lowest prio:
                 try:
-                    where_to_look[LAST_PRIO].append(candidate)
+                    all_nodes[LAST_PRIO].append(candidate)
                     logdebug(LOGGER, 'Added this host to list of lowest prio hosts...')
 
                 except KeyError:
-                    where_to_look[LAST_PRIO] = [candidate]
+                    all_nodes[LAST_PRIO] = [candidate]
                     logdebug(LOGGER, 'Added this host to (newly-created) list of lowest prio hosts...')
 
                 # Remove from current prio:
                 list_candidates.pop(i)
                 loginfo(LOGGER, 'Removed this host from list of hosts with prio %s!', current_prio)
                 if len(list_candidates)==0:
-                    where_to_look.pop(current_prio)
+                    all_nodes.pop(current_prio)
                     loginfo(LOGGER, 'Removed the current priority %s!', current_prio)
-                break
+                return True
+
+        return False
+
+
+
+    def set_priority_low_for_current(self):
+        # We do not change the priority stored ass attribute in the
+        # dicts, BUT we change the priority under which it is stored in
+        # the list of nodes to be used.
+
+        # Deal with open or trusted node:
+        if self.__current_node['is_open']:
+            where_to_look = self.__open_nodes_archive
+        else:
+            where_to_look = self.__trusted_nodes_archive
+
+        # Go over all nodes of the current prio to find the
+        # current one, then move it to a different prio:
+        moved = False
+        try:
+            current_prio = self.__current_node['priority']
+            moved = self.__move_to_last_prio(current_prio, where_to_look)
+            if moved: return # changed successfully!
+
+        except KeyError as e:
+            errmsg = 'No node of prio %s found. Nodes: %s.' % (current_prio, where_to_look)
+            logwarn(LOGGER, errmsg)
+
+            # The node had already been added to the last-prio nodes ?!
+            last_already = self.__is_this_node_in_last_prio_already(where_to_look)
+            if last_already:
+                logdebug(LOGGER, 'Node already had lowest priority.')
+                return # nothing to change!
+
+        # This is extremely unlikely - in fact I don't see how it could occur:
+        if (not moved) and (not last_already):
+            errmsg = 'Could not find this node\'s priority (%s), nor the last-priority (%s). Somehow this node\'s priority was changed weirdly.' % (current_prio, LAST_PRIO)
+            logwarn(LOGGER, errmsg)
+            logwarn(LOGGER, 'All nodes: %s' % where_to_look)
+
+            # No matter where the node is stored, move it to "last" prio:
+            for prio, nodes in where_to_look.iteritems():
+
+                logtrace(LOGGER, 'Looking in prio "%s"...' % prio)
+                moved = self.__move_to_last_prio(prio, where_to_look)
+                if moved: return # changed successfully!
+
+            errmsg = 'Node definitely not found, cannot change prio.'
+            logwarn(LOGGER, errmsg)
+            raise ValueError(errmsg)
 
     def __store_node_info_by_priority(self, node_info, store_where):
         try:
@@ -215,23 +264,6 @@ class NodeManager(object):
             node_info_dict['priority'] = str(node_info_dict['priority'])
         else:
             node_info_dict['priority'] = DEFAULT_PRIO
-
-        # Mandatories:
-        host = node_info_dict['host']
-        credentials = node_info_dict['credentials']
-
-        # Optional ones
-        # If not specified, fill in defaults.
-        vhost = ""
-        if 'vhost' in node_info_dict and node_info_dict['vhost'] is not None:
-            vhost = node_info_dict['vhost']
-        port = 15672
-        if 'port' in node_info_dict and node_info_dict['port'] is not None:
-            port = node_info_dict['port']
-        ssl_enabled = False
-        if 'ssl_enabled' in node_info_dict and node_info_dict['ssl_enabled'] is not None:
-            ssl_enabled = node_info_dict['ssl_enabled']
-
 
         # Mandatories:
         host = node_info_dict['host']
@@ -461,3 +493,25 @@ class NodeManager(object):
         self.__trusted_nodes = copy.deepcopy(self.__trusted_nodes_archive)
         self.__open_nodes = copy.deepcopy(self.__open_nodes_archive)
         self.set_next_host()
+
+    def _get_prio_stored_for_current(self):
+        # Currently only used in unit test
+        return self.__current_node['priority']
+
+    def _get_prio_where_current_is_stored(self):
+        # Currently only used in unit test
+
+        if self.__current_node['is_open']:
+            where_to_look = self.__open_nodes_archive
+        else:
+            where_to_look = self.__trusted_nodes_archive
+
+        if not type(where_to_look) == type(dict()):
+            raise ValueError('%s is not a dict!')
+
+        for prio, nodes in where_to_look.iteritems():
+            for candidate in nodes:
+                if self.__compare_nodes(self.__current_node, candidate):
+                    return prio
+
+        raise ValueError('Node not found, so could not know currently active prio!')
