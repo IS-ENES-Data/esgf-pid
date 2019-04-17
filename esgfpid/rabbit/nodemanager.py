@@ -153,7 +153,11 @@ class NodeManager(object):
 
         return False
 
-    def __move_to_last_prio(self, list_candidates, where_to_look):
+    def __move_to_last_prio(self, current_prio, all_nodes):
+
+        list_candidates = all_nodes[current_prio]
+        loginfo(LOGGER, 'Nodes of prio "%s": %s', current_prio, list_candidates)
+
         for i in xrange(len(list_candidates)):
             candidate = list_candidates[i]
             if self.__compare_nodes(candidate,self.__current_node):
@@ -161,18 +165,18 @@ class NodeManager(object):
 
                 # Add to lowest prio:
                 try:
-                    where_to_look[LAST_PRIO].append(candidate)
+                    all_nodes[LAST_PRIO].append(candidate)
                     logdebug(LOGGER, 'Added this host to list of lowest prio hosts...')
 
                 except KeyError:
-                    where_to_look[LAST_PRIO] = [candidate]
+                    all_nodes[LAST_PRIO] = [candidate]
                     logdebug(LOGGER, 'Added this host to (newly-created) list of lowest prio hosts...')
 
                 # Remove from current prio:
                 list_candidates.pop(i)
                 loginfo(LOGGER, 'Removed this host from list of hosts with prio %s!', current_prio)
                 if len(list_candidates)==0:
-                    where_to_look.pop(current_prio)
+                    all_nodes.pop(current_prio)
                     loginfo(LOGGER, 'Removed the current priority %s!', current_prio)
                 return True
 
@@ -196,12 +200,7 @@ class NodeManager(object):
         # Find all nodes of same prio:
         moved = False
         try:
-            list_candidates = where_to_look[current_prio]
-            loginfo(LOGGER, 'Nodes of current prio (%s): %s', current_prio, list_candidates)
-
-            # Go over all nodes of that prio to find the current one...
-            # Then move it to a different prio:
-            moved = self.__move_to_last_prio(list_candidates, where_to_look)
+            moved = self.__move_to_last_prio(current_prio, where_to_look)
             if moved: return # changed successfully!
 
         except KeyError as e:
@@ -223,7 +222,7 @@ class NodeManager(object):
             # No matter where the node is stored, move it to "last" prio:
             for prio,nodes in where_to_look:
                 logtrace(LOGGER, 'Looking in prio "%s"...' % prio)
-                moved = self.__move_to_last_prio(nodes, where_to_look)
+                moved = self.__move_to_last_prio(prio, where_to_look)
                 if moved: return # changed successfully!
 
             errmsg = 'Node definitely not found, cannot change prio.'
