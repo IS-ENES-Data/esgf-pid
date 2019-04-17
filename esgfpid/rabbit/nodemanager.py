@@ -194,6 +194,7 @@ class NodeManager(object):
             where_to_look = self.__trusted_nodes_archive
 
         # Find all nodes of same prio:
+        moved = False
         try:
             list_candidates = where_to_look[current_prio]
             loginfo(LOGGER, 'Nodes of current prio (%s): %s', current_prio, list_candidates)
@@ -212,11 +213,14 @@ class NodeManager(object):
                 logdebug(LOGGER, 'Node already has lowest priority.')
                 return # nothing to change!
 
-            else:
-                errmsg = 'Could not find this node\'s priority, nor the last-priority. Somehow this node\'s priority was changed weirdly.'
-                logwarn(LOGGER, errmsg)
+        # This is extremely unlikely - in fact I don't see how it could occur:
+        if (not moved) or (not last_already):
+            errmsg = 'Could not find this node\'s priority (%s), nor the last-priority (%s). Somehow this node\'s priority was changed weirdly.' % (current_prio, LAST_PRIO)
+            logwarn(LOGGER, errmsg)
+            logwarn(LOGGER, 'All nodes: %s' % where_to_look)
 
-            
+
+
 
 
 
