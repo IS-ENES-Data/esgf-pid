@@ -3,7 +3,7 @@ import mock
 import logging
 import pika.exceptions as pikaexceptions
 import tests.utils.captureconsoleoutput
-#import tests.resources.pikamock
+import tests.resources.pikamock
 import tests.resources.error_messages
 import esgfpid.utils
 import esgfpid.check
