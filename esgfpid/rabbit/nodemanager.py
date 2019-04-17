@@ -195,7 +195,8 @@ class NodeManager(object):
         else:
             where_to_look = self.__trusted_nodes_archive
 
-        # Find all nodes of same prio:
+        # Go over all nodes of the current prio to find the
+        # current one, then move it to a different prio:
         moved = False
         try:
             current_prio = self.__current_node['priority']
@@ -206,10 +207,10 @@ class NodeManager(object):
             errmsg = 'No node of prio %s found. Nodes: %s.' % (current_prio, where_to_look)
             logwarn(LOGGER, errmsg)
 
-            # The node has already been added to the last-prio nodes ?!
+            # The node had already been added to the last-prio nodes ?!
             last_already = self.__is_this_node_in_last_prio_already(where_to_look)
             if last_already:
-                logdebug(LOGGER, 'Node already has lowest priority.')
+                logdebug(LOGGER, 'Node already had lowest priority.')
                 return # nothing to change!
 
         # This is extremely unlikely - in fact I don't see how it could occur:
@@ -227,11 +228,6 @@ class NodeManager(object):
             errmsg = 'Node definitely not found, cannot change prio.'
             logwarn(LOGGER, errmsg)
             raise ValueError(errmsg)
-
-
-
-
-
 
 
     def __store_node_info_by_priority(self, node_info, store_where):
