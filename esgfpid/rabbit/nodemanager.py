@@ -145,10 +145,6 @@ class NodeManager(object):
 
         current_prio = self.__current_node['priority']
 
-        if current_prio == LAST_PRIO:
-            logdebug(LOGGER, 'Node already has lowest priority.')
-            return # nothing to change!
-
         # Deal with open or trusted node:
         if self.__current_node['is_open']:
             where_to_look = self.__open_nodes_archive
