@@ -73,7 +73,6 @@ class RabbitChecker(object):
         self.__nodemanager = None
         self.__current_rabbit_host = None
         self.__exchange_name = None
-        self.__prefix = None
         self.__send_message = False
 
     def __fill_all_attributes(self, args):
@@ -84,11 +83,6 @@ class RabbitChecker(object):
             self.__print_success_to_console = True
         if args['send_message'] is not None and args['send_message'] == True:
             self.__send_message = True
-        if args['prefix'] is not None:
-            self.__prefix = args['prefix']
-
-        if self.__send_message and (self.__prefix is None):
-            raise ValueError('Can only send test message if you specify a prefix!')
 
 
     #
