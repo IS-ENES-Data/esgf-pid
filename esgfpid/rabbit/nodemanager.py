@@ -137,6 +137,23 @@ class NodeManager(object):
         copy2['params'] = None
         return copy1 == copy2
 
+    def __is_this_node_in_last_prio_already(self, where_to_look):
+        try:
+            list_candidates = where_to_look[LAST_PRIO]
+        except KeyError as e:
+            errmsg = 'No node of last prio (%s) exists.' % LAST_PRIO
+            logwarn(LOGGER, errmsg)
+            return False
+
+        for i in xrange(len(list_candidates)):
+            candidate = list_candidates[i]
+            if self.__compare_nodes(candidate,self.__current_node):
+                logtrace(LOGGER, 'Found current node in archive (in list of last-prio nodes).')
+                return True
+
+        return False
+
+
 
     def set_priority_low_for_current(self):
         # We do not change the priority stored ass attribute in the
@@ -152,8 +169,23 @@ class NodeManager(object):
             where_to_look = self.__trusted_nodes_archive
 
         # Go over all nodes of that prio to find the current one...
-        list_candidates = where_to_look[current_prio]
-        loginfo(LOGGER, 'Nodes of current prio (%s): %s', current_prio, list_candidates)
+        try:
+            list_candidates = where_to_look[current_prio]
+            loginfo(LOGGER, 'Nodes of current prio (%s): %s', current_prio, list_candidates)
+
+        except KeyError as e:
+            errmsg = 'No node of prio %s found. Nodes: %s.' % (current_prio, where_to_look)
+            logwarn(LOGGER, errmsg)
+
+            # The node has already been added to the last-prio nodes ?!
+            last_already = self.__is_this_node_in_last_prio_already(where_to_look)
+            if last_already:
+                logdebug(LOGGER, 'Node already has lowest priority.')
+-               return # nothing to change!
+
+            else:
+                errmsg = 'Could not find this node\'s priority, nor the last-priority. Somehow this node\'s priority was changed weirdly.'
+                logwarn(LOGGER, errmsg)
 
         for i in xrange(len(list_candidates)):
             candidate = list_candidates[i]
