@@ -193,7 +193,8 @@ class RabbitChecker(object):
         props = pika.BasicProperties(
             delivery_mode = 2
         )
-        rkey = '%s.HASH.fresh.preflightcheck' % self.__prefix
+        sani = utils.routingkeys._sanitize_prefix(self.__prefix)
+        rkey = '%s.HASH.fresh.preflightcheck' % sani
         body = 'PLEASE PRINT: Testing pre-flight check...'
         self.__loginfo(' .. checking message ...')
         self.__loginfo(' .. RKEY %s ...' % rkey)
