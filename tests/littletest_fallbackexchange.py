@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import esgfpid.rabbit.rabbit
 import esgfpid.check
 import logging

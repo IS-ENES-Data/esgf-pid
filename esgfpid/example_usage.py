@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import esgfpid
 import logging
 import datetime

@@ -10,6 +10,8 @@ execution, errors tend not to show in this script.
 
 '''
 
+from __future__ import print_function
+
 from helpers_for_testing import *
 
 #
