@@ -93,19 +93,19 @@ if __name__ == '__main__':
     
         if 'utils' in param.modules or 'all' in param.modules:
 
-            from .testcases.util_tests import UtilsTestCase
+            from testcases.util_tests import UtilsTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(UtilsTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from .testcases.util_logging_tests import UtilsLoggingTestCase
+            from testcases.util_logging_tests import UtilsLoggingTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(UtilsLoggingTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from .testcases.errormessage_util_tests import ErrorMessageUtilsTestCase
+            from testcases.errormessage_util_tests import ErrorMessageUtilsTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(ErrorMessageUtilsTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
         if 'messages' in param.modules or 'all' in param.modules:
 
-            from .testcases.messages_tests import MessageCreationTestcase
+            from testcases.messages_tests import MessageCreationTestcase
             tests = unittest.TestLoader().loadTestsFromTestCase(MessageCreationTestcase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
         if 'check' in param.modules or 'all' in param.modules:
 
-            from .testcases.check_tests import CheckTestCase
+            from testcases.check_tests import CheckTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(CheckTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -129,7 +129,7 @@ if __name__ == '__main__':
 
         if 'data_cart' in param.modules or 'all' in param.modules:
 
-            from .testcases.data_cart_tests import DataCartTestCase
+            from testcases.data_cart_tests import DataCartTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(DataCartTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -137,31 +137,31 @@ if __name__ == '__main__':
 
         if 'solr' in param.modules or 'all' in param.modules:
 
-            from .testcases.solr.solr_utils_tests import SolrUtilsTestCase
+            from testcases.solr.solr_utils_tests import SolrUtilsTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrUtilsTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from .testcases.solr.solr_tests import SolrTestCase
+            from testcases.solr.solr_tests import SolrTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from .testcases.solr.solr_task1_tests import SolrTask1TestCase
+            from testcases.solr.solr_task1_tests import SolrTask1TestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrTask1TestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from .testcases.solr.solr_task2_tests import SolrTask2TestCase
+            from testcases.solr.solr_task2_tests import SolrTask2TestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrTask2TestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from .testcases.solr.solr_server_tests import SolrServerConnectorTestCase
+            from testcases.solr.solr_server_tests import SolrServerConnectorTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrServerConnectorTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -169,20 +169,20 @@ if __name__ == '__main__':
 
         if 'nodemanager' in param.modules or 'rabbit' in param.modules or 'all' in param.modules:
 
-            from .testcases.rabbit.nodemanager_tests import NodemanagerTestCase
+            from testcases.rabbit.nodemanager_tests import NodemanagerTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(NodemanagerTestCase)
             tests_to_run.append(tests)
             numtests += tests.countTestCases()
 
         if 'rabbit' in param.modules or 'all' in param.modules:
 
-            from .testcases.rabbit.rabbit_api_tests import RabbitTestCase
+            from testcases.rabbit.rabbit_api_tests import RabbitTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(RabbitTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
             
-            from .testcases.rabbit.rabbitutil_tests import RabbitUtilsTestCase
+            from testcases.rabbit.rabbitutil_tests import RabbitUtilsTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(RabbitUtilsTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -190,7 +190,7 @@ if __name__ == '__main__':
 
             if param.syn:
 
-                from .testcases.rabbit.syn.rabbit_synchronous_tests import RabbitConnectorTestCase
+                from testcases.rabbit.syn.rabbit_synchronous_tests import RabbitConnectorTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(RabbitConnectorTestCase)
                 tests_to_run.append(tests)
                 n = tests.countTestCases()
@@ -199,44 +199,44 @@ if __name__ == '__main__':
             if param.asyn:
 
                 # This tests the API and the thread
-                from .testcases.rabbit.asyn.rabbit_asynchronous_tests import RabbitAsynConnectorTestCase
+                from testcases.rabbit.asyn.rabbit_asynchronous_tests import RabbitAsynConnectorTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(RabbitAsynConnectorTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
 
                 # Confirmer is pretty isolated and easy to test.
-                from .testcases.rabbit.asyn.thread_confirmer_tests import ThreadConfirmerTestCase
+                from testcases.rabbit.asyn.thread_confirmer_tests import ThreadConfirmerTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(ThreadConfirmerTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
 
                 # Feeder needs some mocking...
-                from .testcases.rabbit.asyn.thread_feeder_tests import ThreadFeederTestCase
+                from testcases.rabbit.asyn.thread_feeder_tests import ThreadFeederTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(ThreadFeederTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
 
                 # Returner needs some mocking...
-                from .testcases.rabbit.asyn.thread_returner_tests import ThreadReturnerTestCase
+                from testcases.rabbit.asyn.thread_returner_tests import ThreadReturnerTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(ThreadReturnerTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
             
                 # Shutter needs some mocking...
-                from .testcases.rabbit.asyn.thread_shutter_tests import ThreadShutterTestCase
+                from testcases.rabbit.asyn.thread_shutter_tests import ThreadShutterTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(ThreadShutterTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
 
                 # Builder needs lots of mocking
-                from .testcases.rabbit.asyn.thread_builder_tests import ThreadBuilderTestCase
+                from testcases.rabbit.asyn.thread_builder_tests import ThreadBuilderTestCase
                 tests = unittest.TestLoader().loadTestsFromTestCase(ThreadBuilderTestCase)
                 tests_to_run.append(tests)
                 numtests += tests.countTestCases()
 
         if 'errata' in param.modules or 'all' in param.modules:
 
-            from .testcases.errata_tests import ErrataTestCase
+            from testcases.errata_tests import ErrataTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(ErrataTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -244,7 +244,7 @@ if __name__ == '__main__':
 
         if 'unpublish' in param.modules or 'all' in param.modules:
 
-            from .testcases.unpublication_tests import UnpublicationTestCase
+            from testcases.unpublication_tests import UnpublicationTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(UnpublicationTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -252,7 +252,7 @@ if __name__ == '__main__':
 
         if 'publish' in param.modules or 'all' in param.modules:
 
-            from .testcases.publish_tests import PublishTestCase
+            from testcases.publish_tests import PublishTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(PublishTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -260,7 +260,7 @@ if __name__ == '__main__':
 
         if 'api' in param.modules or 'all' in param.modules:
 
-            from .testcases.connector_tests import ConnectorTestCase
+            from testcases.connector_tests import ConnectorTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(ConnectorTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
         if 'consistency' in param.modules or 'all' in param.modules:
 
-            from .testcases.consistency_tests import ConsistencyTestCase
+            from testcases.consistency_tests import ConsistencyTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(ConsistencyTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
@@ -279,9 +279,9 @@ if __name__ == '__main__':
         if 'rabbit' in param.modules or 'all' in param.modules:
 
             if param.asyn:
-                from .testcases.integration_rabbit_tests_asynchron import RabbitIntegrationTestCase
+                from testcases.integration_rabbit_tests_asynchron import RabbitIntegrationTestCase
             else:
-                from .testcases.integration_rabbit_tests_synchron import RabbitIntegrationTestCase
+                from testcases.integration_rabbit_tests_synchron import RabbitIntegrationTestCase
 
             tests = unittest.TestLoader().loadTestsFromTestCase(RabbitIntegrationTestCase)
             tests_to_run.append(tests)
@@ -290,19 +290,19 @@ if __name__ == '__main__':
 
         if 'solr' in param.modules or 'all' in param.modules:
 
-            from .testcases.integration_solr_tests import SolrIntegrationTestCase
+            from testcases.integration_solr_tests import SolrIntegrationTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrIntegrationTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from .testcases.integration_solr_server_tests import SolrServerIntegrationTestCase
+            from testcases.integration_solr_server_tests import SolrServerIntegrationTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrServerIntegrationTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
             numtests += n
 
-            from .testcases.integration_solr_task1_tests import SolrTask1IntegrationTestCase
+            from testcases.integration_solr_task1_tests import SolrTask1IntegrationTestCase
             tests = unittest.TestLoader().loadTestsFromTestCase(SolrTask1IntegrationTestCase)
             tests_to_run.append(tests)
             n = tests.countTestCases()
