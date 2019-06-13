@@ -33,7 +33,7 @@ def get_routing_key_and_string_message_from_message_if_possible(msg):
         raise ValueError('The message that was passed is None.')
     
     # Get JSON from message, if possible!
-    if isinstance(msg, basestring):
+    if isinstance(msg, str):
 
         try:
             # Valid string message --> JSON

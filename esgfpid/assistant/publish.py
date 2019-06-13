@@ -300,7 +300,7 @@ class DatasetPublicationAssistant(object):
         self.__list_of_file_handles = list(set(self.__list_of_file_handles))
 
     def __send_existing_file_messages_to_queue(self):
-        for i in xrange(0, len(self.__list_of_file_messages)):
+        for i in range(0, len(self.__list_of_file_messages)):
             self.__try_to_send_one_file_message(i)
         msg = 'All file publication jobs handed to rabbit thread.'
         logdebug(LOGGER, msg)

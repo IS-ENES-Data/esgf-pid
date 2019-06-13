@@ -86,7 +86,7 @@ class DataCartTestCase(unittest.TestCase):
         datacart_pid = assistant.make_data_cart_pid(content)
 
         # Check result
-        self.assertNotEquals(dataset_pid, datacart_pid)
+        self.assertNotEqual(dataset_pid, datacart_pid)
 
     '''
     Test if we can create a data cart PID for several

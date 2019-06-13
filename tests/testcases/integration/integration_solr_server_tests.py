@@ -68,7 +68,7 @@ class SolrServerIntegrationTestCase(unittest.TestCase):
 
         # Capture stderr:
         import sys
-        from StringIO import StringIO
+        from io import StringIO
         saved_stdout = sys.stderr
         out = StringIO()
         sys.stderr = out
@@ -102,7 +102,7 @@ class SolrServerIntegrationTestCase(unittest.TestCase):
 
         # Capture stderr:
         import sys
-        from StringIO import StringIO
+        from io import StringIO
         saved_stdout = sys.stderr
         out = StringIO()
         sys.stderr = out

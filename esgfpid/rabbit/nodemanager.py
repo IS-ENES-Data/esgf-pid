@@ -5,7 +5,7 @@ import random
 import esgfpid.defaults
 import esgfpid.exceptions
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
-from naturalsorting import natural_keys
+from .naturalsorting import natural_keys
 import esgfpid.utils
 
 LOGGER = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ class NodeManager(object):
             logwarn(LOGGER, errmsg)
             return False
 
-        for i in xrange(len(list_candidates)):
+        for i in range(len(list_candidates)):
             candidate = list_candidates[i]
             if self.__compare_nodes(candidate,self.__current_node):
                 logtrace(LOGGER, 'Found current node in archive (in list of last-prio nodes).')
@@ -158,7 +158,7 @@ class NodeManager(object):
         list_candidates = all_nodes[current_prio]
         loginfo(LOGGER, 'Nodes of prio "%s": %s', current_prio, list_candidates)
 
-        for i in xrange(len(list_candidates)):
+        for i in range(len(list_candidates)):
             candidate = list_candidates[i]
             if self.__compare_nodes(candidate,self.__current_node):
                 logtrace(LOGGER, 'Found current node in archive.')
@@ -220,7 +220,7 @@ class NodeManager(object):
             logwarn(LOGGER, 'All nodes: %s' % where_to_look)
 
             # No matter where the node is stored, move it to "last" prio:
-            for prio, nodes in where_to_look.iteritems():
+            for prio, nodes in where_to_look.items():
 
                 logtrace(LOGGER, 'Looking in prio "%s"...' % prio)
                 moved = self.__move_to_last_prio(prio, where_to_look)
@@ -351,7 +351,7 @@ class NodeManager(object):
     '''
     def get_num_left_trusted(self):
         n_trusted = 0
-        for list_of_nodes in self.__trusted_nodes.values():
+        for list_of_nodes in list(self.__trusted_nodes.values()):
             n_trusted = n_trusted + len(list_of_nodes)
         return n_trusted
 
@@ -363,7 +363,7 @@ class NodeManager(object):
     '''
     def get_num_left_open(self):
         n_open = 0
-        for list_of_nodes in self.__open_nodes.values():
+        for list_of_nodes in list(self.__open_nodes.values()):
             n_open = n_open + len(list_of_nodes)
         return n_open
 
@@ -402,7 +402,7 @@ class NodeManager(object):
     def __get_highest_priority_node(self, dict_of_nodes):
 
         # Get highest priority:
-        available_priorities = dict_of_nodes.keys()
+        available_priorities = list(dict_of_nodes.keys())
         available_priorities.sort(key=natural_keys)
         current_priority = available_priorities.pop(0)
         list_of_priority_nodes = dict_of_nodes[current_priority]
@@ -510,7 +510,7 @@ class NodeManager(object):
         if not type(where_to_look) == type(dict()):
             raise ValueError('%s is not a dict!')
 
-        for prio, nodes in where_to_look.iteritems():
+        for prio, nodes in where_to_look.items():
             for candidate in nodes:
                 if self.__compare_nodes(self.__current_node, candidate):
                     return prio

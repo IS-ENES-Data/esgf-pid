@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 from rabbitcredentials_SECRET import PREFIX, RABBIT_EXCHANGE
 import esgfpid
@@ -31,7 +31,7 @@ def send_one_test_message(num, connector):
 def send_messages(n, connector, wait=0):
     with open(filename_for_logging_handles, 'a') as text_file:
         print('Sending %i messages.' % n)
-        for i in xrange(n):
+        for i in range(n):
             pid = send_one_test_message(i, connector)
             text_file.write(',%s' % pid)
             time.sleep(wait)

@@ -48,7 +48,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         # Check result
         self.assertIsInstance(testsolr, esgfpid.solr.serverconnector.SolrServerConnector, 'Constructor fail.')
         self.assertFalse(testsolr._SolrServerConnector__https_verify, 'HTTPS verify not set to False.')
-        self.assertEquals(testsolr._SolrServerConnector__solr_url, 'blablabla', 'Wrong url.')
+        self.assertEqual(testsolr._SolrServerConnector__solr_url, 'blablabla', 'Wrong url.')
 
 
     def test_init_with_optional_args(self):

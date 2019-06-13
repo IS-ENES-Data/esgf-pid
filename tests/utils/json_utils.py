@@ -9,9 +9,9 @@ def is_json_same(expected, received):
      - Do they have the same keys?
      - Do the shared keys have the same value?
     '''
-    expected_keys = expected.keys()
+    expected_keys = list(expected.keys())
     expected_keyscopy = expected_keys[:]
-    received_keys = received.keys()
+    received_keys = list(received.keys())
     for key in expected_keyscopy:
         if key not in received_keys:
             return False
@@ -39,9 +39,9 @@ def compare_json_return_errormessage(expected, received, full=True):
     error_msg = ''
     error_occurred = False
 
-    expected_keys = expected.keys()
+    expected_keys = list(expected.keys())
     expected_keyscopy = expected_keys[:]
-    received_keys = received.keys()
+    received_keys = list(received.keys())
     for key in expected_keyscopy:
         if key not in received_keys:
             #error_msg += ('\nExpected key "'+key+'" not in received keys: '+str(received_keys))

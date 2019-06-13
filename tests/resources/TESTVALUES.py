@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import mock
 import copy
@@ -7,7 +7,7 @@ import tests.resources.responsemock
 #import tests.resources.solrmock
 #import tests.resources.rabbitmock
 import tests.utils as utils
-import Queue
+import queue
 
 # Errata
 ERRATA_SEVERAL = ['123456','654321']
@@ -151,7 +151,7 @@ class MockThread2(object):
 
     def get_message_from_unpublished_stack(self, seconds):
         if len(self.messages) == 0:
-            raise Queue.Empty()
+            raise queue.Empty()
         else:
             return self.messages.pop()
 
@@ -298,7 +298,7 @@ def get_coupler_args(**kwargs):
         test_publication=False,
         message_service_synchronous=False
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         coupler_args[k] = v
     return coupler_args
 
@@ -319,7 +319,7 @@ def get_rabbit_credentials(**kwargs):
         url = RABBIT_URL_TRUSTED,
         password = RABBIT_PASSWORD
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         rabbit_args[k] = v
     return rabbit_args
 
@@ -334,7 +334,7 @@ def get_connector_args(**kwargs):
         messaging_service_exchange_name = EXCHANGE_NAME,
         messaging_service_credentials = [cred_copy]
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         connector_args[k] = v
     return connector_args
 
@@ -427,7 +427,7 @@ def get_rabbit_args(**kwargs):
         test_publication=False,
         is_synchronous_mode=kwargs['is_synchronous_mode']
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         rabbit_args[k] = v
     return rabbit_args
 
@@ -480,7 +480,7 @@ def get_testsolr(**kwargs):
         https_verify = True,
         disable_insecure_request_warning = False
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         solr_args[k] = v
     testsolr = esgfpid.solr.SolrInteractor(**solr_args)
     return testsolr
@@ -552,7 +552,7 @@ def get_args_for_nodemanager(**kwargs):
         username='user_foo',
         password='pw_foo'
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         args[k] = v
     return args
 

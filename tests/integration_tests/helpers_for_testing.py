@@ -6,7 +6,7 @@ It comes with a test of its own method. Test it
 by running this module as a python script.
 
 '''
-from __future__ import print_function
+
 
 import logging
 import datetime

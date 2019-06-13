@@ -1,6 +1,6 @@
 import unittest
 import logging
-import Queue
+import queue
 import pika
 import mock
 import esgfpid.rabbit.asynchronous.thread_returnhandler

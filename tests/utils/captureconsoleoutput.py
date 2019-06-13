@@ -9,7 +9,7 @@ http://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-un
 '''
 
 from contextlib import contextmanager
-from StringIO import StringIO
+from io import StringIO
 import sys
 
 @contextmanager

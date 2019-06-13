@@ -23,7 +23,7 @@ thread by calling "finish_rabbit_thread()" or "force_finish_rabbit_thread()".
 
 '''
 
-import Queue
+import queue
 import threading
 import pika
 import time
@@ -70,7 +70,7 @@ class AsynchronousRabbitConnector(object):
 
         # Shared objects
         self.__statemachine = StateMachine()
-        self.__unpublished_messages_queue = Queue.Queue()
+        self.__unpublished_messages_queue = queue.Queue()
 
         # Log flags
         self.__first_message_receival = True
@@ -173,7 +173,7 @@ class AsynchronousRabbitConnector(object):
             self.__rescue_leftovers()
         else:
             loginfo(LOGGER, 'Joining the thread failed once... Retrying.')
-            for i in xrange(20):
+            for i in range(20):
                 time.sleep(0.1) # blocking
             self.__thread.add_event_force_finish()
             success = self.__join(timeout_seconds)
@@ -398,7 +398,7 @@ class AsynchronousRabbitConnector(object):
     def __trigger_n_publish_actions(self, num_messages_to_publish):
         logdebug(LOGGER, 'Asking rabbit thread to publish %i messages...', num_messages_to_publish)
         to_be_sure = 10
-        for i in xrange(num_messages_to_publish+to_be_sure):
+        for i in range(num_messages_to_publish+to_be_sure):
             self.__thread.add_event_publish_message()
 
 
@@ -463,12 +463,12 @@ class AsynchronousRabbitConnector(object):
                 self.__get_msg_from_queue_and_store_first_try(
                     newlist,
                     self.__unpublished_messages_queue)
-            except Queue.Empty:
+            except queue.Empty:
                 try:
                     self.__get_a_msg_from_queue_and_store_second_try(
                         newlist,
                         self.__unpublished_messages_queue)
-                except Queue.Empty:
+                except queue.Empty:
                     break
         return newlist
 

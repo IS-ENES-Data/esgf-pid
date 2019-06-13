@@ -48,12 +48,12 @@ class ThreadConfirmerTestCase(unittest.TestCase):
         # Check result (delivery tags)
         unconf = confirmer._Confirmer__unconfirmed_delivery_tags
         expected_unconf = [1,3,4]
-        self.assertEquals(unconf, expected_unconf,
+        self.assertEqual(unconf, expected_unconf,
             'Unconfirmed delivery tags: %s, expected %s' % (unconf, expected_unconf))
         # Check result (messages)
         unconf_dict = confirmer._Confirmer__unconfirmed_messages_dict
         expected_unconf_dict = {'1':'foo1', '3':'foo3', '4':'foo4'}
-        self.assertEquals(unconf_dict, expected_unconf_dict,
+        self.assertEqual(unconf_dict, expected_unconf_dict,
             'Unconfirmed messages: %s, expected %s' % (unconf_dict, expected_unconf_dict))
 
 
@@ -74,12 +74,12 @@ class ThreadConfirmerTestCase(unittest.TestCase):
         # Check result (delivery tags)
         unconf = confirmer._Confirmer__unconfirmed_delivery_tags
         expected_unconf = [3,4]
-        self.assertEquals(unconf, expected_unconf,
+        self.assertEqual(unconf, expected_unconf,
             'Unconfirmed delivery tags: %s, expected %s' % (unconf, expected_unconf))
         # Check result (messages)
         unconf_dict = confirmer._Confirmer__unconfirmed_messages_dict
         expected_unconf_dict = {'3':'foo3', '4':'foo4'}
-        self.assertEquals(unconf_dict, expected_unconf_dict,
+        self.assertEqual(unconf_dict, expected_unconf_dict,
             'Unconfirmed messages: %s, expected %s' % (unconf_dict, expected_unconf_dict))
 
     #
@@ -103,17 +103,17 @@ class ThreadConfirmerTestCase(unittest.TestCase):
         # Check result (delivery tags)
         unconf = confirmer._Confirmer__unconfirmed_delivery_tags
         expected_unconf = [1,3,4]
-        self.assertEquals(unconf, expected_unconf,
+        self.assertEqual(unconf, expected_unconf,
             'Unconfirmed delivery tags: %s, expected %s' % (unconf, expected_unconf))
         # Check result (messages)
         unconf_dict = confirmer._Confirmer__unconfirmed_messages_dict
         expected_unconf_dict = {'1':'foo1', '3':'foo3', '4':'foo4'}
-        self.assertEquals(unconf_dict, expected_unconf_dict,
+        self.assertEqual(unconf_dict, expected_unconf_dict,
             'Unconfirmed messages: %s, expected %s' % (unconf_dict, expected_unconf_dict))
         # Check result (nacked)
         nacked = confirmer._Confirmer__nacked_messages
         exp = ['foo2']
-        self.assertEquals(nacked, exp,
+        self.assertEqual(nacked, exp,
             'Nacked messages: %s, expected %s' % (nacked, exp))
 
     def test_multiple_nack_ok(self):
@@ -134,21 +134,21 @@ class ThreadConfirmerTestCase(unittest.TestCase):
         # Check result (delivery tags)
         unconf = confirmer._Confirmer__unconfirmed_delivery_tags
         expected_unconf = [3,4]
-        self.assertEquals(unconf, expected_unconf,
+        self.assertEqual(unconf, expected_unconf,
             'Unconfirmed delivery tags: %s, expected %s' % (unconf, expected_unconf))
         # Check result (messages)
         unconf_dict = confirmer._Confirmer__unconfirmed_messages_dict
         expected_unconf_dict = {'3':'foo3', '4':'foo4'}
-        self.assertEquals(unconf_dict, expected_unconf_dict,
+        self.assertEqual(unconf_dict, expected_unconf_dict,
             'Unconfirmed messages: %s, expected %s' % (unconf_dict, expected_unconf_dict))
         # Check result (nacked)
         nacked = confirmer._Confirmer__nacked_messages
         exp = ['foo1', 'foo2']
-        self.assertEquals(nacked, exp,
+        self.assertEqual(nacked, exp,
             'Nacked messages: %s, expected %s' % (nacked, exp))
         # Check result (nacked)
         exp = ['foo1', 'foo2']
-        self.assertEquals(nacked_copy, exp,
+        self.assertEqual(nacked_copy, exp,
             'Nacked messages: %s, expected %s' % (nacked_copy, exp))
 
     #
@@ -167,12 +167,12 @@ class ThreadConfirmerTestCase(unittest.TestCase):
         # Check result (delivery tags)
         unconf = confirmer._Confirmer__unconfirmed_delivery_tags
         expected_unconf = [1,2,3,4,100]
-        self.assertEquals(unconf, expected_unconf,
+        self.assertEqual(unconf, expected_unconf,
             'Unconfirmed delivery tags: %s, expected %s' % (unconf, expected_unconf))
         # Check result (messages)
         unconf_dict = confirmer._Confirmer__unconfirmed_messages_dict
         expected_unconf_dict = {'1':'foo1', '2':'foo2', '3':'foo3', '4':'foo4', '100':'foo100'}
-        self.assertEquals(unconf_dict, expected_unconf_dict,
+        self.assertEqual(unconf_dict, expected_unconf_dict,
             'Unconfirmed messages: %s, expected %s' % (unconf_dict, expected_unconf_dict))
 
     #
@@ -190,10 +190,10 @@ class ThreadConfirmerTestCase(unittest.TestCase):
 
         # Check result (delivery tags)
         expected_messages = ['foo1', 'foo2', 'foo3', 'foo4']
-        self.assertEquals(set(mylist), set(expected_messages),
+        self.assertEqual(set(mylist), set(expected_messages),
             'Leftover messages: %s, expected %s' % (mylist, expected_messages))
-        self.assertEquals(len(mylist), 4)
-        self.assertEquals(num, 4)
+        self.assertEqual(len(mylist), 4)
+        self.assertEqual(num, 4)
 
     #
     # Reset
@@ -210,9 +210,9 @@ class ThreadConfirmerTestCase(unittest.TestCase):
     
         # Check result (delivery tags)
         unconf = confirmer._Confirmer__unconfirmed_delivery_tags
-        self.assertEquals(unconf, [],
+        self.assertEqual(unconf, [],
             'Unconfirmed delivery tags: %s, expected %s' % (unconf, []))
-        self.assertEquals(unconf_retrieved, [],
+        self.assertEqual(unconf_retrieved, [],
             'Unconfirmed delivery tags: %s, expected %s' % (unconf_retrieved, []))
 
     #

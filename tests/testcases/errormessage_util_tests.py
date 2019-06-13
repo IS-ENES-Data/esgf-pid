@@ -41,7 +41,7 @@ class ErrorMessageUtilsTestCase(unittest.TestCase):
             '*** bar                              ***\n'+
             '*** lorem ipsum lorem ipsum loooorem ***\n'+
             '****************************************')
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
 
     def test_get_message_and_routing_key_string_ok2(self):
@@ -57,5 +57,5 @@ class ErrorMessageUtilsTestCase(unittest.TestCase):
             '***********\n'+
             '*** foo ***\n'+
             '***********')
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 

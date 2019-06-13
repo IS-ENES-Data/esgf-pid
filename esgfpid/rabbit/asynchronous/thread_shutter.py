@@ -102,7 +102,7 @@ class ShutDowner(object):
             # were lost during reconnecting or something...
             num_unpub = self.thread.get_num_unpublished()
             logdebug(LOGGER, 'Triggering %i publish events...' % num_unpub)
-            for i in xrange(int(1.1*num_unpub)):
+            for i in range(int(1.1*num_unpub)):
                 self.thread.add_event_publish_message()
             # Now wait some more...
             self.__wait_some_more_and_redecide(iteration)

@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import esgfpid.rabbit.rabbit
 import esgfpid.check
@@ -52,7 +52,7 @@ if True:
     testrabbit.start()
 
     # Run code to be tested:
-    for i in xrange(num_messages):
+    for i in range(num_messages):
           print("Publishing message %i..." % i)
           testrabbit.send_message_to_queue({"stuffee":"foo"+str(i+1),"ROUTING_KEY":routing_key})
           time.sleep(1)

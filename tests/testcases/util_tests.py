@@ -44,7 +44,7 @@ class UtilsTestCase(unittest.TestCase):
         )
 
         expected_handle = DATASETHANDLE_HDL
-        self.assertEquals(received_handle, expected_handle)
+        self.assertEqual(received_handle, expected_handle)
 
     #
     # argsutils

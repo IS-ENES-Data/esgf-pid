@@ -1,6 +1,6 @@
 import logging
 import pika
-import Queue
+import queue
 from .. import rabbitutils
 import esgfpid.defaults as defaults
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
@@ -151,7 +151,7 @@ class RabbitFeeder(object):
         # If no messages left, well, nothing to publish!
         try:
             message = self.__get_message_from_stack()
-        except Queue.Empty as e:
+        except queue.Empty as e:
             logtrace(LOGGER, 'Queue empty. No more messages to be published.')
             return
 

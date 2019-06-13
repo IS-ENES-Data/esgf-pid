@@ -49,10 +49,10 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__FORCE_FINISHED
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 0)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 0)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 0)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 0)
         # Check if connection was closed:
         shutter.thread._connection.close.assert_called()
 
@@ -74,8 +74,8 @@ class ThreadShutterTestCase(unittest.TestCase):
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__FORCE_FINISHED
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 4)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 8)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 4)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 8)
         self.assertFalse(shutter.thread.add_event_publish_message.called)
         # Check if connection was closed:
         shutter.thread._connection.close.assert_called()
@@ -97,10 +97,10 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__FORCE_FINISHED
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 0)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 0)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 0)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 0)
         # Check if ioloop was closed:
         shutter.thread.make_permanently_closed_by_user.assert_called_with()
 
@@ -119,10 +119,10 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__PERMANENTLY_UNAVAILABLE
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 0)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 0)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 0)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 0)
         self.assertFalse(shutter.thread.add_event_publish_message.called)
         # Check if connection was closed:
         shutter.thread._connection.close.assert_called()
@@ -139,11 +139,11 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__PERMANENTLY_UNAVAILABLE
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
 
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 0)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 0)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 0)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 0)
         self.assertTrue(shutter.thread.add_event_publish_message.called)
         # Check if connection was closed:
         shutter.thread._connection.close.assert_called()
@@ -162,11 +162,11 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__PERMANENTLY_UNAVAILABLE
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
 
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 0)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 0)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 0)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 0)
         # Check if connection was closed:
         shutter.thread._connection.close.assert_called()
 
@@ -184,7 +184,7 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__FORCE_FINISHED
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
 
         # Check leftovers:
         self.assertTrue(shutter.thread.get_num_unconfirmed()>0)
@@ -207,11 +207,11 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__FORCE_FINISHED
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
 
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 100)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 100)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 100)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 100)
         # Check if connection was closed:
         shutter.thread._connection.close.assert_called()
 
@@ -234,11 +234,11 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__FORCE_FINISHED
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
 
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 100)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 100)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 100)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 100)
         # Check if connection was closed:
         shutter.thread._connection.close.assert_called()
 
@@ -261,11 +261,11 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__FORCE_FINISHED
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
 
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 100)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 100)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 100)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 100)
         # Check if connection was closed:
         shutter.thread._connection.close.assert_called()
 
@@ -316,8 +316,8 @@ class ThreadShutterTestCase(unittest.TestCase):
 
         # Shutting is interrupted, so messages were not sent:
         self.assertFalse(shutter.thread.add_event_publish_message.called)
-        self.assertEquals(shutter.thread.num_unconfirmed, 100)
-        self.assertEquals(shutter.thread.num_unpublished, 100)
+        self.assertEqual(shutter.thread.num_unconfirmed, 100)
+        self.assertEqual(shutter.thread.num_unpublished, 100)
         # The mock was called, instead of the real method (this is the interrupting):
         self.assertTrue(shutter.recursive_decision_about_closing.called)
 
@@ -355,10 +355,10 @@ class ThreadShutterTestCase(unittest.TestCase):
         # Check result state:
         state = shutter.statemachine._StateMachine__state
         exp = shutter.statemachine._StateMachine__PERMANENTLY_UNAVAILABLE
-        self.assertEquals(state, exp)
+        self.assertEqual(state, exp)
 
         # Check leftovers:
-        self.assertEquals(shutter.thread.get_num_unconfirmed(), 4)
-        self.assertEquals(shutter.thread.get_num_unpublished(), 5)
+        self.assertEqual(shutter.thread.get_num_unconfirmed(), 4)
+        self.assertEqual(shutter.thread.get_num_unpublished(), 5)
         # Check if connection was closed:
         shutter.thread._connection.close.assert_called()

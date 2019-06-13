@@ -327,7 +327,7 @@ class ConnectionBuilder(object):
         num = self.thread.get_num_unpublished()
         if num > 0:
             loginfo(LOGGER, 'Ready to publish messages to RabbitMQ. %s messages are already waiting to be published.', num)
-            for i in xrange(int(num*1.1)):
+            for i in range(int(num*1.1)):
                 self.thread.add_event_publish_message()
         else:
             loginfo(LOGGER, 'Ready to publish messages to RabbitMQ.')

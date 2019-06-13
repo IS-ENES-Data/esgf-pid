@@ -66,7 +66,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder.first_connection()
 
         # Check result:
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         builder.thread._connection.ioloop.start.assert_called_with()
         builder.thread.continue_gently_closing_if_applicable.assert_called_with()
 
@@ -103,7 +103,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder.first_connection()
 
         # Check result:
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         builder.on_connection_error.assert_called()
         mock_connection.ioloop.start.assert_called_with()
         builder.thread.continue_gently_closing_if_applicable.assert_called_with()
@@ -142,7 +142,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder.first_connection()
 
         # Check result:
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         builder.on_connection_error.assert_called()
         mock_connection.ioloop.start.assert_called_with()
         builder.thread.continue_gently_closing_if_applicable.assert_called_with()
@@ -170,7 +170,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder.on_connection_open(unused_connection)
 
         # Check result:
-        self.assertEquals(channelpatch.call_count, 1)
+        self.assertEqual(channelpatch.call_count, 1)
         builder.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events.assert_called_with()
 
     #
@@ -357,7 +357,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # This was called inside reconnect:
         builder.thread._connection.ioloop.stop.assert_called()
         connpatch.assert_called()
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
         self.assertFalse(builder.statemachine.is_AVAILABLE())
@@ -427,7 +427,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # This was called inside reconnect:
         builder.thread._connection.ioloop.stop.assert_called()
         connpatch.assert_called()
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
         self.assertFalse(builder.statemachine.is_AVAILABLE())
@@ -487,7 +487,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # Check result:
         self.assertIn('until received a force-finish. Giving up', str(e.exception))
         builder.statemachine.is_FORCE_FINISHED.assert_called()
-        self.assertEquals(builder.statemachine.is_FORCE_FINISHED.call_count, 4)
+        self.assertEqual(builder.statemachine.is_FORCE_FINISHED.call_count, 4)
         # Reconnect was called:
         mock_connection.add_timeout.assert_not_called()
         # As the connection is never built, no messages are sent, it is not set to available:

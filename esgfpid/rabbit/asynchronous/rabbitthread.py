@@ -1,4 +1,4 @@
-import Queue
+import queue
 import threading
 import pika
 import time

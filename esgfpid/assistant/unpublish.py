@@ -94,7 +94,7 @@ class AssistantAllVersions(AssistantOneVersion):
 
     def __init__(self, **args):
         super(AssistantAllVersions, self).__init__(**args)
-        if 'consumer_solr_url' not in args.keys():
+        if 'consumer_solr_url' not in list(args.keys()):
             args['consumer_solr_url'] = None
         self.__consumer_solr_url = args['consumer_solr_url']
 

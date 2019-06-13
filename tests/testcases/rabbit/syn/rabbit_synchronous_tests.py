@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import unittest
 import mock
@@ -311,7 +311,7 @@ class RabbitConnectorTestCase(unittest.TestCase):
         # Check result:
         # Message was sent:
         channel = testrabbit._SynchronousRabbitConnector__channel
-        self.assertEquals(channel.success_counter, 1, 'Message should succeed!')
+        self.assertEqual(channel.success_counter, 1, 'Message should succeed!')
         # Message was sent on first try:
         self.assertEqual(channel.publish_counter, 1,
             'Message was sent %i times!' % channel.publish_counter)
@@ -347,7 +347,7 @@ class RabbitConnectorTestCase(unittest.TestCase):
             testrabbit.send_message_to_queue(msg)
 
         # Check result:
-        self.assertEquals(channel.success_counter, 0, 'Message should not succeed!')
+        self.assertEqual(channel.success_counter, 0, 'Message should not succeed!')
 
     @mock.patch('esgfpid.rabbit.synchronous.SynchronousRabbitConnector._SynchronousRabbitConnector__make_connection')
     def test_send_message_unroutable(self, connectionmock):
@@ -376,8 +376,8 @@ class RabbitConnectorTestCase(unittest.TestCase):
             testrabbit.send_message_to_queue(msg)
 
         # Check result:
-        self.assertEquals(channel.success_counter, 0, 'Message should not succeed!')
-        self.assertEquals(channel.publish_counter, 2, 'Message was tried %i times, not 2.' % channel.publish_counter)
+        self.assertEqual(channel.success_counter, 0, 'Message should not succeed!')
+        self.assertEqual(channel.publish_counter, 2, 'Message was tried %i times, not 2.' % channel.publish_counter)
 
 
 
@@ -410,7 +410,7 @@ class RabbitConnectorTestCase(unittest.TestCase):
 
         # Check result:
         # Message was sent:
-        self.assertEquals(channel.success_counter, 1, 'Message should succeed!')
+        self.assertEqual(channel.success_counter, 1, 'Message should succeed!')
         # Message was sent on second try:
         self.assertEqual(channel.publish_counter, 2,
             'Message was sent %i times!' % channel.publish_counter)
@@ -450,7 +450,7 @@ class RabbitConnectorTestCase(unittest.TestCase):
         self.assertTrue(conn.is_open)
         # Message was sent:
         channel = testrabbit._SynchronousRabbitConnector__channel
-        self.assertEquals(channel.success_counter, 1, 'Message should succeed!')
+        self.assertEqual(channel.success_counter, 1, 'Message should succeed!')
         # Message was sent on first try:
         self.assertEqual(channel.publish_counter, 1,
             'Message was sent %i times!' % channel.publish_counter)

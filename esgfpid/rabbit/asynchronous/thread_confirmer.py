@@ -207,6 +207,6 @@ class Confirmer(object):
     '''
     def get_unconfirmed_messages_as_list_copy(self):
         newlist = []
-        for deliv_tag,message in self.__unconfirmed_messages_dict.iteritems():
+        for deliv_tag,message in self.__unconfirmed_messages_dict.items():
             newlist.append(message)
         return newlist

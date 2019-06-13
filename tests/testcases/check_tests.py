@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import unittest
 import mock
@@ -106,9 +106,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
@@ -145,9 +145,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     #
@@ -184,9 +184,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
@@ -222,9 +222,9 @@ class CheckTestCase(unittest.TestCase):
         
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
 
@@ -270,9 +270,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
@@ -326,9 +326,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
 
@@ -365,9 +365,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
 
@@ -415,9 +415,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     #
@@ -453,9 +453,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
@@ -511,7 +511,7 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))

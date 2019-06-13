@@ -90,7 +90,7 @@ def _extract_field_from_response_json(response_json, fieldname):
 def _prepend_prefix_to_list_items_if_not_there(list_without_prefixes, prefix):
     new_list_with_prefixes = []
     for suffix_of_handle in list_without_prefixes:
-        if not isinstance(suffix_of_handle, (int, long)): # remove counts (if any were left)
+        if not isinstance(suffix_of_handle, int): # remove counts (if any were left)
             if prefix+'/' not in suffix_of_handle:
                 new_list_with_prefixes.append(prefix+'/'+suffix_of_handle)
             else:
@@ -100,7 +100,7 @@ def _prepend_prefix_to_list_items_if_not_there(list_without_prefixes, prefix):
 def _prepend_hdl_to_list_items_of_not_there(list_without_hdl):
     new_list_with_hdl = []
     for handle in list_without_hdl:
-        if not isinstance(handle, (int, long)): # remove counts (if any were left)
+        if not isinstance(handle, int): # remove counts (if any were left)
             if handle.startswith('hdl:'):
                 new_list_with_hdl.append(handle)
             else:
@@ -110,7 +110,7 @@ def _prepend_hdl_to_list_items_of_not_there(list_without_hdl):
 def _remove_counts_from_list(list_with_counts):
     new_list_without_counts = []
     for item in list_with_counts:
-        if not isinstance(item, (int, long)):
+        if not isinstance(item, int):
             new_list_without_counts.append(item)
     return new_list_without_counts
 

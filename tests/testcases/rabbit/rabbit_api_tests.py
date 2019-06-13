@@ -208,7 +208,7 @@ class RabbitTestCase(unittest.TestCase):
         # Check result:
         self.assertTrue(result_bool,
             'We asked the mock to return True, not %s.' % result_bool)
-        self.assertEquals(result_list, ['a', 'b', 'c'],
+        self.assertEqual(result_list, ['a', 'b', 'c'],
             'We asked the mock to return a list, not %s.' % result_list)
         mock_connector.any_leftovers.assert_called_with()
         mock_connector.get_leftovers.assert_called_with()

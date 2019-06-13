@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import unittest
 import logging
@@ -46,8 +46,8 @@ class RabbitUtilsTestCase(unittest.TestCase):
         # Check result:
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
-        self.assertEquals(received_key, 'roukey', 'Wrong routing key: %s' % received_key)
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(received_key, 'roukey', 'Wrong routing key: %s' % received_key)
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
     def test_get_message_and_routing_key_string_singlequtoes_ok(self):
         
@@ -61,8 +61,8 @@ class RabbitUtilsTestCase(unittest.TestCase):
         # Check result:
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
-        self.assertEquals(received_key, 'roukey', 'Wrong routing key: %s' % received_key)
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(received_key, 'roukey', 'Wrong routing key: %s' % received_key)
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
     def test_get_message_and_routing_key_string_no_key(self):
         
@@ -77,8 +77,8 @@ class RabbitUtilsTestCase(unittest.TestCase):
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
         expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
-        self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(received_key, expected_key, 'Wrong routing key: %s' % received_key)
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
     def test_get_message_and_routing_key_none_error(self):
         
@@ -103,8 +103,8 @@ class RabbitUtilsTestCase(unittest.TestCase):
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
         expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
-        self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(received_key, expected_key, 'Wrong routing key: %s' % received_key)
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
     def test_get_message_and_routing_key_json_ok(self):
         
@@ -118,8 +118,8 @@ class RabbitUtilsTestCase(unittest.TestCase):
         # Check result:
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
-        self.assertEquals(received_key, 'roukey', 'Wrong routing key: %s' % received_key)
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(received_key, 'roukey', 'Wrong routing key: %s' % received_key)
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
     def test_get_message_and_routing_key_json_no_rk(self):
         
@@ -134,8 +134,8 @@ class RabbitUtilsTestCase(unittest.TestCase):
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
         expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
-        self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(received_key, expected_key, 'Wrong routing key: %s' % received_key)
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
     def test_get_message_and_routing_key_list(self):
         
@@ -150,8 +150,8 @@ class RabbitUtilsTestCase(unittest.TestCase):
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
         expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
-        self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(received_key, expected_key, 'Wrong routing key: %s' % received_key)
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
     def test_get_message_and_routing_key_int(self):
         
@@ -166,8 +166,8 @@ class RabbitUtilsTestCase(unittest.TestCase):
         received_message = received_message.replace("'", '"')
         expected_message = str(passed_message).replace("'", '"')
         expected_key = esgfpid.utils.RABBIT_DEFAULT_ROUTING_KEY
-        self.assertEquals(received_key, expected_key, 'Wrong routing key: %s' % received_key)
-        self.assertEquals(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
+        self.assertEqual(received_key, expected_key, 'Wrong routing key: %s' % received_key)
+        self.assertEqual(expected_message, received_message, 'Wrong message.\nExpected: %s\nReceived: %s' % (expected_message, received_message))
 
     def test_get_message_and_routing_key_bogus(self):
         
