@@ -6,7 +6,7 @@ import logging
 import datetime
 import sys
 import esgfpid.utils
-from . import globalvar
+import globalvar
 
 # Setup logging:
 path = 'logs'
