@@ -65,7 +65,7 @@ def get_routing_key_and_string_message_from_message_if_possible(msg):
             logtrace(LOGGER, 'Message was already json.')
 
         except TypeError as e:
-            if 'not JSON serializable' in e.message:
+            if 'not JSON serializable' in repr(e):
 
                 # Message was whatever.
                 msg_string = str(msg)

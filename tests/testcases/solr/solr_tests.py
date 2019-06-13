@@ -126,7 +126,7 @@ class SolrTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query(query)
-        self.assertIn('HTTP 404', raised.exception.message)
+        self.assertIn('HTTP 404', repr(raised.exception))
 
 
     @mock.patch('esgfpid.solr.serverconnector.requests.get')
@@ -143,7 +143,7 @@ class SolrTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query(query)
-        self.assertIn('code 5000', raised.exception.message)
+        self.assertIn('code 5000', repr(raised.exception))
 
 
     def test_retrieve_file_handles_of_same_dataset_no_access(self):
@@ -209,7 +209,7 @@ class SolrTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query(query)
-        self.assertIn('ConnectionError', raised.exception.message)
+        self.assertIn('ConnectionError', repr(raised.exception))
 
     @mock.patch('esgfpid.solr.serverconnector.requests.get')
     def test_retrieve_datasethandles_or_versionnumbers_of_allversions_pids_patched(self, getpatch):

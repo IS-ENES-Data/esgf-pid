@@ -265,9 +265,9 @@ class SolrTask1TestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             received_handles = task.retrieve_file_handles_of_same_dataset(**args)
-        self.assertIn('Failure in both queries', raised.exception.message)
-        self.assertIn('Whatever 1', raised.exception.message)
-        self.assertIn('Whatever 2', raised.exception.message)
+        self.assertIn('Failure in both queries', repr(raised.exception))
+        self.assertIn('Whatever 1', repr(raised.exception))
+        self.assertIn('Whatever 2', repr(raised.exception))
 
 
     @mock.patch('esgfpid.solr.serverconnector.SolrServerConnector.send_query')
@@ -297,7 +297,7 @@ class SolrTask1TestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             received_handles = task.retrieve_file_handles_of_same_dataset(**args)
-        self.assertIn('Failure in both queries', raised.exception.message)
-        self.assertIn('First query returned an empty list', raised.exception.message)
-        self.assertIn('Whatever 2', raised.exception.message)
+        self.assertIn('Failure in both queries', repr(raised.exception))
+        self.assertIn('First query returned an empty list', repr(raised.exception))
+        self.assertIn('Whatever 2', repr(raised.exception))
 

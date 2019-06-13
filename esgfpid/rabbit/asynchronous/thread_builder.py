@@ -185,8 +185,8 @@ class ConnectionBuilder(object):
 
     def __make_error_name(self, ex, custom_text=None):
         errorname = ex.__class__.__name__
-        if not ex.message == '':
-            errorname += ': '+ex.message
+        if not repr(ex) == '':
+            errorname += ': '+repr(ex)
         if custom_text is not None:
             errorname += ' ('+custom_text+')'
         return errorname

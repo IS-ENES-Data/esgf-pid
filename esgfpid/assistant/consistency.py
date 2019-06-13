@@ -75,7 +75,7 @@ class Checker(object):
             self.__log_no_useful_info()
 
     def __log_solr_error_occured(self, exception):
-        msg = ('No dataset integrity test could be run. Message: '+exception.message)
+        msg = ('No dataset integrity test could be run. Message: '+repr(exception))
         self.__message_why_not = msg
         loginfo(LOGGER, msg)
 

@@ -160,7 +160,7 @@ class ConsistencyTestCase(unittest.TestCase):
         # Run code to be tested:
         with self.assertRaises(ValueError) as raised:
             success = checker.data_consistency_check(['any', 'thing'])
-        self.assertIn('No reason specified', raised.exception.message, 'Expected message did not arrive: "%s"' % raised.exception.message)
+        self.assertIn('No reason specified', repr(raised.exception), 'Expected message did not arrive: "%s"' % repr(raised.exception))
 
 
     def test_preparation_files_is_empty_list(self):

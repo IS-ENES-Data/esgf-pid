@@ -73,7 +73,7 @@ class FindVersionsOfSameDataset(object):
             return dataset_handles
 
         except esgfpid.exceptions.SolrResponseError as e:
-            self.__error_messages.append(e.message)
+            self.__error_messages.append(repr(e))
 
     def __get_version_numbers_if_any(self, response_json):
         try:
@@ -83,4 +83,4 @@ class FindVersionsOfSameDataset(object):
             return version_numbers
 
         except esgfpid.exceptions.SolrResponseError as e:
-            self.__error_messages.append(e.message)
+            self.__error_messages.append(repr(e))

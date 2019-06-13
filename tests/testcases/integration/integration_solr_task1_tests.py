@@ -115,4 +115,4 @@ class SolrTask1IntegrationTestCase(unittest.TestCase):
                 version_number=version_number,
                 data_node=data_node
             )
-        self.assertIn('Failure in both queries.', raised.exception.message)
+        self.assertIn('Failure in both queries.', repr(raised.exception))

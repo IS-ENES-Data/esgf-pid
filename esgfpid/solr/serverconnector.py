@@ -92,7 +92,7 @@ class SolrServerConnector(object):
             return response_json
 
         except (ValueError, TypeError) as e:
-            msg = 'Error while parsing Solr response. It seems to be no valid JSON. Message: '+e.message
+            msg = 'Error while parsing Solr response. It seems to be no valid JSON. Message: '+repr(e)
             logerror(LOGGER, msg)
             raise esgfpid.exceptions.SolrError(msg)
 

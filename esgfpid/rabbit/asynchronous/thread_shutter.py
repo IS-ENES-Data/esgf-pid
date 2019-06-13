@@ -35,7 +35,7 @@ class ShutDowner(object):
         try:
             return self.__force_finish('Forced finish from outside the thread.')
         except Exception as e:
-            logwarn(LOGGER, 'Error in shutter.force_finish(): %s: %s', e.__class__.__name__, e.message)
+            logwarn(LOGGER, 'Error in shutter.force_finish(): %s: %s', e.__class__.__name__, repr(e))
             raise e
 
     #####################
@@ -46,7 +46,7 @@ class ShutDowner(object):
         try:
             return self.__finish_gently()
         except Exception as e:
-            logwarn(LOGGER, 'Error in shutter.finish_gently(): %s: %s', e.__class__.__name__, e.message)
+            logwarn(LOGGER, 'Error in shutter.finish_gently(): %s: %s', e.__class__.__name__, repr(e))
             raise e
 
     def __finish_gently(self):
@@ -288,7 +288,7 @@ class ShutDowner(object):
                 logerror(LOGGER, 'Connection was None when trying to close. Synchronization error between threads!')
 
         except AttributeError as e:
-            logdebug(LOGGER, 'AttributeError from pika during connection closedown (%s: %s)', e.__class__.__name__, e.message)
+            logdebug(LOGGER, 'AttributeError from pika during connection closedown (%s: %s)', e.__class__.__name__, repr(e))
 
     def __inform_about_state_at_shutdown(self):
         unsent = self.thread.get_num_unpublished()

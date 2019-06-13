@@ -233,7 +233,7 @@ class ThreadConfirmerTestCase(unittest.TestCase):
         # Run code to be tested:
         with self.assertRaises(esgfpid.rabbit.asynchronous.exceptions.UnknownServerResponse) as e:
             confirmer.on_delivery_confirmation(method_frame)
-        self.assertIn('unknown type', e.exception.message)
+        self.assertIn('unknown type', repr(e.exception))
 
     def test_server_response_error_1(self):
 
@@ -249,7 +249,7 @@ class ThreadConfirmerTestCase(unittest.TestCase):
         # Run code to be tested:
         with self.assertRaises(esgfpid.rabbit.asynchronous.exceptions.UnknownServerResponse) as e:
             confirmer.on_delivery_confirmation(method_frame)
-        self.assertIn('list index out of range', e.exception.message)
+        self.assertIn('list index out of range', repr(e.exception))
 
     def test_server_response_error_2(self):
 
@@ -265,6 +265,6 @@ class ThreadConfirmerTestCase(unittest.TestCase):
         # Run code to be tested:
         with self.assertRaises(esgfpid.rabbit.asynchronous.exceptions.UnknownServerResponse) as e:
             confirmer.on_delivery_confirmation(method_frame)
-        self.assertIn('\'NoneType\' object has no attribute \'split\'', e.exception.message)
+        self.assertIn('\'NoneType\' object has no attribute \'split\'', repr(e.exception))
 
  
