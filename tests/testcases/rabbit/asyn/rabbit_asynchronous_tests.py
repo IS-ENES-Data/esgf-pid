@@ -239,8 +239,7 @@ class RabbitAsynConnectorTestCase(unittest.TestCase):
 
         # Check that the four messages were NOT put into the queue:
         queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
-        with self.assertRaises(Queue.Empty):
-            queue.get(False)
+        self.assertTrue(queue.empty())
 
     def test_send_message_user_closed(self):
 
@@ -268,8 +267,7 @@ class RabbitAsynConnectorTestCase(unittest.TestCase):
 
         # Check that the four messages were NOT put into the queue:
         queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
-        with self.assertRaises(Queue.Empty):
-            queue.get(False)
+        self.assertTrue(queue.empty())
 
 
     #
