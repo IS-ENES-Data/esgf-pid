@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 # Dependencies for using the library:
 dependencies = [
     'pika==1.0.1',
-    'requests>=2.20.0'
+    'requests>=2.22.0'
 ]
 
 # Dependencies for running the tests:
