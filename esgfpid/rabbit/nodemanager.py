@@ -1,3 +1,4 @@
+import ssl
 import pika
 import copy
 import logging
@@ -282,6 +283,10 @@ class NodeManager(object):
         if 'ssl_enabled' in node_info_dict and node_info_dict['ssl_enabled'] is not None:
             ssl_enabled = node_info_dict['ssl_enabled']
 
+        # Create SSLOptions if SSL is enabled
+        ssl_options = None
+        if ssl_enabled:
+            ssl_options = pika.SSLOptions(ssl.create_default_context())
 
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_PIKA_SOCKET_TIMEOUT
@@ -292,7 +297,7 @@ class NodeManager(object):
         # https://pika.readthedocs.org/en/0.9.6/connecting.html
         params = pika.ConnectionParameters(
             host=host,
-            ssl=ssl_enabled,
+            ssl_options=ssl_options,
             port=port,
             virtual_host=vhost,
             credentials=credentials,
