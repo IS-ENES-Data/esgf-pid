@@ -18,7 +18,7 @@ def make_suffix_from_drsid_and_versionnumber(**args):
     return _make_uuid_from_basis(hash_basis)
 
 def _make_uuid_from_basis(hash_basis):
-    hash_basis_utf8 = hash_basis.encode('utf-8')
+    hash_basis_utf8 = str(hash_basis.encode('utf-8'))
     ds_uuid = uuid.uuid3(uuid.NAMESPACE_URL, hash_basis_utf8) # Using uuid3, as this is easy to use also with Java
     return str(ds_uuid)
     # Which NAMESPACE (1st arg) we use does not matter, as uuids only have to be unique inside ESGF, not globally.
