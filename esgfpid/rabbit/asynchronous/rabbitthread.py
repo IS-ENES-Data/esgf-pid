@@ -158,11 +158,11 @@ class RabbitThread(threading.Thread):
         The fact that it is possible to increase it requires some precautions.
         If messages can be scheduled to be sent to server, but not actually sent
         yet makes it difficult to loop over the Queue of unsent messages, using
-        "while" and "Queue.Empty" to break it.
+        "while" and "queue.Empty" to break it.
         (It will loop for too long and then have to call the publish method many
         many times with no more messages to publish.)
 
-        If you ever decide to while-loop and break on Queue.Empty, just make sure
+        If you ever decide to while-loop and break on queue.Empty, just make sure
         the publish interval is zero.
         '''
         self.__PUBLISH_INTERVAL_SECONDS = 0
@@ -348,9 +348,9 @@ class RabbitThread(threading.Thread):
     def get_num_unconfirmed(self):
         return self.__confirmer.get_num_unconfirmed()
 
-    ''' Called by feeder, to publish a message. May raise Queue.Empty. '''
+    ''' Called by feeder, to publish a message. May raise queue.Empty. '''
     def get_message_from_unpublished_stack(self, seconds):
-        return self.__unpublished_messages_queue.get(block=True, timeout=seconds) # can raise Queue.Empty
+        return self.__unpublished_messages_queue.get(block=True, timeout=seconds) # can raise queue.Empty
 
     ''' Called by feeder, to put a message back that was not successfully published. '''
     def put_one_message_into_queue_of_unsent_messages(self, message):

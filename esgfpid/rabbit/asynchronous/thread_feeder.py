@@ -185,7 +185,7 @@ class RabbitFeeder(object):
     Note: May block for up to 2 seconds.
 
     :return: A message from the stack of unpublished messages.
-    :raises: Queue.Empty.
+    :raises: queue.Empty.
     '''
     def __get_message_from_stack(self, seconds=0):
         message = self.thread.get_message_from_unpublished_stack(seconds)

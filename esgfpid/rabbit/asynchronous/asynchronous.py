@@ -440,7 +440,7 @@ class AsynchronousRabbitConnector(object):
     published once publishing definitely has ended.
 
     The method iterates over the Queue and retrieves objects until
-    a Queue.Empty event occurs. As this event is not guaranteed
+    a queue.Empty event occurs. As this event is not guaranteed
     to be true, the retrieval is then tried another time with
     a little timeout to make sure all elements are retrieved.
 
