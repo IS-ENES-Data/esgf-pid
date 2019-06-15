@@ -473,12 +473,12 @@ class AsynchronousRabbitConnector(object):
         return newlist
 
     '''Put a message from the Queue to the list, without waiting.'''
-    def __get_msg_from_queue_and_store_first_try(self, alist, queue):
-        msg_incl_routing_key = queue.get(block=False)
+    def __get_msg_from_queue_and_store_first_try(self, alist, msg_queue):
+        msg_incl_routing_key = msg_queue.get(block=False)
         alist.append(msg_incl_routing_key)
 
     '''Put a message from the Queue to the list, with waiting.'''
-    def __get_a_msg_from_queue_and_store_second_try(self, alist, queue):
+    def __get_a_msg_from_queue_and_store_second_try(self, alist, msg_queue):
         wait_seconds = 0.5
-        msg_incl_routing_key = queue.get(block=True, timeout=wait_seconds)
+        msg_incl_routing_key = msg_queue.get(block=True, timeout=wait_seconds)
         alist.append(msg_incl_routing_key)

@@ -67,7 +67,7 @@ without needed references to each other.
 '''
 class RabbitThread(threading.Thread):
 
-    def __init__(self, statemachine, queue, facade, node_manager):
+    def __init__(self, statemachine, msg_queue, facade, node_manager):
         threading.Thread.__init__(self)
 
         '''
@@ -107,7 +107,7 @@ class RabbitThread(threading.Thread):
         will retrieve and publish them.
         Shared with the main thread!
         '''
-        self.__unpublished_messages_queue = queue
+        self.__unpublished_messages_queue = msg_queue
 
         # These are only used by the rabbit thread:
         '''
