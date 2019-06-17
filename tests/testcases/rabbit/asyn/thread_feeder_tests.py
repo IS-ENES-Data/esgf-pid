@@ -135,7 +135,7 @@ class ThreadFeederTestCase(unittest.TestCase):
 
         # Preparation:
         msg = "{'foo':'bar'}"
-        feeder, thread = self.make_feeder(error=pika.exceptions.ChannelClosed)
+        feeder, thread = self.make_feeder(error=pika.exceptions.ChannelClosed(reply_code=0, reply_text='Channel Closed'))
         thread.messages.append(msg)
 
         # Run code to be tested:

@@ -124,7 +124,7 @@ class ThreadReturnerTestCase(unittest.TestCase):
         # Preparation:
         emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY
         body = '{"foo":"bar"}'
-        handler, thread = self.make_returnhandler(error=pika.exceptions.ChannelClosed)
+        handler, thread = self.make_returnhandler(error=pika.exceptions.ChannelClosed(reply_code=0, reply_text='Channel Closed'))
         # <Basic.Return(['exchange=rabbitsender_integration_tests', 'reply_code=312', 'reply_text=NO_ROUTE', 'routing_key=cmip6.publisher.HASH.cart.datasets'])>"
         frame = mock.MagicMock()
         frame.reply_text = 'NO_ROUTE'

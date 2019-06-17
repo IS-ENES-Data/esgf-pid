@@ -309,7 +309,7 @@ class CheckTestCase(unittest.TestCase):
             if params.host == 'tomato.salad-with-spam.fr':
                 return tests.resources.pikamock.MockPikaBlockingConnection(mock.MagicMock())
             else:
-                raise pika.exceptions.ConnectionClosed      
+                raise pika.exceptions.ConnectionClosed(reply_code=0, reply_text='Connection Closed')      
         connection_patch.side_effect = different_mock_response_depending_on_host
 
         # Run code to be tested and capture stout:

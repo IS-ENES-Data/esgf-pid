@@ -232,7 +232,7 @@ class RabbitConnectorTestCase(unittest.TestCase):
         def make_mocked_connection(params):
             return tests.resources.pikamock.MockPikaBlockingConnection(params)
         connectionmock.side_effect = make_mocked_connection
-        channelmock.side_effect = pika.exceptions.ChannelClosed
+        channelmock.side_effect = pika.exceptions.ChannelClosed(reply_code=0, reply_text='Channel Closed')
 
         # Make test rabbit:
         testrabbit = TESTHELPERS.get_synchronous_rabbit()

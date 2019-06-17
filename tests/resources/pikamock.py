@@ -61,7 +61,7 @@ class MockPikaBlockingConnection(object):
     def channel(self): # This mocks the original API
         #return MockChannel()
         if self.raise_channel_closed:
-            raise pika.exceptions.ChannelClosed()
+            raise pika.exceptions.ChannelClosed(reply_code=0, reply_text='Channel Closed')
         else:
             return MockChannel()
 
