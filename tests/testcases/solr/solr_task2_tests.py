@@ -94,7 +94,7 @@ class SolrTask2TestCase(unittest.TestCase):
             'version_numbers': ['2015', '2016', '2099'],
             'dataset_handles': ['hdl:123/987/567', 'hdl:123/234', 'hdl:123/456']
         }
-        self.assertEqual(expected_dict, received_dict, 'Expected %s, but got %s' % (expected_dict, received_dict))
+        self.assertEqual(sorted(expected_dict), sorted(received_dict), 'Expected %s, but got %s' % (expected_dict, received_dict))
 
     @mock.patch('esgfpid.solr.serverconnector.SolrServerConnector.send_query')
     def test_retrieve_dataset_handles_only_handles_returned_ok(self, getpatch):
@@ -123,7 +123,7 @@ class SolrTask2TestCase(unittest.TestCase):
             'version_numbers': [],
             'dataset_handles': ['hdl:123/987/567', 'hdl:123/234', 'hdl:123/456']
         }
-        self.assertEqual(expected_dict, received_dict, 'Expected %s, but got %s' % (expected_dict, received_dict))
+        self.assertEqual(sorted(expected_dict), sorted(received_dict), 'Expected %s, but got %s' % (expected_dict, received_dict))
 
 
 
@@ -154,7 +154,7 @@ class SolrTask2TestCase(unittest.TestCase):
             'version_numbers': ['2015', '2016', '2099'],
             'dataset_handles': []
         }
-        self.assertEqual(expected_dict, received_dict, 'Expected %s, but got %s' % (expected_dict, received_dict))
+        self.assertEqual(sorted(expected_dict), sorted(received_dict), 'Expected %s, but got %s' % (expected_dict, received_dict))
 
 
 
@@ -185,7 +185,7 @@ class SolrTask2TestCase(unittest.TestCase):
             'version_numbers': [],
             'dataset_handles': []
         }
-        self.assertEqual(expected_dict, received_dict, 'Expected %s, but got %s' % (expected_dict, received_dict))
+        self.assertEqual(sorted(expected_dict), sorted(received_dict), 'Expected %s, but got %s' % (expected_dict, received_dict))
 
 
     @mock.patch('esgfpid.solr.serverconnector.SolrServerConnector.send_query')

@@ -94,7 +94,7 @@ class SolrTask1TestCase(unittest.TestCase):
         getpatch.assert_called_once_with(expected_query)
         # Was the response treated correctly?
         expected_handles = ['hdl:123/987/567', 'hdl:123/234', 'hdl:123/456']
-        self.assertEqual(expected_handles, received_handles, 'Expected %s, but got %s' % (expected_handles, received_handles))
+        self.assertEqual(sorted(expected_handles), sorted(received_handles), 'Expected %s, but got %s' % (expected_handles, received_handles))
 
 
     @mock.patch('esgfpid.solr.serverconnector.SolrServerConnector.send_query')
@@ -162,7 +162,7 @@ class SolrTask1TestCase(unittest.TestCase):
         getpatch.assert_called_with(expected_query_2)
         # Was the response treated correctly?
         expected_handles = ['hdl:123/987/567', 'hdl:123/234', 'hdl:123/456']
-        self.assertEqual(expected_handles, received_handles, 'Expected %s, but got %s' % (expected_handles, received_handles))
+        self.assertEqual(sorted(expected_handles), sorted(received_handles), 'Expected %s, but got %s' % (expected_handles, received_handles))
 
     @mock.patch('esgfpid.solr.serverconnector.SolrServerConnector.send_query')
     def test_retrieve_file_handles_of_same_dataset_A_error_B_ok_patched(self, getpatch):
@@ -200,7 +200,7 @@ class SolrTask1TestCase(unittest.TestCase):
         getpatch.assert_called_with(expected_query_2)
         # Was the response treated correctly?
         expected_handles = ['hdl:123/987/567', 'hdl:123/234', 'hdl:123/456']
-        self.assertEqual(expected_handles, received_handles, 'Expected %s, but got %s' % (expected_handles, received_handles))
+        self.assertEqual(sorted(expected_handles), sorted(received_handles), 'Expected %s, but got %s' % (expected_handles, received_handles))
 
     @mock.patch('esgfpid.solr.serverconnector.SolrServerConnector.send_query')
     def test_retrieve_file_handles_of_same_dataset_A_error_B_nohandles_patched(self, getpatch):
