@@ -265,6 +265,6 @@ class ThreadConfirmerTestCase(unittest.TestCase):
         # Run code to be tested:
         with self.assertRaises(esgfpid.rabbit.asynchronous.exceptions.UnknownServerResponse) as e:
             confirmer.on_delivery_confirmation(method_frame)
-        self.assertIn('\'NoneType\' object has no attribute \'split\'', repr(e.exception))
+        self.assertIn('\\\'NoneType\\\' object has no attribute \\\'split\\\'', repr(e.exception))
 
  
