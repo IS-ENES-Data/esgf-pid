@@ -7,7 +7,11 @@ import tests.resources.responsemock
 #import tests.resources.solrmock
 #import tests.resources.rabbitmock
 import tests.utils as utils
-import queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 
 # Errata
 ERRATA_SEVERAL = ['123456','654321']
