@@ -2,7 +2,11 @@ import unittest
 import mock
 import logging
 import esgfpid
-import importlib
+import sys
+if sys.version_info.major >= 3:
+    import importlib
+    def reload(module):
+        return importlib.reload(module)
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -55,7 +59,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         # Prepare flags
         defaults_patch.LOG_INFO_TO_DEBUG = False # <-- This is tested
         defaults_patch.LOG_TRACE_TO_DEBUG = 999 # irrelevant here
-        importlib.reload(esgfpid.utils)
+        reload(esgfpid.utils)
 
         # Run code to be tested:
         esgfpid.utils.loginfo(logger, 'barbaz %s %i', 'a', 1, show=True)
@@ -78,7 +82,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         # Prepare flags
         defaults_patch.LOG_INFO_TO_DEBUG = False # <-- This is tested
         defaults_patch.LOG_TRACE_TO_DEBUG = 999 # irrelevant here
-        importlib.reload(esgfpid.utils)
+        reload(esgfpid.utils)
 
         # Run code to be tested:
         esgfpid.utils.loginfo(logger, 'barbaz')
@@ -96,7 +100,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         # Prepare flags
         defaults_patch.LOG_INFO_TO_DEBUG = True # <-- This is tested
         defaults_patch.LOG_TRACE_TO_DEBUG = 999 # irrelevant here
-        importlib.reload(esgfpid.utils)
+        reload(esgfpid.utils)
 
         # Run code to be tested:
         esgfpid.utils.loginfo(logger, 'barbaz')
@@ -115,7 +119,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         defaults_patch.LOG_INFO_TO_DEBUG = 999 # irrelevant here
         defaults_patch.LOG_DEBUG_TO_INFO = False
         defaults_patch.LOG_TRACE_TO_DEBUG = 999 # irrelevant here
-        importlib.reload(esgfpid.utils)
+        reload(esgfpid.utils)
 
         # Run code to be tested:
         esgfpid.utils.logdebug(logger, 'foofoo')
@@ -134,7 +138,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         # Prepare flags
         defaults_patch.LOG_INFO_TO_DEBUG = 999 # irrelevant here
         defaults_patch.LOG_TRACE_TO_DEBUG = False #  this is relevant!
-        importlib.reload(esgfpid.utils)
+        reload(esgfpid.utils)
 
         # Run code to be tested:
         esgfpid.utils.logtrace(logger, 'superdetail')
@@ -154,7 +158,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         defaults_patch.LOG_INFO_TO_DEBUG = 999 # irrelevant here
         defaults_patch.LOG_TRACE_TO_DEBUG = True #  this is relevant!
         defaults_patch.LOG_DEBUG_TO_INFO = False
-        importlib.reload(esgfpid.utils)
+        reload(esgfpid.utils)
 
         # Run code to be tested:
         esgfpid.utils.logtrace(logger, 'superdetail')
@@ -176,7 +180,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         # Prepare flags
         defaults_patch.LOG_INFO_TO_DEBUG = 999 # irrelevant here
         defaults_patch.LOG_TRACE_TO_DEBUG = 999 # irrelevant here
-        importlib.reload(esgfpid.utils)
+        reload(esgfpid.utils)
 
         # Run code to be tested:
         esgfpid.utils.logwarn(logger, 'danger')
@@ -194,7 +198,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         # Prepare flags
         defaults_patch.LOG_INFO_TO_DEBUG = 999 # irrelevant here
         defaults_patch.LOG_TRACE_TO_DEBUG = 999 # irrelevant here
-        importlib.reload(esgfpid.utils)
+        reload(esgfpid.utils)
 
         # Run code to be tested:
         esgfpid.utils.logerror(logger, 'danger')
@@ -224,7 +228,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         defaults_patch.LOG_INFO_TO_DEBUG = 999 # irrelevant here
         defaults_patch.LOG_TRACE_TO_DEBUG = 999 # irrelevant here
         defaults_patch.LOG_DEBUG_TO_INFO = False
-        importlib.reload(esgfpid.utils)
+        reload(esgfpid.utils)
 
         # Run code to be tested:
         for i in range(35):
