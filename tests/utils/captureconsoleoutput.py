@@ -9,8 +9,11 @@ http://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-un
 '''
 
 from contextlib import contextmanager
-from io import StringIO
 import sys
+if sys.version[0] == '2':
+    from StringIO import StringIO
+else:
+    from io import StringIO
 
 @contextmanager
 def captured_output():
