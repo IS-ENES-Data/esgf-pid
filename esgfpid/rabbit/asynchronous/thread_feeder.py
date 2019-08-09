@@ -1,6 +1,10 @@
 import logging
 import pika
-import queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 from .. import rabbitutils
 import esgfpid.defaults as defaults
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times

@@ -1,6 +1,10 @@
 import unittest
 import logging
-import queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 import pika
 import esgfpid.rabbit.asynchronous.thread_feeder
 from esgfpid.rabbit.asynchronous.exceptions import OperationNotAllowed

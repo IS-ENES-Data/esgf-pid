@@ -1,4 +1,8 @@
-import queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 import threading
 import pika
 import time

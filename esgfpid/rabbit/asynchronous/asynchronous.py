@@ -23,7 +23,11 @@ thread by calling "finish_rabbit_thread()" or "force_finish_rabbit_thread()".
 
 '''
 
-import queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 import threading
 import pika
 import time
