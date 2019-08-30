@@ -285,6 +285,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder = self.make_builder()
         builder._ConnectionBuilder__start_connect_time = datetime.datetime.now()
         builder.statemachine.set_to_wanting_to_stop()
+        builder.thread.get_num_unpublished.return_value = 0
         testchannel = mock.MagicMock()
 
         # Run code to be tested:
