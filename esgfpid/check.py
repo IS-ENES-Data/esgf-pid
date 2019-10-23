@@ -39,8 +39,6 @@ Example result:
     print method.)
 :param send_message: Optional. Boolean. If True, a test message will be sent to
     a RabbitMQ instance after successful connection.
-:param prefix: Optional. String. If send_message is True, a prefix is needed to
-    send a test message.
 :return: String message, or None. If the check passed, returns None. Otherwise,
     returns a detailed, printable string problem message - see example above.
 '''
@@ -56,7 +54,7 @@ class RabbitChecker(object):
 
     def __init__(self, **args):
         mandatory_args = ['connector']
-        optional_args = ['prefix', 'send_message', 'print_to_console', 'print_success_to_console']
+        optional_args = ['send_message', 'print_to_console', 'print_success_to_console']
         check_presence_of_mandatory_args(args, mandatory_args)
         add_missing_optional_args_with_value_none(args, optional_args)
         self.__define_all_attributes()
@@ -74,6 +72,7 @@ class RabbitChecker(object):
         self.__current_rabbit_host = None
         self.__exchange_name = None
         self.__send_message = False
+        self.__prefix = None
 
     def __fill_all_attributes(self, args):
         self.__nodemanager = args['connector']._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
@@ -83,6 +82,8 @@ class RabbitChecker(object):
             self.__print_success_to_console = True
         if args['send_message'] is not None and args['send_message'] == True:
             self.__send_message = True
+        self.__prefix = args['connector'].prefix
+
 
 
     #
@@ -141,6 +142,10 @@ class RabbitChecker(object):
                 self.__check_exchange_existence(self.channel)
 
                 if self.__send_message:
+                    if self.__prefix is None:
+                        # Cannot happen, as we get it from the connector object.
+                        raise esgfpid.exceptions.ArgumentError('Missing handle prefix!')
+
                     self.__check_send_print_message(self.channel)
 
                 success = True
@@ -187,7 +192,16 @@ class RabbitChecker(object):
         props = pika.BasicProperties(
             delivery_mode = 2
         )
+        
+        # This also does the trick:
+        #esgfpid.utils.routingkeys.add_prefix_to_routing_keys(self.__prefix)
+        #rkey = utils.routingkeys.ROUTING_KEYS['pre_flight']
         rkey = utils.routingkeys.ROUTING_KEYS_TEMPLATES['pre_flight']
+        sanitized_prefix = utils.routingkeys._sanitize_prefix(self.__prefix)
+        rkey = rkey.replace('PREFIX', sanitized_prefix)
+        if 'PREFIX' in rkey:
+            raise ValueError('Prefix placeholder in routing key was not replaced!')
+
         body = 'PLEASE PRINT: Testing pre-flight check...'
         self.__loginfo(' .. checking message ...')
         res = channel.basic_publish(
