@@ -75,14 +75,20 @@ class RabbitChecker(object):
         self.__prefix = None
 
     def __fill_all_attributes(self, args):
+        
         self.__nodemanager = args['connector']._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
+
         if args['print_to_console'] is not None and args['print_to_console'] == True:
             self.__print_errors_to_console = True
+
         if args['print_success_to_console'] is not None and args['print_success_to_console'] == True:
             self.__print_success_to_console = True
+        
         if args['send_message'] is not None and args['send_message'] == True:
             self.__send_message = True
+        
         self.__prefix = args['connector'].prefix
+
 
 
     #

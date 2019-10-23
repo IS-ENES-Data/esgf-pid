@@ -67,7 +67,6 @@ expected_message_connection_failed_only1 = '''Checking config for PID module (ra
  .. giving this node a lower priority..
 Config for PID module (rabbit messaging queue) .. FAILED!'''
 
-
 expected_message_connection_failed_only2 = '''*********************************************************************************
 *** PROBLEM IN SETTING UP                                                     ***
 *** RABBIT MESSAGING QUEUE (PID MODULE)                                       ***
@@ -85,7 +84,6 @@ expected_message_connection_failed_several1 = '''Checking config for PID module 
  .. checking connection (tomato.salad-with-spam.fr)... FAILED.
  .. giving this node a lower priority..
 Config for PID module (rabbit messaging queue) .. FAILED!'''
-
 
 expected_message_connection_failed_several2 = '''**************************************************************************************
 *** PROBLEM IN SETTING UP                                                          ***
