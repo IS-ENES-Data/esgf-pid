@@ -109,7 +109,6 @@ class CheckTestCase(unittest.TestCase):
         self.assertEquals(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
-
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
     def test_run_check_with_msg_ok(self, connection_patch):
         ''' This checks if the entire function works fine in case
