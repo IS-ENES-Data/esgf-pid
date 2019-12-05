@@ -117,9 +117,11 @@ class NodeManager(object):
     def __add_node(self, store_where, store_archive, **kwargs):
         if self.__has_necessary_info(kwargs):
             node_info = copy.deepcopy(kwargs)
+            node_copy = copy.deepcopy(kwargs)
             self.__complete_info_dict(node_info, kwargs['is_open'])
+            self.__complete_info_dict(node_copy, kwargs['is_open'])
             self.__store_node_info_by_priority(node_info, store_where)
-            self.__store_node_info_by_priority(copy.deepcopy(node_info), store_archive)
+            self.__store_node_info_by_priority(node_copy, store_archive)
             #store_where[node_info['priority']].append(node_info)
             #store_archive[node_info['priority']].append(copy.deepcopy(node_info))
             return node_info
@@ -127,15 +129,12 @@ class NodeManager(object):
             raise esgfpid.exceptions.ArgumentError('Cannot add this RabbitMQ node. Missing info. Required: username, password, host and exchange_name. Provided: '+str(kwargs))
 
     def __compare_nodes(self, cand1, cand2):
-        copy1 = copy.deepcopy(cand1)
-        copy2 = copy.deepcopy(cand2)
         # These cannot be compared by "==".
         # They are created from the other info, so neglecting
         # them in this comparison is ok!
-        copy1['credentials'] = None
-        copy2['credentials'] = None
-        copy1['params'] = None
-        copy2['params'] = None
+        ignore_keys = ['credentials', 'params']
+        copy1 = dict((k, v) for k,v in cand1.items() if k not in ignore_keys)
+        copy2 = dict((k, v) for k,v in cand2.items() if k not in ignore_keys)
         return copy1 == copy2
 
     def __is_this_node_in_last_prio_already(self, where_to_look):
@@ -496,8 +495,23 @@ class NodeManager(object):
     '''
     def reset_nodes(self):
         logdebug(LOGGER, 'Resetting hosts...')
-        self.__trusted_nodes = copy.deepcopy(self.__trusted_nodes_archive)
-        self.__open_nodes = copy.deepcopy(self.__open_nodes_archive)
+
+        # Create a copy of a node list by rebuilding the ConnectionParameters with the values of the original nodes.
+        # This is done to prevent performing a copy of the SSLContext in the pika SSLOption object.
+        def _copy_node_list(node_list):
+            list_copy = {}
+            ignore_keys = ['params']
+            for list_key, list_value in node_list.items():
+                copy_value = []
+                for node_info in list_value:
+                    node_info_copy = dict((k, v) for k,v in node_info.items() if k not in ignore_keys)
+                    copy_value.append(self.__complete_info_dict(node_info_copy, node_info['is_open']))
+                list_copy[list_key] = copy_value
+            return list_copy
+
+        self.__trusted_nodes = _copy_node_list(self.__trusted_nodes_archive)
+        self.__open_nodes = _copy_node_list(self.__open_nodes_archive)
+
         self.set_next_host()
 
     def _get_prio_stored_for_current(self):
