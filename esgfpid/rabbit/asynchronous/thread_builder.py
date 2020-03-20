@@ -485,7 +485,19 @@ class ConnectionBuilder(object):
         In this case, we want to reopen a connection.
 
     '''
-    def on_channel_closed(self, channel, reply_code, reply_text):
+    def on_channel_closed(self, connection, exception):
+
+        # From the docs: The exception will either be an instance of
+        # exceptions.ConnectionClosed if a fully-open connection was closed
+        # by user or broker or exception of another type (...)
+        if isinstance(exception, pika.exceptions.ChannelClosed):
+            reply_code = exception.reply_code
+            reply_text = exception.reply_text
+        else:
+            # TODO Not sure when this might happen, could not reproduce.
+            reply_code = -1
+            reply_text = str(exception)
+
         logdebug(LOGGER, 'Channel was closed: %s (code %s)', reply_text, reply_code)
 
         # Channel closed because user wants to close:
@@ -548,7 +560,19 @@ class ConnectionBuilder(object):
     (2) There was some other problem that closed the connection.
 
     '''
-    def on_connection_closed(self, connection, reply_code, reply_text):
+    def on_connection_closed(self, connection, exception):
+
+        # From the docs: The exception will either be an instance of
+        # exceptions.ConnectionClosed if a fully-open connection was closed
+        # by user or broker or exception of another type (...)
+        if isinstance(exception, pika.exceptions.ConnectionClosed):
+            reply_code = exception.reply_code
+            reply_text = exception.reply_text
+        else:
+            # TODO Not sure when this might happen, could not reproduce.
+            reply_code = -1 
+            reply_text = str(exception)
+
         loginfo(LOGGER, 'Connection to RabbitMQ was closed. Reason: %s.', reply_text)
         self.thread._channel = None
         if self.__was_user_shutdown(reply_code, reply_text):
