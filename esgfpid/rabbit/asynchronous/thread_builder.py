@@ -284,7 +284,7 @@ class ConnectionBuilder(object):
 
     def __make_channel_confirm_delivery(self):
         logtrace(LOGGER, 'Set confirm delivery... (Issue Confirm.Select RPC command)')
-        self.thread._channel.confirm_delivery(callback=self.confirmer.on_delivery_confirmation)
+        self.thread._channel.confirm_delivery(ack_nack_callback=self.confirmer.on_delivery_confirmation)
         logdebug(LOGGER, 'Set confirm delivery... done.')
  
     def __make_ready_for_publishing(self):
