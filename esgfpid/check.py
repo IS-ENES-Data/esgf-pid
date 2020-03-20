@@ -192,16 +192,16 @@ class RabbitChecker(object):
         rkey = utils.routingkeys.ROUTING_KEYS_TEMPLATES['pre_flight']
         body = 'PLEASE PRINT: Testing pre-flight check...'
         self.__loginfo(' .. checking message ...')
-        res = channel.basic_publish(
-            exchange=self.__nodemanager.get_exchange_name(),
-            routing_key=rkey,
-            body=body,
-            properties=props,
-            mandatory=True
-        )
-        if res:
+        try:
+            res = channel.basic_publish(
+                exchange=self.__nodemanager.get_exchange_name(),
+                routing_key=rkey,
+                body=body,
+                properties=props,
+                mandatory=True
+            )
             self.__loginfo(' .. checking message ... ok.')
-        else:
+        except pika.exceptions.UnroutableError:
             self.__loginfo(' .. checking message ... failed.')
             self.__add_error_message_message_fail(rkey)
             raise ValueError('Could not send message to messaging service host %s' %
