@@ -286,6 +286,10 @@ class NodeManager(object):
         ssl_options = None
         if ssl_enabled:
             ssl_options = pika.SSLOptions(ssl.create_default_context())
+            # I did not test pika and SSL in python 3.7 yet! Issues were reported:
+            # https://github.com/pika/pika/issues/1107
+            # https://pika.readthedocs.io/en/stable/examples/tls_mutual_authentication.html
+            # TODO Test and fix SSL in pika with python 3.7
 
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_PIKA_SOCKET_TIMEOUT
@@ -316,6 +320,7 @@ class NodeManager(object):
             frame_max=None, heartbeat_interval=None, ssl=None, ssl_options=None,
             connection_attempts=None, retry_delay=None, socket_timeout=None, locale=None,
             backpressure_detection=None)
+        # Note: heartbeat_interval renamed to heartbeat in pika 1.0.0
         '''
         return node_info_dict
 

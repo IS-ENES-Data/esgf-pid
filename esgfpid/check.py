@@ -333,6 +333,11 @@ class RabbitChecker(object):
         utils.logwarn(LOGGER, msg)
 
     def __define_fallback_exchange(self):
+        # NOTE: This method is currently not used, and it should not, as it might not be
+        # safe with pike 1.1.0, as the signatures of exchange_declare(), queue_declare()
+        # and queue_bind() have changed since pika 0.11.2, according to the version history.
+        # https://pika.readthedocs.io/en/stable/version_history.html
+        #
         # TODO Maybe add passive check.
         #print('Called fallback method') # remove
         exchange_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
