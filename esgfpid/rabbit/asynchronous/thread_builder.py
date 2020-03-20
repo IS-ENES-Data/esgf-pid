@@ -211,14 +211,9 @@ class ConnectionBuilder(object):
             parameters=params,
             on_open_callback=self.on_connection_open,
             on_open_error_callback=self.on_connection_error,
-            on_close_callback=self.on_connection_closed,
-            stop_ioloop_on_close=False # why? see below. 
+            on_close_callback=self.on_connection_closed
+            # Removed parameter, see https://github.com/pika/pika/issues/961
         )
-        # Don't stop ioloop on connection close, because
-        # otherwise the thread would not accept more events/
-        # messages (and might end) after a connection is
-        # closed. We still want to accept messages and try
-        # to reconnect and send them then.
 
     ''' Callback, called by RabbitMQ.'''
     def on_connection_open(self, unused_connection):
