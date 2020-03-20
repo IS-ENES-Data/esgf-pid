@@ -640,7 +640,7 @@ class ConnectionBuilder(object):
         else:
             self.statemachine.set_to_waiting_to_be_available()
             loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
-            connection.add_timeout(wait_seconds, self.reconnect)
+            connection.ioloop.call_later(wait_seconds, self.reconnect)
             logtrace(LOGGER, 'Reconnect event added to connection %s (not to %s)', connection, self.thread._connection)
 
     ###########################

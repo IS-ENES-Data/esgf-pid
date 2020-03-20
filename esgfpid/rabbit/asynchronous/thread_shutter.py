@@ -78,7 +78,7 @@ class ShutDowner(object):
             logdebug(LOGGER, 'Continue gentle shutdown even after reconnect (iteration %i)...', self.__close_decision_iterations)
             if self.thread._connection is not None:
                 wait_seconds = defaults.RABBIT_ASYN_FINISH_WAIT_SECONDS
-                self.thread._connection.add_timeout(wait_seconds, self.recursive_decision_about_closing)
+                self.thread._connection.ioloop.call_later(wait_seconds, self.recursive_decision_about_closing)
             else:
                 logerror(LOGGER, 'Connection was None when trying to wait for pending messages (after reconnect). Synchronization error between threads!')
 
@@ -167,7 +167,7 @@ class ShutDowner(object):
         # Instead of time.sleep(), add an event to the thread's ioloop
         self.__close_decision_iterations += 1
         if self.thread._connection is not None:
-            self.thread._connection.add_timeout(wait_seconds, self.recursive_decision_about_closing)
+            self.thread._connection.ioloop.call_later(wait_seconds, self.recursive_decision_about_closing)
             self.__is_in_process_of_gently_closing = True
             # Problem: If a reconnect occurs after this, this event will be lost.
             # I cannot retrieve if from the ioloop and pass it to the new one.

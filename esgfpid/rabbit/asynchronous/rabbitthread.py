@@ -53,7 +53,7 @@ passes events to it.
 
 The RabbitThread provides some methods to be called by the main
 thread, i.e. by the AsynchronousRabbitConnector, which use pika's
-SelectConnection.add_timeout() to pass the event to the thread's
+SelectConnection.ioloop.call_later() to pass the event to the thread's
 blocking loop.
 
 Only the methods
@@ -276,7 +276,7 @@ class RabbitThread(threading.Thread):
     '''
     def __add_event(self, event):
         if self._connection is not None:
-            self._connection.add_timeout(self.__PUBLISH_INTERVAL_SECONDS, event)
+            self._connection.ioloop.call_later(self.__PUBLISH_INTERVAL_SECONDS, event)
         else:
             # If the main thread wants to add an event so quickly after starting the
             # thread that not even the connection object is listening for events yet,
@@ -289,7 +289,7 @@ class RabbitThread(threading.Thread):
             logdebug(LOGGER, 'Main thread wants to add event to thread that is not ready to receive events yet. Blocking and waiting.')
             self.__wait_for_thread_to_accept_events()
             logdebug(LOGGER, 'Thread declared itself ready to receive events.')
-            self._connection.add_timeout(self.__PUBLISH_INTERVAL_SECONDS, event)
+            self._connection.ioloop.call_later(self.__PUBLISH_INTERVAL_SECONDS, event)
             logerror(LOGGER, 'Added event after having waited for thread to open.')
 
 
