@@ -81,7 +81,7 @@ class AssistantOneVersion(object):
             timestamp = message_timestamp,
             data_node = self._data_node,
             dataset_handle = handle,
-            drs_id = self._drs_id
+            drs_id = self._drs_id # can be none
         )
         if 'version_number' in kwargs:
             message['version_number'] = int(kwargs['version_number'])

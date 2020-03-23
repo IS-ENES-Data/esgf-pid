@@ -230,6 +230,7 @@ class NodeManager(object):
             logwarn(LOGGER, errmsg)
             raise ValueError(errmsg)
 
+
     def __store_node_info_by_priority(self, node_info, store_where):
         try:
             store_where[node_info['priority']].append(node_info)

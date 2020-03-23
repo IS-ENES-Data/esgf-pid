@@ -171,5 +171,4 @@ expected_message_first_channel_closed_then_ok1 = '''Checking config for PID modu
 Config for PID module (rabbit messaging queue).. ok.
 Successful connection to PID messaging queue at "tomato.salad-with-spam.fr".'''
 
-
 expected_message_first_channel_closed_then_ok2 = None
