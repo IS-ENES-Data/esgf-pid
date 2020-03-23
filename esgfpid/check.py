@@ -103,13 +103,10 @@ class RabbitChecker(object):
         if success:
             self.__loginfo('Config for PID module (rabbit messaging queue).. ok.')
             self.__loginfo('Successful connection to PID messaging queue at "%s".' % self.__current_rabbit_host)
-            #self.__define_fallback_exchange()
+
         else:
             self.__loginfo('Config for PID module (rabbit messaging queue) .. FAILED!')
             msg = self.__assemble_error_message()
-
-            #if self.channel_ok:
-            #    self.__define_fallback_exchange()
 
         if self.connection is not None:
             self.connection.close()
@@ -343,41 +340,3 @@ class RabbitChecker(object):
         if self.__print_errors_to_console == True:
             print(msg)
         utils.logwarn(LOGGER, msg)
-
-    def __define_fallback_exchange(self):
-        # TODO Maybe add passive check.
-        #print('Called fallback method') # remove
-        exchange_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
-        queue_name = esgfpid.defaults.RABBIT_FALLBACK_EXCHANGE_NAME
-        routing_key = "#"
-
-        # Declare exchange
-        try:
-            utils.loginfo(LOGGER, 'Declaration of fallback exchange "%s"...' % exchange_name)
-            self.channel.exchange_declare(exchange_name, passive=False, durable=True, exchange_type='topic')
-            utils.loginfo(LOGGER, 'Declaration of fallback exchange "%s"... done.' % exchange_name)
-        except (pika.exceptions.ChannelClosed) as e:
-            utils.loginfo(LOGGER, 'Declaration of fallback exchange "%s"... failed. Reasons: %s' % (exchange_name,e))
-            self.channel = self.__open_channel(self.connection)
-
-        # Declare queue
-        try:
-            utils.loginfo(LOGGER, 'Declaration of fallback queue "%s"...' % queue_name)
-            self.channel.queue_declare(queue_name, passive=False, durable=True)
-            utils.loginfo(LOGGER, 'Declaration of fallback queue "%s"... done.' % queue_name)
-        except (pika.exceptions.ChannelClosed) as e:
-            utils.loginfo(LOGGER, 'Declaration of fallback queue "%s"... failed. Reasons: %s' % (queue_name,e))
-            self.channel = self.__open_channel(self.connection)
-
-        # Bind routing key
-        try:
-            utils.loginfo(LOGGER, 'Binding of fallback queue with routing key "%s"...' % routing_key)
-            self.channel.queue_bind(
-                queue = queue_name,
-                exchange = exchange_name,
-                routing_key = routing_key
-            )
-            utils.loginfo(LOGGER, 'Binding of fallback queue with routing key "%s"... done.' % routing_key)
-        except (pika.exceptions.ChannelClosed) as e:
-            utils.loginfo(LOGGER, 'Binding of fallback queue with routing key "%s"... failed. Reasons: %s' % (queue_name,e))
-
