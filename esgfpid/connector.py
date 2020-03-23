@@ -358,7 +358,7 @@ class Connector(object):
 
         The consumer will of course check the PID request message's
         timestamp with the timestamp of the last publication, so that
-        republications in the mean time are not unpublished.
+        republications in the meantime are not unpublished.
 
         The unpublication of the files is included in this method.
 
