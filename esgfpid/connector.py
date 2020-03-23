@@ -198,7 +198,7 @@ class Connector(object):
         for credentials in args['messaging_service_credentials']:
 
             if not isinstance(credentials, dict):
-                errmsg = 'Credentials for each RabbitMQ node should be a dictionary.'
+                errmsg = 'Credentials for each RabbitMQ node should be a dictionary. Got %s.' % type(credentials)
                 raise esgfpid.exceptions.ArgumentError(errmsg)
 
             # Mandatory:
