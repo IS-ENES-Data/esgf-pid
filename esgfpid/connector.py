@@ -362,7 +362,7 @@ class Connector(object):
 
         The unpublication of the files is included in this method.
 
-        :param handle: Optional. The handle of the dataset
+        :param dataset_handle: Optional. The handle of the dataset
             to be unpublished.
 
         :param drs_id: Optional. The dataset id of the dataset
@@ -378,7 +378,7 @@ class Connector(object):
         '''
 
         # Check args
-        optional_args = ['handle', 'drs_id', 'version_number']
+        optional_args = ['dataset_handle', 'drs_id', 'version_number']
         esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
 
         # Check if data node is given
@@ -396,7 +396,7 @@ class Connector(object):
             message_timestamp=esgfpid.utils.get_now_utc_as_formatted_string()
         )
         assistant.unpublish_one_dataset_version(
-            handle = args['handle'],
+            dataset_handle = args['dataset_handle'],
             version_number = args['version_number']
         )
  
