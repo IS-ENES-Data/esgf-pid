@@ -23,6 +23,26 @@ class UnpublicationTestCase(unittest.TestCase):
     def setUp(self):
         LOGGER.info('######## Next test (%s) ##########', __name__)
 
+    def test_unpublish_one_version_by_handle(self):
+
+        # Preparations
+        testcoupler = TESTHELPERS.get_coupler(solr_switched_off=True)
+        TESTHELPERS.patch_with_rabbit_mock(testcoupler)
+        args = TESTHELPERS.get_args_for_unpublish_one()
+        args['drs_id'] = None # not passed
+        assistant = esgfpid.assistant.unpublish.AssistantOneVersion(coupler=testcoupler, **args)
+  
+        # Run code to be tested:
+        assistant.unpublish_one_dataset_version(
+            dataset_handle=DATASETHANDLE_HDL # is redundant, but will be checked.
+        )
+
+        # Check result:
+        expected_rabbit_task = TESTHELPERS.get_rabbit_message_unpub_one_by_handle()
+        received_rabbit_task = TESTHELPERS.get_received_message_from_rabbitmock(testcoupler)
+        same = utils.is_json_same(expected_rabbit_task, received_rabbit_task)
+        self.assertTrue(same, error_message(expected_rabbit_task, received_rabbit_task))
+
     def test_unpublish_one_version_by_version_number(self):
 
         # Preparations

@@ -607,6 +607,18 @@ def get_rabbit_message_unpub_one():
     }
     return expected_rabbit_task
 
+def get_rabbit_message_unpub_one_by_handle():
+    expected_rabbit_task = {
+        "handle": DATASETHANDLE_HDL,
+        "aggregation_level": "dataset",
+        "operation": "unpublish_one_version",
+        "message_timestamp":"anydate",
+        "data_node": DATA_NODE,
+        "ROUTING_KEY" : PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-onevers',
+        "drs_id": None,
+    }
+    return expected_rabbit_task
+
 def get_rabbit_message_unpub_all():
     expected_rabbit_task = {
         "operation": "unpublish_all_versions",
