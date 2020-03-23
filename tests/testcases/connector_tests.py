@@ -729,6 +729,34 @@ class ConnectorTestCase(unittest.TestCase):
         self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
 
     '''
+    This passes the correct args.
+    '''
+    def test_unpublish_one_version_by_handle_ok(self):
+
+        # Preparations: Make patched connector with data node (needed for unpublish)
+        testconnector = TESTHELPERS.get_connector(data_node=DATA_NODE)
+        TESTHELPERS.patch_with_rabbit_mock(testconnector)
+  
+        # Run code to be tested: Unpublish
+        testconnector.unpublish_one_version(
+            dataset_handle = DATASETHANDLE_HDL
+        )
+
+        # Check result:
+        expected_rabbit_task = {
+            "handle": DATASETHANDLE_HDL,
+            "operation": "unpublish_one_version",
+            "message_timestamp":"anydate",
+            "aggregation_level":"dataset",
+            "data_node": DATA_NODE,
+            "ROUTING_KEY":PREFIX_FOR_ROUTINGKEY+'.HASH.fresh.unpubli-onevers',
+            "drs_id": None,
+        }
+        received_rabbit_msg = TESTHELPERS.get_received_message_from_rabbitmock(testconnector)
+        is_same = utils.is_json_same(expected_rabbit_task, received_rabbit_msg)
+        self.assertTrue(is_same, utils.compare_json_return_errormessage(expected_rabbit_task, received_rabbit_msg))
+
+    '''
     We unpublish one version.
 
     For this, no solr url is needed, as the version is already

@@ -198,7 +198,7 @@ class Connector(object):
         for credentials in args['messaging_service_credentials']:
 
             if not isinstance(credentials, dict):
-                errmsg = 'Credentials for each RabbitMQ node should be a dictionary.'
+                errmsg = 'Credentials for each RabbitMQ node should be a dictionary. Got %s.' % type(credentials)
                 raise esgfpid.exceptions.ArgumentError(errmsg)
 
             # Mandatory:
@@ -358,11 +358,11 @@ class Connector(object):
 
         The consumer will of course check the PID request message's
         timestamp with the timestamp of the last publication, so that
-        republications in the mean time are not unpublished.
+        republications in the meantime are not unpublished.
 
         The unpublication of the files is included in this method.
 
-        :param handle: Optional. The handle of the dataset
+        :param dataset_handle: Optional. The handle of the dataset
             to be unpublished.
 
         :param drs_id: Optional. The dataset id of the dataset
@@ -378,7 +378,7 @@ class Connector(object):
         '''
 
         # Check args
-        optional_args = ['handle', 'drs_id', 'version_number']
+        optional_args = ['dataset_handle', 'drs_id', 'version_number']
         esgfpid.utils.add_missing_optional_args_with_value_none(args, optional_args)
 
         # Check if data node is given
@@ -396,7 +396,7 @@ class Connector(object):
             message_timestamp=esgfpid.utils.get_now_utc_as_formatted_string()
         )
         assistant.unpublish_one_dataset_version(
-            handle = args['handle'],
+            dataset_handle = args['dataset_handle'],
             version_number = args['version_number']
         )
  

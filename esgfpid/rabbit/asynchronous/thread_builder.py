@@ -582,7 +582,7 @@ class ConnectionBuilder(object):
             loginfo(LOGGER, 'Connection to %s closed.', self.__node_manager.get_connection_parameters().host)
             self.__make_permanently_closed_by_error(connection, reply_text)
         else:
-            # This reconnects to next host_
+            # This reconnects to next host:
             self.on_connection_error(connection, reply_text)
 
     def __was_permanent_error(self, reply_code, reply_text):
