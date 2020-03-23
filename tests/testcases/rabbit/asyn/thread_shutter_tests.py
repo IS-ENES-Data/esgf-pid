@@ -278,7 +278,7 @@ class ThreadShutterTestCase(unittest.TestCase):
         shutter.continue_gently_closing_if_applicable()
 
         # Check results
-        self.assertFalse(shutter.thread._connection.add_timeout.called)
+        self.assertFalse(shutter.thread._connection.ioloop.call_later.called)
 
         # Check if connection was not closed yet:
         # (because it is not applicable!)
@@ -293,7 +293,7 @@ class ThreadShutterTestCase(unittest.TestCase):
         
         # Run code to be tested
         shutter.continue_gently_closing_if_applicable()
-        self.assertTrue(shutter.thread._connection.add_timeout.called)
+        self.assertTrue(shutter.thread._connection.ioloop.call_later.called)
         self.assertTrue(shutter.recursive_decision_about_closing.called)
         # Check if connection was closed:
         # (Cannot be closed, as we mock the method that would lead to closing)

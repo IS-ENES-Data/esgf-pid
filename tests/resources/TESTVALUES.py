@@ -87,10 +87,10 @@ def get_thread_mock4(error=None):
 
 def get_connection_mock():
     connectionmock = mock.MagicMock()
-    def side_effect_add_timeout(seconds, callback):
+    def side_effect_call_later(seconds, callback):
         callback()
-    connectionmock.add_timeout = mock.MagicMock()
-    connectionmock.add_timeout.side_effect = side_effect_add_timeout
+    connectionmock.ioloop.call_later = mock.MagicMock()
+    connectionmock.ioloop.call_later.side_effect = side_effect_call_later
     return connectionmock
 
 
@@ -212,10 +212,10 @@ class MockThread4(object):
         self._connection.is_closing = False
         self._connection.is_open = True
 
-        # Implement callback
-        def side_effect(wait_seconds, callback):
+        def side_effect_call_later(seconds, callback):
             callback()
-        self._connection.add_timeout.side_effect = side_effect
+        self._connection.ioloop.call_later = mock.MagicMock()
+        self._connection.ioloop.call_later.side_effect = side_effect_call_later
 
         # Methods (used by modules):
         self.tell_publisher_to_stop_waiting_for_gentle_finish = mock.MagicMock()
