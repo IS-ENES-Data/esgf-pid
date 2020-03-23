@@ -54,9 +54,9 @@ to check for logs/queues.
 
 
 ```
-$RABBIT='myrabbit.abcd.ef'
-$USER='alice'
-$PW='supersecurity'
+HOST='myrabbit.abcd.ef'
+USER='alice'
+PW='supersecurity'
 
 python3 test01_file_dataset_publication.py $HOST $USER $PW
 python3 test02_check_method.py $HOST $USER $PW
