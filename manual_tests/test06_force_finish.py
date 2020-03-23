@@ -4,7 +4,8 @@ import sys
 import datetime
 
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
+
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -20,21 +21,13 @@ EXCH = 'test123'
 # This exchange needs to have bindings to a queue using these routing keys:
 # 2114100.HASH.fresh.publi-ds-repli
 # 2114100.HASH.fresh.publi-file-repli
-# 2114100.HASH.fresh.unpubli-allvers   <----- remove!
+# 2114100.HASH.fresh.unpubli-allvers
 # 2114100.HASH.fresh.unpubli-onevers
 # PREFIX.HASH.fresh.preflightcheck
-# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE    <----- mandatory!  
+# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE    
 # 2114100.HASH.fresh.datacart
 # 2114100.HASH.fresh.errata-add
-# 2114100.HASH.fresh.errata-rem
-
-
-ok = input('For this test please delete the binding between exchange %s and routing key "2114100.HASH.fresh.unpubli-allvers". Then enter "done". ' % EXCH)
-if ok == 'done':
-    pass
-else:
-    print('Exiting.')
-    exit()
+# 2114100.HASH.fresh.errata-rem 
 
 # Dummy values
 pid_prefix = '21.14100'
@@ -63,14 +56,14 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_unroutable_not_drop.log'
+filename = './log_force_finish.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: UNROUTABLE! _______________')
+LOGGER.warning('___________ STARTING SCRIPT: FORCE FINISH ______________')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
 
@@ -95,24 +88,32 @@ pid_connector = esgfpid.Connector(
     thredds_service_path=thredds_service_path,
     test_publication=test_publication)
 
-# Get a pid:
+# File and dataset publication:
 pid = pid_connector.make_handle_from_drsid_and_versionnumber(
     drs_id=datasetName,
     version_number=versionNumber)
 
-# Open the connection, send messages, close
+pid_wizard = pid_connector.create_publication_assistant(
+    drs_id=datasetName,
+    version_number=versionNumber,
+    is_replica=is_replica)
+
+pid_wizard.add_file(
+    file_name=file_name,
+    file_handle=trackingID,
+    checksum=checksum,
+    file_size=file_size,
+    publish_path=publishPath,
+    checksum_type=checksumType,
+    file_version=fileVersion)
+
+
+# Open the connection, send messages, FORCE-close
 pid_connector.start_messaging_thread()
-pid_connector.unpublish_all_versions(drs_id=datasetName)
-pid_connector.finish_messaging_thread()
+pid_wizard.dataset_publication_finished()
+pid_connector.force_finish_messaging_thread()
 
-ok = input('Please restore the binding. Then enter "done". ')
-if ok == 'done':
-    pass
-else:
-    print('Your own risk.')
-
-print('Check log for errors (none expected)')
-tmp = 'Routing Key:\t"UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE   "\nContent:\t"{"operation": "unpublish_all_versions", "aggregation_level": "dataset",  [...]'
-print('Check queue for one new message:\n%s' % tmp)
+print('Check stdout and log for errors! Errors are expected: 2 pending messages')
+print('Check queue, should have NO new message!')
 LOGGER.warning('___________ DONE _______________________________________')
 

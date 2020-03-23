@@ -3,8 +3,8 @@ import logging
 import sys
 import datetime
 
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -20,14 +20,21 @@ EXCH = 'test123'
 # This exchange needs to have bindings to a queue using these routing keys:
 # 2114100.HASH.fresh.publi-ds-repli
 # 2114100.HASH.fresh.publi-file-repli
-# 2114100.HASH.fresh.unpubli-allvers
+# 2114100.HASH.fresh.unpubli-allvers   <----- remove!
 # 2114100.HASH.fresh.unpubli-onevers
 # PREFIX.HASH.fresh.preflightcheck
-# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE    
-# 2114100.HASH.fresh.datacart              <----- mandatory!
+# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE    <----- mandatory!  
+# 2114100.HASH.fresh.datacart
 # 2114100.HASH.fresh.errata-add
 # 2114100.HASH.fresh.errata-rem
 
+
+ok = input('For this test please delete the binding between exchange %s and routing key "2114100.HASH.fresh.unpubli-allvers". Then enter "done". ' % EXCH)
+if ok == 'done':
+    pass
+else:
+    print('Exiting.')
+    exit()
 
 # Dummy values
 pid_prefix = '21.14100'
@@ -56,14 +63,14 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_datacart.log'
+filename = './log_unroutable_not_drop.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: DATA CART! ________________')
+LOGGER.warning('___________ STARTING SCRIPT: UNROUTABLE! _______________')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
 
@@ -95,14 +102,14 @@ pid = pid_connector.make_handle_from_drsid_and_versionnumber(
 
 # Open the connection, send messages, close
 pid_connector.start_messaging_thread()
-
-pid_connector.create_data_cart_pid(dict(
-    mydrs1 = 'mypid1',
-    mydrs2 = 'mypid2'))
-
+pid_connector.unpublish_all_versions(drs_id=datasetName)
 pid_connector.finish_messaging_thread()
 
+input('Please restore the binding between exchange %s and routing key "2114100.HASH.fresh.unpubli-allvers".' % EXCH)
+
+
 print('Check log for errors (none expected)')
-tmp = 'Routing Key:\t"2114100.HASH.fresh.datacart"\nContent:\t"{"handle": "hdl:...", "message_timestamp": "...", "data_cart_content": {"mydrs1": "mypid1", "mydrs2": "mypid2"}, "operation": "shopping_cart",   [...]'
+tmp = 'Routing Key:\t"UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE   "\nContent:\t"{"operation": "unpublish_all_versions", "aggregation_level": "dataset",  [...]'
 print('Check queue for one new message:\n%s' % tmp)
 LOGGER.warning('___________ DONE _______________________________________')
+

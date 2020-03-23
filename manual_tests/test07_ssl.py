@@ -3,7 +3,9 @@ import logging
 import sys
 import datetime
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
+
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
+
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -14,18 +16,18 @@ USER = sys.argv[2]
 PW = sys.argv[3]
 VHOST = 'esgf-pid'
 AMQP_PORT = 5672
-SSL = False
 EXCH = 'test123'
-# THis exchange needs to have bindings to a queue using these routing keys:
+# This exchange needs to have bindings to a queue using these routing keys:
 # 2114100.HASH.fresh.publi-ds-repli
 # 2114100.HASH.fresh.publi-file-repli
-# 2114100.HASH.fresh.unpubli-allvers
-# 2114100.HASH.fresh.unpubli-onevers
-# PREFIX.HASH.fresh.preflightcheck             <----- mandatory!
-# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE
+# 2114100.HASH.fresh.unpubli-allvers              <----- mandatory!
+# 2114100.HASH.fresh.unpubli-onevers              <----- mandatory!
+# PREFIX.HASH.fresh.preflightcheck
+# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE    
 # 2114100.HASH.fresh.datacart
 # 2114100.HASH.fresh.errata-add
-# 2114100.HASH.fresh.errata-rem
+# 2114100.HASH.fresh.errata-rem 
+
 
 # Dummy values
 pid_prefix = '21.14100'
@@ -54,17 +56,17 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_preflight_check_method.log'
+filename = './log_ssl.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: CHECK METHOD! ______________')
+LOGGER.warning('___________ STARTING SCRIPT: SSL! ___________')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
-
+# https://github.com/pika/pika/issues/1107
 
 # Create credentials
 # (This does not connect)
@@ -74,7 +76,7 @@ creds = dict(
     password=PW,
     vhost=VHOST,
     port=AMQP_PORT,
-    ssl_enabled=SSL)
+    ssl_enabled=True)
 
 # Create a connector
 # (This does not connect)
@@ -86,37 +88,21 @@ pid_connector = esgfpid.Connector(
     thredds_service_path=thredds_service_path,
     test_publication=test_publication)
 
+# Get a pid:
+pid = pid_connector.make_handle_from_drsid_and_versionnumber(
+    drs_id=datasetName,
+    version_number=versionNumber)
 
-# Check the connection:
+# Open the connection, send messages, close
+pid_connector.start_messaging_thread()
 
+pid_connector.unpublish_all_versions(drs_id=datasetName)
 
-
-# Without sending
-#check_pid_connection(pid_connector, send_message=False) # does not exist in esgfpid
-x = pid_connector.check_pid_queue_availability(send_message=False)
-print(x)
-if x is None:
-    print('1/2: Success, I think')
-else:
-    print('1/2: Fail, I think')
-
-
-# With sending
-#check_pid_connection(pid_connector, send_message=True) # does not exist in esgfpid
-LOGGER.warning('___________ NOW WITH MESSAGE____________________________')
-y = pid_connector.check_pid_queue_availability(send_message=True)
-print(y)
-if y is None:
-    print('2/2: Success, I think')
-else:
-    print('2/2: Fail, I think')
-
-
+pid_connector.finish_messaging_thread()
 
 print('Check log for errors (none expected)')
-tmp = 'Routing Key:\t"PREFIX.HASH.fresh.preflightcheck"\nContent:\t"PLEASE PRINT: Testing pre-flight check..."'
-print('Check queue for one new message:\n%s' % tmp)
+tmp1 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-onevers"\nContent:\t"{"operation": "unpublish_one_version", "aggregation_level": "dataset", [...]"'
+tmp2 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-allvers"\nContent:\t"{"operation": "unpublish_all_versions", "aggregation_level": "dataset",  [...]'
+print('Check queue for two new messages:\n%s\n%s' % (tmp1, tmp2))
 LOGGER.warning('___________ DONE _______________________________________')
-
-
 

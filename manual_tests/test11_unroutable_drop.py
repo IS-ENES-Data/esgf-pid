@@ -4,7 +4,8 @@ import sys
 import datetime
 
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
+
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -20,14 +21,20 @@ EXCH = 'test123'
 # This exchange needs to have bindings to a queue using these routing keys:
 # 2114100.HASH.fresh.publi-ds-repli
 # 2114100.HASH.fresh.publi-file-repli
-# 2114100.HASH.fresh.unpubli-allvers              <----- mandatory!
-# 2114100.HASH.fresh.unpubli-onevers              <----- mandatory!
+# 2114100.HASH.fresh.unpubli-allvers         <----- remove!
+# 2114100.HASH.fresh.unpubli-onevers
 # PREFIX.HASH.fresh.preflightcheck
-# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE    
+# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE      <----- remove!
 # 2114100.HASH.fresh.datacart
 # 2114100.HASH.fresh.errata-add
-# 2114100.HASH.fresh.errata-rem 
+# 2114100.HASH.fresh.errata-rem
 
+ok = input('For this test please delete the bindings between exchange %s and routing key "2114100.HASH.fresh.unpubli-allvers" AND "UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE". Then enter "done". ' % EXCH)
+if ok == 'done':
+    pass
+else:
+    print('Exiting.')
+    exit()
 
 # Dummy values
 pid_prefix = '21.14100'
@@ -56,14 +63,14 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_un_publication.log'
+filename = './log_unroutable_drop.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: UN-PUBLICATION! ___________')
+LOGGER.warning('___________ STARTING SCRIPT: DROPPED MESSAGES __________')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
 
@@ -95,31 +102,13 @@ pid = pid_connector.make_handle_from_drsid_and_versionnumber(
 
 # Open the connection, send messages, close
 pid_connector.start_messaging_thread()
-
-LOGGER.warning('___________ BY DRS AND VERSION__________________________')
-
-print(datasetName, versionNumber)
-pid_connector.unpublish_one_version(
-    drs_id=datasetName,
-    version_number=versionNumber)
-
-LOGGER.warning('___________ ALL VERSIONS BY DRS_ID _____________________')
-
 pid_connector.unpublish_all_versions(drs_id=datasetName)
-
-
-#LOGGER.warning('___________ BY PID _____________________________________')
-# IS NOT CURRENTLY IMPLEMENTED!
-#print(pid)
-#pid_connector.unpublish_one_version(dataset_handle=pid, handle=pid)
-
-
-
 pid_connector.finish_messaging_thread()
 
-print('Check log for errors (none expected)')
-tmp1 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-onevers"\nContent:\t"{"operation": "unpublish_one_version", "aggregation_level": "dataset", [...]"'
-tmp2 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-allvers"\nContent:\t"{"operation": "unpublish_all_versions", "aggregation_level": "dataset",  [...]'
-print('Check queue for two new messages:\n%s\n%s' % (tmp1, tmp2))
+input('Please restore the binding between exchange %s and routing key "2114100.HASH.fresh.unpubli-allvers" AND "UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE".' % EXCH)
+
+
+print('Check log for errors. We expect this: "[...] Dropping the message."')
+print('Check queue, should have NO new message!')
 LOGGER.warning('___________ DONE _______________________________________')
 

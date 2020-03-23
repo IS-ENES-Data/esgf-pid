@@ -4,7 +4,8 @@ import sys
 import datetime
 
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
+
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -20,15 +21,16 @@ EXCH = 'test123'
 # This exchange needs to have bindings to a queue using these routing keys:
 # 2114100.HASH.fresh.publi-ds-repli
 # 2114100.HASH.fresh.publi-file-repli
-# 2114100.HASH.fresh.unpubli-allvers         <----- remove!
+# 2114100.HASH.fresh.unpubli-allvers
 # 2114100.HASH.fresh.unpubli-onevers
-# PREFIX.HASH.fresh.preflightcheck
-# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE      <----- remove!
+# PREFIX.HASH.fresh.preflightcheck          <------- remove!
+# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE
 # 2114100.HASH.fresh.datacart
 # 2114100.HASH.fresh.errata-add
-# 2114100.HASH.fresh.errata-rem
+# 2114100.HASH.fresh.errata-rem 
 
-ok = input('For this test please delete the bindings between exchange %s and routing key "2114100.HASH.fresh.unpubli-allvers" AND "UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE". Then enter "done". ' % EXCH)
+
+ok = input('For this test please delete the binding between exchange %s and routing key "PREFIX.HASH.fresh.preflightcheck". Then enter "done". ' % EXCH)
 if ok == 'done':
     pass
 else:
@@ -62,14 +64,14 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_unroutable_drop.log'
+filename = './log_preflightcheck_wrong_routingkey.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: DROPPED MESSAGES __________')
+LOGGER.warning('___________ STARTING SCRIPT: CHECK METHOD WRONG KEY! ___')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
 
@@ -94,23 +96,22 @@ pid_connector = esgfpid.Connector(
     thredds_service_path=thredds_service_path,
     test_publication=test_publication)
 
-# Get a pid:
-pid = pid_connector.make_handle_from_drsid_and_versionnumber(
-    drs_id=datasetName,
-    version_number=versionNumber)
 
-# Open the connection, send messages, close
-pid_connector.start_messaging_thread()
-pid_connector.unpublish_all_versions(drs_id=datasetName)
-pid_connector.finish_messaging_thread()
+# Send a message with
 
-ok = input('Please restore the bindings. Then enter "done". ')
-if ok == 'done':
-    pass
+res = pid_connector.check_pid_queue_availability(send_message=True)
+print(res)
+if res is None:
+    print('Unexpected behaviour, message should not be confirmed!')
 else:
-    print('Your own risk.')
+    print('Message not sent - expected error')
 
-print('Check log for errors. We expect this: "[...] Dropping the message."')
+input('Please restore the binding between exchange %s and routing key "PREFIX.HASH.fresh.preflightcheck".' % EXCH)
+
+print('Check stdout for errors! Errors are expected: "*** PROBLEM IN SETTING UP ...  ... Message failure with routing key"')
+print('Check log for errors! Should only have a warning.')
 print('Check queue, should have NO new message!')
 LOGGER.warning('___________ DONE _______________________________________')
+
+
 

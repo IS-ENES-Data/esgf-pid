@@ -4,7 +4,8 @@ import sys
 import datetime
 
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
+
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -18,12 +19,12 @@ AMQP_PORT = 5672
 SSL = False
 EXCH = 'test123'
 # This exchange needs to have bindings to a queue using these routing keys:
-# 2114100.HASH.fresh.unpubli-allvers
-# 2114100.HASH.fresh.unpubli-onevers
 # 2114100.HASH.fresh.publi-ds-repli
 # 2114100.HASH.fresh.publi-file-repli
+# 2114100.HASH.fresh.unpubli-allvers              <----- mandatory!
+# 2114100.HASH.fresh.unpubli-onevers              <----- mandatory!
 # PREFIX.HASH.fresh.preflightcheck
-# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE
+# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE    
 # 2114100.HASH.fresh.datacart
 # 2114100.HASH.fresh.errata-add
 # 2114100.HASH.fresh.errata-rem 
@@ -56,14 +57,14 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_wrong_exchange.log'
+filename = './log_un_publication.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: WRONG EXCHANGE! ___________')
+LOGGER.warning('___________ STARTING SCRIPT: UN-PUBLICATION! ___________')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
 
@@ -82,38 +83,44 @@ creds = dict(
 # (This does not connect)
 pid_connector = esgfpid.Connector(
     handle_prefix=pid_prefix,
-    messaging_service_exchange_name=EXCH+'blablabla',
+    messaging_service_exchange_name=EXCH,
     messaging_service_credentials=[creds], # list of dicts
     data_node=pid_data_node,
     thredds_service_path=thredds_service_path,
     test_publication=test_publication)
 
-# File and dataset publication:
+# Get a pid:
 pid = pid_connector.make_handle_from_drsid_and_versionnumber(
     drs_id=datasetName,
     version_number=versionNumber)
 
-pid_wizard = pid_connector.create_publication_assistant(
-    drs_id=datasetName,
-    version_number=versionNumber,
-    is_replica=is_replica)
-
-pid_wizard.add_file(
-    file_name=file_name,
-    file_handle=trackingID,
-    checksum=checksum,
-    file_size=file_size,
-    publish_path=publishPath,
-    checksum_type=checksumType,
-    file_version=fileVersion)
-
-
 # Open the connection, send messages, close
 pid_connector.start_messaging_thread()
-pid_wizard.dataset_publication_finished()
+
+LOGGER.warning('___________ BY DRS AND VERSION__________________________')
+
+print(datasetName, versionNumber)
+pid_connector.unpublish_one_version(
+    drs_id=datasetName,
+    version_number=versionNumber)
+
+LOGGER.warning('___________ ALL VERSIONS BY DRS_ID _____________________')
+
+pid_connector.unpublish_all_versions(drs_id=datasetName)
+
+
+#LOGGER.warning('___________ BY PID _____________________________________')
+# IS NOT CURRENTLY IMPLEMENTED!
+#print(pid)
+#pid_connector.unpublish_one_version(dataset_handle=pid, handle=pid)
+
+
+
 pid_connector.finish_messaging_thread()
 
-print('Check log for errors! We expect a lot: "Received remote Channel.Close (404): "NOT_FOUND" and "At close down: 2 pending messages (2 unpublished"')
-print('Check queue, should have NO new message!')
+print('Check log for errors (none expected)')
+tmp1 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-onevers"\nContent:\t"{"operation": "unpublish_one_version", "aggregation_level": "dataset", [...]"'
+tmp2 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-allvers"\nContent:\t"{"operation": "unpublish_all_versions", "aggregation_level": "dataset",  [...]'
+print('Check queue for two new messages:\n%s\n%s' % (tmp1, tmp2))
 LOGGER.warning('___________ DONE _______________________________________')
 

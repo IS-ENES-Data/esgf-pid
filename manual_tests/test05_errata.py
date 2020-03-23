@@ -4,7 +4,8 @@ import sys
 import datetime
 
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
+
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)

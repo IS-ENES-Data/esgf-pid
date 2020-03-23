@@ -4,7 +4,8 @@ import sys
 import datetime
 
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
+
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -17,24 +18,17 @@ VHOST = 'esgf-pid'
 AMQP_PORT = 5672
 SSL = False
 EXCH = 'test123'
-# This exchange needs to have bindings to a queue using these routing keys:
-# 2114100.HASH.fresh.publi-ds-repli
-# 2114100.HASH.fresh.publi-file-repli
+# THis exchange needs to have bindings to a queue using these routing keys:
+# 2114100.HASH.fresh.publi-ds-repli               <----- mandatory!
+# 2114100.HASH.fresh.publi-file-repli             <----- mandatory!
 # 2114100.HASH.fresh.unpubli-allvers
 # 2114100.HASH.fresh.unpubli-onevers
-# PREFIX.HASH.fresh.preflightcheck          <------- remove!
+# PREFIX.HASH.fresh.preflightcheck
 # UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE
 # 2114100.HASH.fresh.datacart
 # 2114100.HASH.fresh.errata-add
 # 2114100.HASH.fresh.errata-rem 
 
-
-ok = input('For this test please delete the binding between exchange %s and routing key "PREFIX.HASH.fresh.preflightcheck". Then enter "done". ' % EXCH)
-if ok == 'done':
-    pass
-else:
-    print('Exiting.')
-    exit()
 
 # Dummy values
 pid_prefix = '21.14100'
@@ -63,14 +57,14 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_preflightcheck_wrong_routingkey.log'
+filename = './log_file_dataset_publication.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: CHECK METHOD WRONG KEY! ___')
+LOGGER.warning('___________ STARTING SCRIPT: PUBLICATION! _______________')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
 
@@ -95,26 +89,34 @@ pid_connector = esgfpid.Connector(
     thredds_service_path=thredds_service_path,
     test_publication=test_publication)
 
+# File and dataset publication:
+pid = pid_connector.make_handle_from_drsid_and_versionnumber(
+    drs_id=datasetName,
+    version_number=versionNumber)
 
-# Send a message with
+pid_wizard = pid_connector.create_publication_assistant(
+    drs_id=datasetName,
+    version_number=versionNumber,
+    is_replica=is_replica)
 
-res = pid_connector.check_pid_queue_availability(send_message=True)
-print(res)
-if res is None:
-    print('Unexpected behaviour, message should not be confirmed!')
-else:
-    print('Message not sent - expected error')
+pid_wizard.add_file(
+    file_name=file_name,
+    file_handle=trackingID,
+    checksum=checksum,
+    file_size=file_size,
+    publish_path=publishPath,
+    checksum_type=checksumType,
+    file_version=fileVersion)
 
-ok = input('Please restore the binding between exchange %s and routing key "PREFIX.HASH.fresh.preflightcheck". Then enter "done". ' % EXCH)
-if ok == 'done':
-    pass
-else:
-    print('Your own risk.')
 
-print('Check stdout for errors! Errors are expected: "*** PROBLEM IN SETTING UP ...  ... Message failure with routing key"')
-print('Check log for errors! Should only have a warning.')
-print('Check queue, should have NO new message!')
+# Open the connection, send messages, close
+pid_connector.start_messaging_thread()
+pid_wizard.dataset_publication_finished()
+pid_connector.finish_messaging_thread()
+
+print('Check log for errors (none expected)')
+tmp1 = 'Routing Key:\t"2114100.HASH.fresh.publi-file-repli"\nContent:\t"{"handle": "'+trackingID+'", "aggregation_level": "file", "operation": "publish", "is_replica": true, "file_name": "myFunnyFile.nc", [...]"'
+tmp2 = 'Routing Key:\t"2114100.HASH.fresh.publi-ds-repli"\nContent:\t"{"handle": "'+pid+'", "aggregation_level": "dataset", "operation": "publish" [...]'
+print('Check queue for two new messages:\n%s\n%s' % (tmp1, tmp2))
 LOGGER.warning('___________ DONE _______________________________________')
-
-
 

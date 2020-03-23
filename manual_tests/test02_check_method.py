@@ -3,8 +3,8 @@ import logging
 import sys
 import datetime
 
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -17,16 +17,16 @@ VHOST = 'esgf-pid'
 AMQP_PORT = 5672
 SSL = False
 EXCH = 'test123'
-# This exchange needs to have bindings to a queue using these routing keys:
+# THis exchange needs to have bindings to a queue using these routing keys:
 # 2114100.HASH.fresh.publi-ds-repli
 # 2114100.HASH.fresh.publi-file-repli
 # 2114100.HASH.fresh.unpubli-allvers
 # 2114100.HASH.fresh.unpubli-onevers
-# PREFIX.HASH.fresh.preflightcheck
-# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE    
+# PREFIX.HASH.fresh.preflightcheck             <----- mandatory!
+# UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE
 # 2114100.HASH.fresh.datacart
 # 2114100.HASH.fresh.errata-add
-# 2114100.HASH.fresh.errata-rem 
+# 2114100.HASH.fresh.errata-rem
 
 # Dummy values
 pid_prefix = '21.14100'
@@ -55,14 +55,14 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_force_finish.log'
+filename = './log_preflight_check_method.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: FORCE FINISH ______________')
+LOGGER.warning('___________ STARTING SCRIPT: CHECK METHOD! ______________')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
 
@@ -87,32 +87,37 @@ pid_connector = esgfpid.Connector(
     thredds_service_path=thredds_service_path,
     test_publication=test_publication)
 
-# File and dataset publication:
-pid = pid_connector.make_handle_from_drsid_and_versionnumber(
-    drs_id=datasetName,
-    version_number=versionNumber)
 
-pid_wizard = pid_connector.create_publication_assistant(
-    drs_id=datasetName,
-    version_number=versionNumber,
-    is_replica=is_replica)
-
-pid_wizard.add_file(
-    file_name=file_name,
-    file_handle=trackingID,
-    checksum=checksum,
-    file_size=file_size,
-    publish_path=publishPath,
-    checksum_type=checksumType,
-    file_version=fileVersion)
+# Check the connection:
 
 
-# Open the connection, send messages, FORCE-close
-pid_connector.start_messaging_thread()
-pid_wizard.dataset_publication_finished()
-pid_connector.force_finish_messaging_thread()
 
-print('Check stdout and log for errors! Errors are expected: 2 pending messages')
-print('Check queue, should have NO new message!')
+# Without sending
+#check_pid_connection(pid_connector, send_message=False) # does not exist in esgfpid
+x = pid_connector.check_pid_queue_availability(send_message=False)
+print(x)
+if x is None:
+    print('1/2: Success, I think')
+else:
+    print('1/2: Fail, I think')
+
+
+# With sending
+#check_pid_connection(pid_connector, send_message=True) # does not exist in esgfpid
+LOGGER.warning('___________ NOW WITH MESSAGE____________________________')
+y = pid_connector.check_pid_queue_availability(send_message=True)
+print(y)
+if y is None:
+    print('2/2: Success, I think')
+else:
+    print('2/2: Fail, I think')
+
+
+
+print('Check log for errors (none expected)')
+tmp = 'Routing Key:\t"PREFIX.HASH.fresh.preflightcheck"\nContent:\t"PLEASE PRINT: Testing pre-flight check..."'
+print('Check queue for one new message:\n%s' % tmp)
 LOGGER.warning('___________ DONE _______________________________________')
+
+
 

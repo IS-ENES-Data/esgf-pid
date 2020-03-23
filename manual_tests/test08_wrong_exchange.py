@@ -4,7 +4,11 @@ import sys
 import datetime
 
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
+input('This test takes some seconds and will repeatedly run into errors. Please wait until it finished. Ok? (press any key)')
+
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
+
+
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -17,11 +21,11 @@ VHOST = 'esgf-pid'
 AMQP_PORT = 5672
 SSL = False
 EXCH = 'test123'
-# THis exchange needs to have bindings to a queue using these routing keys:
-# 2114100.HASH.fresh.publi-ds-repli               <----- mandatory!
-# 2114100.HASH.fresh.publi-file-repli             <----- mandatory!
+# This exchange needs to have bindings to a queue using these routing keys:
 # 2114100.HASH.fresh.unpubli-allvers
 # 2114100.HASH.fresh.unpubli-onevers
+# 2114100.HASH.fresh.publi-ds-repli
+# 2114100.HASH.fresh.publi-file-repli
 # PREFIX.HASH.fresh.preflightcheck
 # UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE
 # 2114100.HASH.fresh.datacart
@@ -56,14 +60,14 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_file_dataset_publication.log'
+filename = './log_wrong_exchange.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: PUBLICATION! _______________')
+LOGGER.warning('___________ STARTING SCRIPT: WRONG EXCHANGE! ___________')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
 
@@ -82,7 +86,7 @@ creds = dict(
 # (This does not connect)
 pid_connector = esgfpid.Connector(
     handle_prefix=pid_prefix,
-    messaging_service_exchange_name=EXCH,
+    messaging_service_exchange_name=EXCH+'blablabla',
     messaging_service_credentials=[creds], # list of dicts
     data_node=pid_data_node,
     thredds_service_path=thredds_service_path,
@@ -113,9 +117,7 @@ pid_connector.start_messaging_thread()
 pid_wizard.dataset_publication_finished()
 pid_connector.finish_messaging_thread()
 
-print('Check log for errors (none expected)')
-tmp1 = 'Routing Key:\t"2114100.HASH.fresh.publi-file-repli"\nContent:\t"{"handle": "'+trackingID+'", "aggregation_level": "file", "operation": "publish", "is_replica": true, "file_name": "myFunnyFile.nc", [...]"'
-tmp2 = 'Routing Key:\t"2114100.HASH.fresh.publi-ds-repli"\nContent:\t"{"handle": "'+pid+'", "aggregation_level": "dataset", "operation": "publish" [...]'
-print('Check queue for two new messages:\n%s\n%s' % (tmp1, tmp2))
+print('Check log for errors! We expect a lot: "Received remote Channel.Close (404): "NOT_FOUND" and "At close down: 2 pending messages (2 unpublished"')
+print('Check queue, should have NO new message!')
 LOGGER.warning('___________ DONE _______________________________________')
 

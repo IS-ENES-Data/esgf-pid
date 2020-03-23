@@ -4,7 +4,8 @@ import sys
 import datetime
 
 
-print('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script).')
+input('Make sure you have an exchange "test123" ready, including a queue and the required bindings (see inside this script). Ok? (press any key)')
+
 if not len(sys.argv) == 4:
     print('Please call with <host> <user> <password>!')
     exit(999)
@@ -15,17 +16,18 @@ USER = sys.argv[2]
 PW = sys.argv[3]
 VHOST = 'esgf-pid'
 AMQP_PORT = 5672
+SSL = False
 EXCH = 'test123'
 # This exchange needs to have bindings to a queue using these routing keys:
 # 2114100.HASH.fresh.publi-ds-repli
 # 2114100.HASH.fresh.publi-file-repli
-# 2114100.HASH.fresh.unpubli-allvers              <----- mandatory!
-# 2114100.HASH.fresh.unpubli-onevers              <----- mandatory!
+# 2114100.HASH.fresh.unpubli-allvers
+# 2114100.HASH.fresh.unpubli-onevers
 # PREFIX.HASH.fresh.preflightcheck
 # UNROUTABLE.UNROUTABLE.fresh.UNROUTABLE    
-# 2114100.HASH.fresh.datacart
+# 2114100.HASH.fresh.datacart              <----- mandatory!
 # 2114100.HASH.fresh.errata-add
-# 2114100.HASH.fresh.errata-rem 
+# 2114100.HASH.fresh.errata-rem
 
 
 # Dummy values
@@ -55,17 +57,17 @@ root.addHandler(handler)
 pikalogger = logging.getLogger('pika')
 pikalogger.setLevel(logging.INFO)
 # File for error and warn
-filename = './log_ssl.log'
+filename = './log_datacart.log'
 handler = logging.FileHandler(filename=filename)
 handler.setFormatter(formatter)
 handler.setLevel(logging.WARN)
 root.addHandler(handler)
 LOGGER = logging.getLogger(__name__)
 LOGGER.warning('________________________________________________________')
-LOGGER.warning('___________ STARTING SCRIPT: SSL! ___________')
+LOGGER.warning('___________ STARTING SCRIPT: DATA CART! ________________')
 LOGGER.warning('___________ %s ___________________________' % datetime.datetime.now().strftime('%Y-%m-%d_%H_%M'))
 
-# https://github.com/pika/pika/issues/1107
+
 
 # Create credentials
 # (This does not connect)
@@ -75,7 +77,7 @@ creds = dict(
     password=PW,
     vhost=VHOST,
     port=AMQP_PORT,
-    ssl_enabled=True)
+    ssl_enabled=SSL)
 
 # Create a connector
 # (This does not connect)
@@ -95,13 +97,13 @@ pid = pid_connector.make_handle_from_drsid_and_versionnumber(
 # Open the connection, send messages, close
 pid_connector.start_messaging_thread()
 
-pid_connector.unpublish_all_versions(drs_id=datasetName)
+pid_connector.create_data_cart_pid(dict(
+    mydrs1 = 'mypid1',
+    mydrs2 = 'mypid2'))
 
 pid_connector.finish_messaging_thread()
 
 print('Check log for errors (none expected)')
-tmp1 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-onevers"\nContent:\t"{"operation": "unpublish_one_version", "aggregation_level": "dataset", [...]"'
-tmp2 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-allvers"\nContent:\t"{"operation": "unpublish_all_versions", "aggregation_level": "dataset",  [...]'
-print('Check queue for two new messages:\n%s\n%s' % (tmp1, tmp2))
+tmp = 'Routing Key:\t"2114100.HASH.fresh.datacart"\nContent:\t"{"handle": "hdl:...", "message_timestamp": "...", "data_cart_content": {"mydrs1": "mypid1", "mydrs2": "mypid2"}, "operation": "shopping_cart",   [...]'
+print('Check queue for one new message:\n%s' % tmp)
 LOGGER.warning('___________ DONE _______________________________________')
-
