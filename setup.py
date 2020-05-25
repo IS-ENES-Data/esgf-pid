@@ -48,12 +48,12 @@ except(IOError, ImportError):
 
 setup(
     name='esgfpid',
-    version='0.7.18-dev',
+    version='0.7.18-dev-deprecated',
     author='Merret Buurman, German Climate Computing Centre (DKRZ)',
     author_email='buurman@dkrz.de',
     url='https://github.com/IS-ENES-Data/esgf-pid',
-    download_url='https://github.com/IS-ENES-Data/esgf-pid/archive/0.7.10.tar.gz',
-    description='Library for sending PID requests to a rabbit messaging queue during ESGF publication.',
+    download_url='https://github.com/IS-ENES-Data/esgf-pid/archive/0.7.xx.tar.gz',
+    description='Library for sending PID requests to a rabbit messaging queue during ESGF publication. Deprecated branch.',
     long_description=long_description,
     packages=packages + test_packages,
     install_requires=dependencies,
