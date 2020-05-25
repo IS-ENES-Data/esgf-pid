@@ -1,3 +1,4 @@
+import ssl
 import pika
 import copy
 import logging
@@ -5,7 +6,7 @@ import random
 import esgfpid.defaults
 import esgfpid.exceptions
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
-from naturalsorting import natural_keys
+from .naturalsorting import natural_keys
 import esgfpid.utils
 
 LOGGER = logging.getLogger(__name__)
@@ -116,9 +117,11 @@ class NodeManager(object):
     def __add_node(self, store_where, store_archive, **kwargs):
         if self.__has_necessary_info(kwargs):
             node_info = copy.deepcopy(kwargs)
+            node_copy = copy.deepcopy(kwargs)
             self.__complete_info_dict(node_info, kwargs['is_open'])
+            self.__complete_info_dict(node_copy, kwargs['is_open'])
             self.__store_node_info_by_priority(node_info, store_where)
-            self.__store_node_info_by_priority(copy.deepcopy(node_info), store_archive)
+            self.__store_node_info_by_priority(node_copy, store_archive)
             #store_where[node_info['priority']].append(node_info)
             #store_archive[node_info['priority']].append(copy.deepcopy(node_info))
             return node_info
@@ -126,15 +129,12 @@ class NodeManager(object):
             raise esgfpid.exceptions.ArgumentError('Cannot add this RabbitMQ node. Missing info. Required: username, password, host and exchange_name. Provided: '+str(kwargs))
 
     def __compare_nodes(self, cand1, cand2):
-        copy1 = copy.deepcopy(cand1)
-        copy2 = copy.deepcopy(cand2)
         # These cannot be compared by "==".
         # They are created from the other info, so neglecting
         # them in this comparison is ok!
-        copy1['credentials'] = None
-        copy2['credentials'] = None
-        copy1['params'] = None
-        copy2['params'] = None
+        ignore_keys = ['credentials', 'params']
+        copy1 = dict((k, v) for k,v in cand1.items() if k not in ignore_keys)
+        copy2 = dict((k, v) for k,v in cand2.items() if k not in ignore_keys)
         return copy1 == copy2
 
     def __is_this_node_in_last_prio_already(self, where_to_look):
@@ -145,7 +145,7 @@ class NodeManager(object):
             logwarn(LOGGER, errmsg)
             return False
 
-        for i in xrange(len(list_candidates)):
+        for i in range(len(list_candidates)):
             candidate = list_candidates[i]
             if self.__compare_nodes(candidate,self.__current_node):
                 logtrace(LOGGER, 'Found current node in archive (in list of last-prio nodes).')
@@ -158,7 +158,7 @@ class NodeManager(object):
         list_candidates = all_nodes[current_prio]
         loginfo(LOGGER, 'Nodes of prio "%s": %s', current_prio, list_candidates)
 
-        for i in xrange(len(list_candidates)):
+        for i in range(len(list_candidates)):
             candidate = list_candidates[i]
             if self.__compare_nodes(candidate,self.__current_node):
                 logtrace(LOGGER, 'Found current node in archive.')
@@ -220,7 +220,7 @@ class NodeManager(object):
             logwarn(LOGGER, 'All nodes: %s' % where_to_look)
 
             # No matter where the node is stored, move it to "last" prio:
-            for prio, nodes in where_to_look.iteritems():
+            for prio, nodes in where_to_look.items():
 
                 logtrace(LOGGER, 'Looking in prio "%s"...' % prio)
                 moved = self.__move_to_last_prio(prio, where_to_look)
@@ -282,6 +282,14 @@ class NodeManager(object):
         if 'ssl_enabled' in node_info_dict and node_info_dict['ssl_enabled'] is not None:
             ssl_enabled = node_info_dict['ssl_enabled']
 
+        # Create SSLOptions if SSL is enabled
+        ssl_options = None
+        if ssl_enabled:
+            ssl_options = pika.SSLOptions(ssl.create_default_context())
+            # I did not test pika and SSL in python 3.7 yet! Issues were reported:
+            # https://github.com/pika/pika/issues/1107
+            # https://pika.readthedocs.io/en/stable/examples/tls_mutual_authentication.html
+            # TODO Test and fix SSL in pika with python 3.7
 
         # Get some defaults:
         socket_timeout = esgfpid.defaults.RABBIT_PIKA_SOCKET_TIMEOUT
@@ -292,7 +300,7 @@ class NodeManager(object):
         # https://pika.readthedocs.org/en/0.9.6/connecting.html
         params = pika.ConnectionParameters(
             host=host,
-            ssl=ssl_enabled,
+            ssl_options=ssl_options,
             port=port,
             virtual_host=vhost,
             credentials=credentials,
@@ -312,6 +320,7 @@ class NodeManager(object):
             frame_max=None, heartbeat_interval=None, ssl=None, ssl_options=None,
             connection_attempts=None, retry_delay=None, socket_timeout=None, locale=None,
             backpressure_detection=None)
+        # Note: heartbeat_interval renamed to heartbeat in pika 1.0.0
         '''
         return node_info_dict
 
@@ -351,7 +360,7 @@ class NodeManager(object):
     '''
     def get_num_left_trusted(self):
         n_trusted = 0
-        for list_of_nodes in self.__trusted_nodes.values():
+        for list_of_nodes in list(self.__trusted_nodes.values()):
             n_trusted = n_trusted + len(list_of_nodes)
         return n_trusted
 
@@ -363,7 +372,7 @@ class NodeManager(object):
     '''
     def get_num_left_open(self):
         n_open = 0
-        for list_of_nodes in self.__open_nodes.values():
+        for list_of_nodes in list(self.__open_nodes.values()):
             n_open = n_open + len(list_of_nodes)
         return n_open
 
@@ -402,7 +411,7 @@ class NodeManager(object):
     def __get_highest_priority_node(self, dict_of_nodes):
 
         # Get highest priority:
-        available_priorities = dict_of_nodes.keys()
+        available_priorities = list(dict_of_nodes.keys())
         available_priorities.sort(key=natural_keys)
         current_priority = available_priorities.pop(0)
         list_of_priority_nodes = dict_of_nodes[current_priority]
@@ -491,8 +500,23 @@ class NodeManager(object):
     '''
     def reset_nodes(self):
         logdebug(LOGGER, 'Resetting hosts...')
-        self.__trusted_nodes = copy.deepcopy(self.__trusted_nodes_archive)
-        self.__open_nodes = copy.deepcopy(self.__open_nodes_archive)
+
+        # Create a copy of a node list by rebuilding the ConnectionParameters with the values of the original nodes.
+        # This is done to prevent performing a copy of the SSLContext in the pika SSLOption object.
+        def _copy_node_list(node_list):
+            list_copy = {}
+            ignore_keys = ['params']
+            for list_key, list_value in node_list.items():
+                copy_value = []
+                for node_info in list_value:
+                    node_info_copy = dict((k, v) for k,v in node_info.items() if k not in ignore_keys)
+                    copy_value.append(self.__complete_info_dict(node_info_copy, node_info['is_open']))
+                list_copy[list_key] = copy_value
+            return list_copy
+
+        self.__trusted_nodes = _copy_node_list(self.__trusted_nodes_archive)
+        self.__open_nodes = _copy_node_list(self.__open_nodes_archive)
+
         self.set_next_host()
 
     def _get_prio_stored_for_current(self):
@@ -510,7 +534,7 @@ class NodeManager(object):
         if not type(where_to_look) == type(dict()):
             raise ValueError('%s is not a dict!')
 
-        for prio, nodes in where_to_look.iteritems():
+        for prio, nodes in where_to_look.items():
             for candidate in nodes:
                 if self.__compare_nodes(self.__current_node, candidate):
                     return prio

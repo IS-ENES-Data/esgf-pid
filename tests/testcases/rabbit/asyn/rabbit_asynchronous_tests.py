@@ -29,10 +29,10 @@ class RabbitAsynConnectorTestCase(unittest.TestCase):
     def tearDown(self):
         LOGGER.info('#############################')
 
-    def assert_messages_are_in_queue(self, queue, list_of_messages):
+    def assert_messages_are_in_queue(self, msg_queue, list_of_messages):
         queue_content = []
-        while not queue.empty():
-            queue_content.append(queue.get(False))
+        while not msg_queue.empty():
+            queue_content.append(msg_queue.get(False))
         for msg in list_of_messages:
             self.assertIn(msg, queue_content)
 
@@ -185,8 +185,8 @@ class RabbitAsynConnectorTestCase(unittest.TestCase):
         self.assertTrue(feedermock.publish_message.call_count>=4)
 
         # Check that the four messages were put into the queue:
-        queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
-        self.assert_messages_are_in_queue(queue, ['foo', 'a', 'b', 'c'])
+        msg_queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
+        self.assert_messages_are_in_queue(msg_queue, ['foo', 'a', 'b', 'c'])
 
 
     def test_send_message_waiting(self):
@@ -211,8 +211,8 @@ class RabbitAsynConnectorTestCase(unittest.TestCase):
         feedermock.publish_message.assert_not_called()
 
         # Check that the four messages were put into the queue:
-        queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
-        self.assert_messages_are_in_queue(queue, ['foo', 'a', 'b', 'c'])
+        msg_queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
+        self.assert_messages_are_in_queue(msg_queue, ['foo', 'a', 'b', 'c'])
 
     def test_send_message_unavail(self):
 
@@ -236,9 +236,8 @@ class RabbitAsynConnectorTestCase(unittest.TestCase):
         feedermock.publish_message.assert_not_called()
 
         # Check that the four messages were NOT put into the queue:
-        queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
-        with self.assertRaises(Queue.Empty):
-            queue.get(False)
+        msg_queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
+        self.assertTrue(msg_queue.empty())
 
     def test_send_message_user_closed(self):
 
@@ -265,9 +264,8 @@ class RabbitAsynConnectorTestCase(unittest.TestCase):
         feedermock.publish_message.assert_not_called()
 
         # Check that the four messages were NOT put into the queue:
-        queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
-        with self.assertRaises(Queue.Empty):
-            queue.get(False)
+        msg_queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
+        self.assertTrue(msg_queue.empty())
 
 
     #
@@ -435,5 +433,5 @@ class RabbitAsynConnectorTestCase(unittest.TestCase):
         feedermock.publish_message.assert_called()
 
         # Check that the four messages were put into the queue:
-        queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
-        self.assert_messages_are_in_queue(queue, ['foo'])
+        msg_queue = testrabbit._AsynchronousRabbitConnector__unpublished_messages_queue
+        self.assert_messages_are_in_queue(msg_queue, ['foo'])

@@ -3,7 +3,7 @@ import esgfpid.exceptions
 def check_presence_of_mandatory_args(args, mandatory_args):
     missing_args = []
     for name in mandatory_args:
-        if name not in args.keys():
+        if name not in list(args.keys()):
             missing_args.append(name)
     if len(missing_args)>0:
         raise esgfpid.exceptions.ArgumentError('Missing mandatory arguments: '+', '.join(missing_args))
@@ -23,7 +23,7 @@ def check_noneness_of_mandatory_args(args, mandatory_args):
 
 def add_missing_optional_args_with_value_none(args, optional_args):
     for name in optional_args:
-        if not name in args.keys():
+        if not name in list(args.keys()):
             args[name] = None
     return args
 

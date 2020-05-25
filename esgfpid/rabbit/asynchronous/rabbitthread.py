@@ -1,4 +1,8 @@
-import Queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 import threading
 import pika
 import time
@@ -49,7 +53,7 @@ passes events to it.
 
 The RabbitThread provides some methods to be called by the main
 thread, i.e. by the AsynchronousRabbitConnector, which use pika's
-SelectConnection.add_timeout() to pass the event to the thread's
+SelectConnection.ioloop.call_later() to pass the event to the thread's
 blocking loop.
 
 Only the methods
@@ -67,7 +71,7 @@ without needed references to each other.
 '''
 class RabbitThread(threading.Thread):
 
-    def __init__(self, statemachine, queue, facade, node_manager):
+    def __init__(self, statemachine, msg_queue, facade, node_manager):
         threading.Thread.__init__(self)
 
         '''
@@ -107,7 +111,7 @@ class RabbitThread(threading.Thread):
         will retrieve and publish them.
         Shared with the main thread!
         '''
-        self.__unpublished_messages_queue = queue
+        self.__unpublished_messages_queue = msg_queue
 
         # These are only used by the rabbit thread:
         '''
@@ -158,11 +162,11 @@ class RabbitThread(threading.Thread):
         The fact that it is possible to increase it requires some precautions.
         If messages can be scheduled to be sent to server, but not actually sent
         yet makes it difficult to loop over the Queue of unsent messages, using
-        "while" and "Queue.Empty" to break it.
+        "while" and "queue.Empty" to break it.
         (It will loop for too long and then have to call the publish method many
         many times with no more messages to publish.)
 
-        If you ever decide to while-loop and break on Queue.Empty, just make sure
+        If you ever decide to while-loop and break on queue.Empty, just make sure
         the publish interval is zero.
         '''
         self.__PUBLISH_INTERVAL_SECONDS = 0
@@ -272,7 +276,7 @@ class RabbitThread(threading.Thread):
     '''
     def __add_event(self, event):
         if self._connection is not None:
-            self._connection.add_timeout(self.__PUBLISH_INTERVAL_SECONDS, event)
+            self._connection.ioloop.call_later(self.__PUBLISH_INTERVAL_SECONDS, event)
         else:
             # If the main thread wants to add an event so quickly after starting the
             # thread that not even the connection object is listening for events yet,
@@ -285,7 +289,7 @@ class RabbitThread(threading.Thread):
             logdebug(LOGGER, 'Main thread wants to add event to thread that is not ready to receive events yet. Blocking and waiting.')
             self.__wait_for_thread_to_accept_events()
             logdebug(LOGGER, 'Thread declared itself ready to receive events.')
-            self._connection.add_timeout(self.__PUBLISH_INTERVAL_SECONDS, event)
+            self._connection.ioloop.call_later(self.__PUBLISH_INTERVAL_SECONDS, event)
             logerror(LOGGER, 'Added event after having waited for thread to open.')
 
 
@@ -348,9 +352,9 @@ class RabbitThread(threading.Thread):
     def get_num_unconfirmed(self):
         return self.__confirmer.get_num_unconfirmed()
 
-    ''' Called by feeder, to publish a message. May raise Queue.Empty. '''
+    ''' Called by feeder, to publish a message. May raise queue.Empty. '''
     def get_message_from_unpublished_stack(self, seconds):
-        return self.__unpublished_messages_queue.get(block=True, timeout=seconds) # can raise Queue.Empty
+        return self.__unpublished_messages_queue.get(block=True, timeout=seconds) # can raise queue.Empty
 
     ''' Called by feeder, to put a message back that was not successfully published. '''
     def put_one_message_into_queue_of_unsent_messages(self, message):

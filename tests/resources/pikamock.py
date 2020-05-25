@@ -61,7 +61,7 @@ class MockPikaBlockingConnection(object):
     def channel(self): # This mocks the original API
         #return MockChannel()
         if self.raise_channel_closed:
-            raise pika.exceptions.ChannelClosed()
+            raise pika.exceptions.ChannelClosed(reply_code=0, reply_text='Channel Closed')
         else:
             return MockChannel()
 
@@ -87,8 +87,8 @@ class MockPikaSelectConnection(object):
         self.is_open = False
         self.is_closed = True
 
-    def add_timeout(self, seconds, to_be_called):
-        to_be_called()
+    #def add_timeout(self, seconds, to_be_called):
+    #    to_be_called()
 
     def add_on_close_callback(self, callback):
         pass

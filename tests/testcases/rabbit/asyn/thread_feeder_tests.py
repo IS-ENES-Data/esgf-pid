@@ -1,6 +1,10 @@
 import unittest
 import logging
-import Queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 import pika
 import esgfpid.rabbit.asynchronous.thread_feeder
 from esgfpid.rabbit.asynchronous.exceptions import OperationNotAllowed
@@ -74,7 +78,7 @@ class ThreadFeederTestCase(unittest.TestCase):
         self.assertNotIn(msg, thread.messages)
         # Correct routing key:
         rk = thread._channel.basic_publish.call_args[1]["routing_key"]
-        self.assertEquals(rk, 'myprefix.HASH.fresh.mydescription')
+        self.assertEqual(rk, 'myprefix.HASH.fresh.mydescription')
 
     def test_routing_key_untrusted_ok(self):
 
@@ -94,7 +98,7 @@ class ThreadFeederTestCase(unittest.TestCase):
         self.assertNotIn(msg, thread.messages)
         # Correct routing key:
         rk = thread._channel.basic_publish.call_args[1]["routing_key"]
-        self.assertEquals(rk, 'myprefix.HASH.fresh-untrusted-fallback.mydescription')
+        self.assertEqual(rk, 'myprefix.HASH.fresh-untrusted-fallback.mydescription')
 
     def test_routing_key_untrusted_ok(self):
 
@@ -115,7 +119,7 @@ class ThreadFeederTestCase(unittest.TestCase):
         self.assertNotIn(msg, thread.messages)
         # Correct routing key:
         rk = thread._channel.basic_publish.call_args[1]["routing_key"]
-        self.assertEquals(rk, 'myprefix.HASH.fresh-untrusted-only.mydescription')
+        self.assertEqual(rk, 'myprefix.HASH.fresh-untrusted-only.mydescription')
 
     def test_send_message_empty(self):
 
@@ -135,7 +139,7 @@ class ThreadFeederTestCase(unittest.TestCase):
 
         # Preparation:
         msg = "{'foo':'bar'}"
-        feeder, thread = self.make_feeder(error=pika.exceptions.ChannelClosed)
+        feeder, thread = self.make_feeder(error=pika.exceptions.ChannelClosed(reply_code=0, reply_text='Channel Closed'))
         thread.messages.append(msg)
 
         # Run code to be tested:
@@ -224,7 +228,7 @@ class ThreadFeederTestCase(unittest.TestCase):
         thread.messages.append(msg)
 
         # Pre-Check:
-        self.assertEquals(feeder._RabbitFeeder__delivery_number, 1)
+        self.assertEqual(feeder._RabbitFeeder__delivery_number, 1)
 
         # Increase delivery number:
         feeder.publish_message()
@@ -233,11 +237,11 @@ class ThreadFeederTestCase(unittest.TestCase):
         thread._channel.basic_publish.assert_called()
 
         # Check if it was increased:
-        self.assertEquals(feeder._RabbitFeeder__delivery_number, 4)
+        self.assertEqual(feeder._RabbitFeeder__delivery_number, 4)
 
         # Run code to be tested:
         feeder.reset_delivery_number()
 
         # Check if it was reset:
-        self.assertEquals(feeder._RabbitFeeder__delivery_number, 1)
+        self.assertEqual(feeder._RabbitFeeder__delivery_number, 1)
 

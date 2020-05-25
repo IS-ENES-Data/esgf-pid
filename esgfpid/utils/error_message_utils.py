@@ -19,7 +19,7 @@ def _get_max_length(msg_list):
 
 def _fill_up_strings(msg_list, max_len):
     msg_list_updated = copy.copy(msg_list)
-    for i in xrange(len(msg_list)):
+    for i in range(len(msg_list)):
         current_length = len(msg_list[i])
         need_to_fill = max_len - current_length
         msg_list_updated[i] = msg_list[i] + (' '*need_to_fill)
@@ -27,6 +27,6 @@ def _fill_up_strings(msg_list, max_len):
 
 def _append_line_enclosers(msg_list, encl='***'):
     msg_list_updated = copy.copy(msg_list)
-    for i in xrange(len(msg_list)):
+    for i in range(len(msg_list)):
         msg_list_updated[i] = encl + ' ' + msg_list[i] + ' '+ encl
     return msg_list_updated

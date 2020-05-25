@@ -44,7 +44,7 @@ class UtilsTestCase(unittest.TestCase):
         )
 
         expected_handle = DATASETHANDLE_HDL
-        self.assertEquals(received_handle, expected_handle)
+        self.assertEqual(received_handle, expected_handle)
 
     #
     # argsutils
@@ -85,8 +85,8 @@ class UtilsTestCase(unittest.TestCase):
         with self.assertRaises(esgfpid.exceptions.ArgumentError)as raised:
             all_mandatory_args_ok = esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         expected_message = 'The arguments that were passed are not ok: Missing mandatory arguments: mand3'
-        self.assertIn(expected_message, raised.exception.message,
-            'Unexpected error message:\n%s\nExpected:\n%s' % (raised.exception.message, expected_message))
+        self.assertIn(expected_message, repr(raised.exception),
+            'Unexpected error message:\n%s\nExpected:\n%s' % (repr(raised.exception), expected_message))
 
     def test_check_presence_of_mandatory_args_several_missing(self):
 
@@ -100,8 +100,8 @@ class UtilsTestCase(unittest.TestCase):
         with self.assertRaises(esgfpid.exceptions.ArgumentError)as raised:
             all_mandatory_args_ok = esgfpid.utils.check_presence_of_mandatory_args(args, mandatory_args)
         expected_message = 'The arguments that were passed are not ok: Missing mandatory arguments: mand2, mand3'
-        self.assertIn(expected_message, raised.exception.message,
-            'Unexpected error message:\n%s\nExpected:\n%s' % (raised.exception.message, expected_message))
+        self.assertIn(expected_message, repr(raised.exception),
+            'Unexpected error message:\n%s\nExpected:\n%s' % (repr(raised.exception), expected_message))
 
     def test_find_additional_args_found_ok(self):
 
@@ -158,7 +158,7 @@ class UtilsTestCase(unittest.TestCase):
 
         with self.assertRaises(esgfpid.exceptions.ArgumentError) as raised:
             esgfpid.utils.check_noneness_of_mandatory_args(all_args, mandatory_args)
-        self.assertIn('These arguments are None: mand2', raised.exception.message)
+        self.assertIn('These arguments are None: mand2', repr(raised.exception))
 
     def test_check_noneness_of_mandatory_args_ok(self):
         mandatory_args = ['mand1','mand2']

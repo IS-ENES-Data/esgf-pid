@@ -4,7 +4,7 @@ import os.path
 def get_boolean(arg):
     if isinstance(arg, bool):
         return arg
-    elif isinstance(arg, basestring):
+    elif isinstance(arg, str):
         if arg.lower() in ['true']:
             return True
         elif arg.lower() in ['false']:
@@ -18,7 +18,7 @@ def ensure_directory_exists(path):
     try: 
         os.mkdir(path)
     except OSError as e:
-        if 'File exists' in e.message:
+        if 'File exists' in repr(e):
             if not os.path.isdir(path):
                 raise
 

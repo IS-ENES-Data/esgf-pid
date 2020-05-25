@@ -67,7 +67,7 @@ class SolrIntegrationTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query(query)
-        self.assertIn('ConnectionError', raised.exception.message)
+        self.assertIn('ConnectionError', repr(raised.exception))
 
     def test_send_query_404(self):
 
@@ -81,7 +81,7 @@ class SolrIntegrationTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query(query)
-        self.assertIn('HTTP 404', raised.exception.message)
+        self.assertIn('HTTP 404', repr(raised.exception))
 
 
     def test_send_query_400(self):
@@ -96,4 +96,4 @@ class SolrIntegrationTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query(query)
-        self.assertIn('Solr replied with code 400', raised.exception.message)
+        self.assertIn('Solr replied with code 400', repr(raised.exception))

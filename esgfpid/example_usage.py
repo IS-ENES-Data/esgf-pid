@@ -1,3 +1,5 @@
+
+
 import esgfpid
 import logging
 import datetime
@@ -46,7 +48,7 @@ def init_logging():
     logging.basicConfig(level=LOGLEVEL, filename=filename, filemode='w', format=myformat)
     pikalogger = logging.getLogger('pika')
     pikalogger.setLevel(logging.WARNING)
-    print 'Logging to file ".%s"' % filename
+    print('Logging to file ".%s"' % filename)
 
 def init_connector(data_node):
     trusted_node1 = {

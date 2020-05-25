@@ -1,3 +1,5 @@
+
+
 import pika
 import logging
 import socket
@@ -78,7 +80,6 @@ class RabbitChecker(object):
         self.__nodemanager = args['connector']._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
         if args['print_to_console'] is not None and args['print_to_console'] == True:
             self.__print_errors_to_console = True
-
         if args['print_success_to_console'] is not None and args['print_success_to_console'] == True:
             self.__print_success_to_console = True
         if args['send_message'] is not None and args['send_message'] == True:
@@ -202,16 +203,16 @@ class RabbitChecker(object):
 
         body = 'PLEASE PRINT: Testing pre-flight check...'
         self.__loginfo(' .. checking message ...')
-        res = channel.basic_publish(
-            exchange=self.__nodemanager.get_exchange_name(),
-            routing_key=rkey,
-            body=body,
-            properties=props,
-            mandatory=True
-        )
-        if res:
+        try:
+            res = channel.basic_publish(
+                exchange=self.__nodemanager.get_exchange_name(),
+                routing_key=rkey,
+                body=body,
+                properties=props,
+                mandatory=True
+            )
             self.__loginfo(' .. checking message ... ok.')
-        else:
+        except pika.exceptions.UnroutableError:
             self.__loginfo(' .. checking message ... failed.')
             self.__add_error_message_message_fail(rkey)
             raise ValueError('Could not send message to messaging service host %s' %
@@ -341,4 +342,3 @@ class RabbitChecker(object):
         if self.__print_errors_to_console == True:
             print(msg)
         utils.logwarn(LOGGER, msg)
-

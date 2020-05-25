@@ -55,8 +55,8 @@ class UnacceptedMessagesHandler(object):
             body_json = self.__add_emergency_routing_key(body_json)
             self.__resend_an_unroutable_message(json.dumps(body_json))
         except pika.exceptions.ChannelClosed as e:
-            logdebug(LOGGER, 'Error during "on_message_not_accepted": %s: %s', e.__class__.__name__, e.message)
-            logerror(LOGGER, 'Could not resend message: %s: %s', e.__class__.__name__, e.message)
+            logdebug(LOGGER, 'Error during "on_message_not_accepted": %s: %s', e.__class__.__name__, repr(e))
+            logerror(LOGGER, 'Could not resend message: %s: %s', e.__class__.__name__, repr(e))
 
     def __add_emergency_routing_key(self, body_json):
         emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY

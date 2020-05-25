@@ -84,8 +84,8 @@ class ConnectorTestCase(unittest.TestCase):
         # Check result: Did the module get the right number of
         # trusted and open rabbit nodes?
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
-        self.assertEquals(node_manager.get_num_left_trusted(), 1)
-        self.assertEquals(node_manager.get_num_left_open(),1)
+        self.assertEqual(node_manager.get_num_left_trusted(), 1)
+        self.assertEqual(node_manager.get_num_left_open(),1)
 
 
     def test_init_no_prefix(self):
@@ -177,8 +177,8 @@ class ConnectorTestCase(unittest.TestCase):
         # Check results: Did the module get the right number of
         # trusted and open rabbit nodes?
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
-        self.assertEquals(node_manager.get_num_left_trusted(), 1)
-        self.assertEquals(node_manager.get_num_left_open(),0)
+        self.assertEqual(node_manager.get_num_left_trusted(), 1)
+        self.assertEqual(node_manager.get_num_left_open(),0)
 
     '''
     Test the constructor, with trusted node.
@@ -201,14 +201,14 @@ class ConnectorTestCase(unittest.TestCase):
         # Check results: Did the module get the right number of
         # trusted and open rabbit nodes?
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
-        self.assertEquals(node_manager.get_num_left_trusted(), 1)
-        self.assertEquals(node_manager.get_num_left_open(),0)
+        self.assertEqual(node_manager.get_num_left_trusted(), 1)
+        self.assertEqual(node_manager.get_num_left_open(),0)
         # Check: Were the right values passed?
         node_manager.set_next_host()
         curr = node_manager._NodeManager__current_node
-        self.assertEquals(curr['vhost'],'foo')
-        self.assertEquals(curr['port'],666)
-        self.assertEquals(curr['ssl_enabled'],True)
+        self.assertEqual(curr['vhost'],'foo')
+        self.assertEqual(curr['port'],666)
+        self.assertEqual(curr['ssl_enabled'],True)
 
     '''
     Test the constructor, with only open nodes.
@@ -253,8 +253,8 @@ class ConnectorTestCase(unittest.TestCase):
         # Check results: Did the module get the right number of
         # trusted and open rabbit nodes?
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
-        self.assertEquals(node_manager.get_num_left_trusted(), 0)
-        self.assertEquals(node_manager.get_num_left_open(),1)
+        self.assertEqual(node_manager.get_num_left_trusted(), 0)
+        self.assertEqual(node_manager.get_num_left_open(),1)
 
     def test_init_rabbit_user_as_list(self):
 
@@ -355,7 +355,7 @@ class ConnectorTestCase(unittest.TestCase):
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
         node_manager.set_next_host()
         curr = node_manager._NodeManager__current_node
-        self.assertEquals(curr['ssl_enabled'],True)
+        self.assertEqual(curr['ssl_enabled'],True)
 
     def test_init_sslenabled_string_bool_false(self):
 
@@ -379,7 +379,7 @@ class ConnectorTestCase(unittest.TestCase):
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
         node_manager.set_next_host()
         curr = node_manager._NodeManager__current_node
-        self.assertEquals(curr['ssl_enabled'],False)
+        self.assertEqual(curr['ssl_enabled'],False)
 
     def test_init_sslenabled_string_bool_other(self):
 
@@ -425,9 +425,9 @@ class ConnectorTestCase(unittest.TestCase):
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
         node_manager.set_next_host()
         curr = node_manager._NodeManager__current_node
-        self.assertEquals(curr['ssl_enabled'],None)
-        self.assertEquals(curr['vhost'],None)
-        self.assertEquals(curr['port'],None)
+        self.assertEqual(curr['ssl_enabled'],None)
+        self.assertEqual(curr['vhost'],None)
+        self.assertEqual(curr['port'],None)
 
     def test_init_port_no_int(self):
 
@@ -471,9 +471,9 @@ class ConnectorTestCase(unittest.TestCase):
         node_manager = testconnector._Connector__coupler._Coupler__rabbit_message_sender._RabbitMessageSender__node_manager
         node_manager.set_next_host()
         curr = node_manager._NodeManager__current_node
-        self.assertEquals(curr['ssl_enabled'],None)
-        self.assertEquals(curr['vhost'],None)
-        self.assertEquals(curr['port'],123)
+        self.assertEqual(curr['ssl_enabled'],None)
+        self.assertEqual(curr['vhost'],None)
+        self.assertEqual(curr['port'],123)
 
     '''
     Test if the solr URL is passed to the consumer in the
@@ -528,15 +528,15 @@ class ConnectorTestCase(unittest.TestCase):
         # Check results: Check if the correct defaults
         # were set (i.e. passed to coupler.)
         coupler_args = testconnector._Connector__coupler.args
-        self.assertEquals(coupler_args['data_node'],None)
-        self.assertEquals(coupler_args['thredds_service_path'],None)
-        self.assertEquals(coupler_args['test_publication'],False)
-        self.assertEquals(coupler_args['solr_url'],None)
-        self.assertEquals(coupler_args['solr_switched_off'],True)
-        self.assertEquals(coupler_args['solr_https_verify'],False)
-        self.assertEquals(coupler_args['disable_insecure_request_warning'],False)
-        self.assertEquals(coupler_args['message_service_synchronous'],False)
-        self.assertEquals(coupler_args['consumer_solr_url'],None)
+        self.assertEqual(coupler_args['data_node'],None)
+        self.assertEqual(coupler_args['thredds_service_path'],None)
+        self.assertEqual(coupler_args['test_publication'],False)
+        self.assertEqual(coupler_args['solr_url'],None)
+        self.assertEqual(coupler_args['solr_switched_off'],True)
+        self.assertEqual(coupler_args['solr_https_verify'],False)
+        self.assertEqual(coupler_args['disable_insecure_request_warning'],False)
+        self.assertEqual(coupler_args['message_service_synchronous'],False)
+        self.assertEqual(coupler_args['consumer_solr_url'],None)
         
     '''
     Test whether the correct defaults are set
@@ -562,15 +562,15 @@ class ConnectorTestCase(unittest.TestCase):
         # Check results: Check if the correct defaults
         # were set (i.e. passed to coupler.)
         coupler_args = testconnector._Connector__coupler.args
-        self.assertEquals(coupler_args['data_node'],DATA_NODE)
-        self.assertEquals(coupler_args['thredds_service_path'],THREDDS)
-        self.assertEquals(coupler_args['test_publication'],True)
-        self.assertEquals(coupler_args['solr_url'],SOLR_URL_LIBRARY)
-        self.assertEquals(coupler_args['solr_switched_off'],False)
-        self.assertEquals(coupler_args['solr_https_verify'],True)
-        self.assertEquals(coupler_args['disable_insecure_request_warning'],True)
-        self.assertEquals(coupler_args['message_service_synchronous'],True)
-        self.assertEquals(coupler_args['consumer_solr_url'],SOLR_URL_CONSUMER)
+        self.assertEqual(coupler_args['data_node'],DATA_NODE)
+        self.assertEqual(coupler_args['thredds_service_path'],THREDDS)
+        self.assertEqual(coupler_args['test_publication'],True)
+        self.assertEqual(coupler_args['solr_url'],SOLR_URL_LIBRARY)
+        self.assertEqual(coupler_args['solr_switched_off'],False)
+        self.assertEqual(coupler_args['solr_https_verify'],True)
+        self.assertEqual(coupler_args['disable_insecure_request_warning'],True)
+        self.assertEqual(coupler_args['message_service_synchronous'],True)
+        self.assertEqual(coupler_args['consumer_solr_url'],SOLR_URL_CONSUMER)
 
     '''
     Check if solr is not switched off if an URL given.
@@ -584,8 +584,8 @@ class ConnectorTestCase(unittest.TestCase):
         # Check results: Check if the correct defaults
         # were set (i.e. passed to coupler.)
         coupler_args = testconnector._Connector__coupler.args
-        self.assertEquals(coupler_args['solr_url'],'foo')
-        self.assertEquals(coupler_args['solr_switched_off'],False)
+        self.assertEqual(coupler_args['solr_url'],'foo')
+        self.assertEqual(coupler_args['solr_switched_off'],False)
 
     '''
     Check if solr is not switched off if an URL given.
@@ -601,8 +601,8 @@ class ConnectorTestCase(unittest.TestCase):
         # Check results: Check if the correct defaults
         # were set (i.e. passed to coupler.)
         coupler_args = testconnector._Connector__coupler.args
-        self.assertEquals(coupler_args['solr_url'],None)
-        self.assertEquals(coupler_args['solr_switched_off'],True)
+        self.assertEqual(coupler_args['solr_url'],None)
+        self.assertEqual(coupler_args['solr_switched_off'],True)
 
 
     #
@@ -1069,4 +1069,4 @@ class ConnectorTestCase(unittest.TestCase):
             version_number=DS_VERSION
         )
         expected_handle = DATASETHANDLE_HDL
-        self.assertEquals(received_handle, expected_handle)
+        self.assertEqual(received_handle, expected_handle)

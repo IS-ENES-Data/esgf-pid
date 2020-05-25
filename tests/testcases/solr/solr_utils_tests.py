@@ -1,3 +1,5 @@
+
+
 import unittest
 import mock
 import logging
@@ -42,7 +44,7 @@ class SolrUtilsTestCase(unittest.TestCase):
             'hdl:10876.test/e4f9bac0-f8ff-453f-a634-9953932801f6', 
             'hdl:10876.test/05935211-c8cc-4bf2-8149-745f41a7d07c'
         ]
-        equal = (received_handles == expected_handles)
+        equal = (sorted(received_handles) == sorted(expected_handles))
         self.assertTrue(equal, 'Expected: %s\nReceived: %s' % (expected_handles, received_handles))
 
     def test_no_handles_found(self):

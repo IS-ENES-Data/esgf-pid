@@ -106,9 +106,9 @@ class Confirmer(object):
             multiple = method_frame.method.multiple # Boolean
             return deliv_tag, confirmation_type, multiple
         except AttributeError as e:
-            raise UnknownServerResponse(str(method_frame)+' - '+e.message)
+            raise UnknownServerResponse(str(method_frame)+' - '+repr(e))
         except IndexError as e:
-            raise UnknownServerResponse(str(method_frame)+' - '+e.message)
+            raise UnknownServerResponse(str(method_frame)+' - '+repr(e))
 
     def __react_on_single_delivery_ack(self, deliv_tag):
         self.__remove_delivery_tag_and_message_single(deliv_tag)
@@ -207,6 +207,6 @@ class Confirmer(object):
     '''
     def get_unconfirmed_messages_as_list_copy(self):
         newlist = []
-        for deliv_tag,message in self.__unconfirmed_messages_dict.iteritems():
+        for deliv_tag,message in self.__unconfirmed_messages_dict.items():
             newlist.append(message)
         return newlist

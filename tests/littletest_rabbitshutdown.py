@@ -1,3 +1,5 @@
+
+
 import esgfpid.rabbit.rabbit
 import logging
 import time
@@ -36,7 +38,7 @@ testrabbit = esgfpid.rabbit.rabbit.RabbitMessageSender(
 testrabbit.start()
 
 # Run code to be tested:
-for i in xrange(num_messages):
+for i in range(num_messages):
       print("Publishing message %i..." % i)
       testrabbit.send_message_to_queue({"stuffee":"foo"+str(i+1),"ROUTING_KEY":routing_key})
       print("Publishing message %i... done." % i)

@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 # Dependencies for using the library:
 dependencies = [
-    'pika==0.11.2',
-    'requests>=2.20.0'
+    'pika>=1.0.1,<=1.1.0',
+    'requests>=2.22.0'
 ]
 
 # Dependencies for running the tests:
@@ -48,11 +48,11 @@ except(IOError, ImportError):
 
 setup(
     name='esgfpid',
-    version='0.7.17',
+    version='0.8.0',
     author='Merret Buurman, German Climate Computing Centre (DKRZ)',
     author_email='buurman@dkrz.de',
     url='https://github.com/IS-ENES-Data/esgf-pid',
-    download_url='https://github.com/IS-ENES-Data/esgf-pid/archive/0.7.10.tar.gz',
+    download_url='https://github.com/IS-ENES-Data/esgf-pid/archive/0.8.0.tar.gz',
     description='Library for sending PID requests to a rabbit messaging queue during ESGF publication.',
     long_description=long_description,
     packages=packages + test_packages,
@@ -63,6 +63,7 @@ setup(
        'Development Status :: 4 - Beta',
        'Programming Language :: Python :: 2',
        'Programming Language :: Python :: 2.7',
+       'Programming Language :: Python :: 3.7',
        'License :: OSI Approved :: Apache Software License',
        'Intended Audience :: Developers',
        'Topic :: Software Development :: Libraries :: Python Modules',

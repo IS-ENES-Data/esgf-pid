@@ -1,3 +1,5 @@
+
+
 import unittest
 import argparse
 import logging
@@ -83,7 +85,7 @@ if __name__ == '__main__':
     # Collect tests:
     verbosity = 5
     descriptions = 0
-    print '\nCollecting tests:'
+    print('\nCollecting tests:')
     tests_to_run = []
     numtests = 0
 
@@ -307,9 +309,9 @@ if __name__ == '__main__':
             numtests += n
 
     # Run all of them:
-    print 'Run '+str(numtests)+' tests.'
+    print('Run '+str(numtests)+' tests.')
     test_suites = unittest.TestSuite(tests_to_run)
-    print '\nStarting tests:'
+    print('\nStarting tests:')
     logging.info("Starting tests:")
     test_result = unittest.TextTestRunner(descriptions=descriptions, verbosity=verbosity).run(test_suites)
     sys.exit(not test_result.wasSuccessful())

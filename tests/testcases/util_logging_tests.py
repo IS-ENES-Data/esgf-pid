@@ -2,6 +2,11 @@ import unittest
 import mock
 import logging
 import esgfpid
+import sys
+if sys.version_info.major >= 3:
+    import importlib
+    def reload(module):
+        return importlib.reload(module)
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -120,7 +125,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         esgfpid.utils.logdebug(logger, 'foofoo')
 
         # Check results:
-        self.assertEquals(logger.info_messages, [], 'Received info: %s (should be an an empty list).' % (logger.info_messages))
+        self.assertEqual(logger.info_messages, [], 'Received info: %s (should be an an empty list).' % (logger.info_messages))
         self.assertIn('foofoo', logger.debug_messages, 'Missing "foofoo" in: '+str(logger.debug_messages))
 
     @mock.patch('esgfpid.defaults')
@@ -139,8 +144,8 @@ class UtilsLoggingTestCase(unittest.TestCase):
         esgfpid.utils.logtrace(logger, 'superdetail')
 
         # Check results:
-        self.assertEquals(logger.info_messages, [], 'Received info: %s (should be an an empty list).' % (logger.info_messages))
-        self.assertEquals(logger.debug_messages, [], 'Received debug: %s (should be an empty list).' % (logger.debug_messages))
+        self.assertEqual(logger.info_messages, [], 'Received info: %s (should be an an empty list).' % (logger.info_messages))
+        self.assertEqual(logger.debug_messages, [], 'Received debug: %s (should be an empty list).' % (logger.debug_messages))
 
     @mock.patch('esgfpid.defaults')
     def test_log_trace_to_debug(self, defaults_patch):
@@ -162,7 +167,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         expected_debug = '[trace] superdetail'
         self.assertTrue(esgfpid.defaults.LOG_TRACE_TO_DEBUG)
         self.assertIn(expected_debug, logger.debug_messages, 'Received debug: %s (should be %s).' % (logger.debug_messages, expected_debug))
-        self.assertEquals(logger.info_messages, [], 'Received info: %s (should be empty list).' % (logger.info_messages))
+        self.assertEqual(logger.info_messages, [], 'Received info: %s (should be empty list).' % (logger.info_messages))
 
 
     @mock.patch('esgfpid.defaults')
@@ -226,7 +231,7 @@ class UtilsLoggingTestCase(unittest.TestCase):
         reload(esgfpid.utils)
 
         # Run code to be tested:
-        for i in xrange(35):
+        for i in range(35):
             counter += 1
             esgfpid.utils.log_every_x_times(logger, counter, x, (msg+str(counter)))
 
@@ -234,5 +239,5 @@ class UtilsLoggingTestCase(unittest.TestCase):
         received_messages = ', '.join(logger.debug_messages)
         #expected_messages = 'Foobar1 (counter 1), Foobar10 (counter 10), Foobar20 (counter 20), Foobar30 (counter 30)'
         expected_messages = 'Foobar1, Foobar10, Foobar20, Foobar30'
-        self.assertEquals([],logger.info_messages,'Received info messages: "%s" (should be empty list).' % logger.info_messages)
-        self.assertEquals(expected_messages, received_messages, 'Received messages: %s (should be %s).' % (received_messages,expected_messages))
+        self.assertEqual([],logger.info_messages,'Received info messages: "%s" (should be empty list).' % logger.info_messages)
+        self.assertEqual(expected_messages, received_messages, 'Received messages: %s (should be %s).' % (received_messages,expected_messages))

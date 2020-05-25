@@ -5,7 +5,11 @@ import tests.resources.responsemock
 #import tests.resources.solrmock
 #import tests.resources.rabbitmock
 import tests.utils as utils
-import Queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 
 # Errata
 ERRATA_SEVERAL = ['123456','654321']
@@ -81,10 +85,10 @@ def get_thread_mock4(error=None):
 
 def get_connection_mock():
     connectionmock = mock.MagicMock()
-    def side_effect_add_timeout(seconds, callback):
+    def side_effect_call_later(seconds, callback):
         callback()
-    connectionmock.add_timeout = mock.MagicMock()
-    connectionmock.add_timeout.side_effect = side_effect_add_timeout
+    connectionmock.ioloop.call_later = mock.MagicMock()
+    connectionmock.ioloop.call_later.side_effect = side_effect_call_later
     return connectionmock
 
 
@@ -149,7 +153,7 @@ class MockThread2(object):
 
     def get_message_from_unpublished_stack(self, seconds):
         if len(self.messages) == 0:
-            raise Queue.Empty()
+            raise queue.Empty()
         else:
             return self.messages.pop()
 
@@ -206,10 +210,10 @@ class MockThread4(object):
         self._connection.is_closing = False
         self._connection.is_open = True
 
-        # Implement callback
-        def side_effect(wait_seconds, callback):
+        def side_effect_call_later(seconds, callback):
             callback()
-        self._connection.add_timeout.side_effect = side_effect
+        self._connection.ioloop.call_later = mock.MagicMock()
+        self._connection.ioloop.call_later.side_effect = side_effect_call_later
 
         # Methods (used by modules):
         self.tell_publisher_to_stop_waiting_for_gentle_finish = mock.MagicMock()
@@ -296,7 +300,7 @@ def get_coupler_args(**kwargs):
         test_publication=False,
         message_service_synchronous=False
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         coupler_args[k] = v
     return coupler_args
 
@@ -317,7 +321,7 @@ def get_rabbit_credentials(**kwargs):
         url = RABBIT_URL_TRUSTED,
         password = RABBIT_PASSWORD
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         rabbit_args[k] = v
     return rabbit_args
 
@@ -332,7 +336,7 @@ def get_connector_args(**kwargs):
         messaging_service_exchange_name = EXCHANGE_NAME,
         messaging_service_credentials = [cred_copy]
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         connector_args[k] = v
     return connector_args
 
@@ -425,7 +429,7 @@ def get_rabbit_args(**kwargs):
         test_publication=False,
         is_synchronous_mode=kwargs['is_synchronous_mode']
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         rabbit_args[k] = v
     return rabbit_args
 
@@ -478,7 +482,7 @@ def get_testsolr(**kwargs):
         https_verify = True,
         disable_insecure_request_warning = False
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         solr_args[k] = v
     testsolr = esgfpid.solr.SolrInteractor(**solr_args)
     return testsolr
@@ -550,7 +554,7 @@ def get_args_for_nodemanager(**kwargs):
         username='user_foo',
         password='pw_foo'
     )
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
         args[k] = v
     return args
 

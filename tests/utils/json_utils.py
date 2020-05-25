@@ -9,12 +9,14 @@ def is_json_same(expected, received):
      - Do they have the same keys?
      - Do the shared keys have the same value?
     '''
-    expected_keys = expected.keys()
+    expected_keys = list(expected.keys())
     expected_keyscopy = expected_keys[:]
-    received_keys = received.keys()
+    received_keys = list(received.keys())
     for key in expected_keyscopy:
         if key not in received_keys:
             return False
+        elif isinstance(expected[key], list):
+            return True if sorted(expected[key]) == sorted(received[key]) else False
         elif expected[key] != received[key]:
             return False
         else:
@@ -39,14 +41,20 @@ def compare_json_return_errormessage(expected, received, full=True):
     error_msg = ''
     error_occurred = False
 
-    expected_keys = expected.keys()
+    expected_keys = list(expected.keys())
     expected_keyscopy = expected_keys[:]
-    received_keys = received.keys()
+    received_keys = list(received.keys())
     for key in expected_keyscopy:
         if key not in received_keys:
             #error_msg += ('\nExpected key "'+key+'" not in received keys: '+str(received_keys))
             error_msg += ('\nExpected key "%s" not in received keys: %s' % (key, received_keys))
             error_occurred = True
+        elif isinstance(expected[key], list):
+            if sorted(expected[key]) != sorted(received[key]):
+                error_msg += ('\nReceived for key "%s":\n\t%s (%s)\nnot same as expected\n\t%s (%s)' % (key, received[key], type(received[key]), expected[key], type(expected[key])))
+                error_occurred = True
+                expected_keys.remove(key)
+                received_keys.remove(key)
         elif expected[key] != received[key]:
             #error_msg += ('\nReceived for key "'+str(key)+'":\n'+str(received[key])+'\nnot same as expected\n'+str(expected[key]))
             error_msg += ('\nReceived for key "%s":\n\t%s (%s)\nnot same as expected\n\t%s (%s)' % (key, received[key], type(received[key]), expected[key], type(expected[key])))

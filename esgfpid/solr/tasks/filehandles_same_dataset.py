@@ -33,7 +33,7 @@ class FindFilesOfSameDatasetVersion(object):
         try:
             file_handles = self.__strategy1(args) # can raise SolrError or SolrSwitchedOff, but can't return None
         except esgfpid.exceptions.SolrError as e:
-            self.__error_messages.append('Error during first query: '+e.message)
+            self.__error_messages.append('Error during first query: '+repr(e))
 
         if file_handles is not None and len(file_handles)>0:
             LOGGER.debug('Retrieved file handles from solr in first query.')
@@ -43,7 +43,7 @@ class FindFilesOfSameDatasetVersion(object):
         try:
             file_handles = self.__strategy2(args) # can raise SolrError or SolrSwitchedOff, but can't return None
         except esgfpid.exceptions.SolrError as e:
-            self.__error_messages.append('Error during second query: '+e.message)
+            self.__error_messages.append('Error during second query: '+repr(e))
             msg = '/n'.join(self.__error_messages)
             raise esgfpid.exceptions.SolrError('Failure in both queries. Messages:\n'+msg)
 

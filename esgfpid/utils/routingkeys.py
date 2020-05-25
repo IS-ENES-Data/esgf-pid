@@ -70,7 +70,7 @@ Add the (sanitized) prefix to all routing keys.
 '''
 def add_prefix_to_routing_keys(prefix):
     sanitized_prefix = _sanitize_prefix(prefix)
-    for k,v in ROUTING_KEYS_TEMPLATES.iteritems():
+    for k,v in ROUTING_KEYS_TEMPLATES.items():
         ROUTING_KEYS[k] = v.replace('PREFIX', sanitized_prefix)
 
 

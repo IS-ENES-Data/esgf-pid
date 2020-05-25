@@ -153,7 +153,7 @@ class MessageCreationTestcase(unittest.TestCase):
         args_dict = self.__get_args_dict_dataset()
   
         # Run code to be tested:
-        for k,v in args_dict.iteritems():
+        for k,v in args_dict.items():
             args = copy.deepcopy(args_dict)
             LOGGER.debug('Deleting %s and trying...', k)
             del args[k]

@@ -1,8 +1,13 @@
 import unittest
 import logging
-import Queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 import pika
 import mock
+import json
 import esgfpid.rabbit.asynchronous.thread_returnhandler
 from esgfpid.rabbit.asynchronous.exceptions import OperationNotAllowed
 
@@ -53,9 +58,10 @@ class ThreadReturnerTestCase(unittest.TestCase):
         handler.on_message_not_accepted(thread._channel, frame, props, body)
 
         # Check result:
-        thread.send_a_message.assert_called_once()
-        expected = '{"original_routing_key": "%s", "foo": "bar", "ROUTING_KEY": "%s"}' % (routing_key, emergency_routing_key)
-        thread.send_a_message.assert_called_with(expected)
+        thread.send_a_message.assert_called_once_with(mock.ANY)
+        call_args, call_kwargs = thread.send_a_message.call_args
+        expected = {"foo": "bar", "ROUTING_KEY": emergency_routing_key, "original_routing_key": routing_key}
+        self.assertEqual(json.loads(call_args[0]), expected)
 
     def test_send_message_second_time(self):
 
@@ -93,9 +99,10 @@ class ThreadReturnerTestCase(unittest.TestCase):
         handler.on_message_not_accepted(thread._channel, frame, props, body)
 
         # Check result:
-        thread.send_a_message.assert_called_once()
-        expected = '{"original_routing_key": "%s", "foo": "bar", "ROUTING_KEY": "%s"}' % (routing_key, emergency_routing_key)
-        thread.send_a_message.assert_called_with(expected)
+        thread.send_a_message.assert_called_once_with(mock.ANY)
+        call_args, call_kwargs = thread.send_a_message.call_args
+        expected = {"foo": "bar", "ROUTING_KEY": emergency_routing_key, "original_routing_key": routing_key}
+        self.assertEqual(json.loads(call_args[0]), expected)
 
 
     def test_send_message_no_key(self):
@@ -114,9 +121,10 @@ class ThreadReturnerTestCase(unittest.TestCase):
         handler.on_message_not_accepted(thread._channel, frame, props, body)
 
         # Check result:
-        thread.send_a_message.assert_called_once()
-        expected = '{"original_routing_key": "None", "foo": "bar", "ROUTING_KEY": "%s"}' % (emergency_routing_key)
-        thread.send_a_message.assert_called_with(expected)
+        thread.send_a_message.assert_called_once_with(mock.ANY)
+        call_args, call_kwargs = thread.send_a_message.call_args
+        expected = {"foo": "bar", "ROUTING_KEY": emergency_routing_key, "original_routing_key": "None"}
+        self.assertEqual(json.loads(call_args[0]), expected)
 
 
     def test_send_message_error(self):
@@ -124,7 +132,7 @@ class ThreadReturnerTestCase(unittest.TestCase):
         # Preparation:
         emergency_routing_key = esgfpid.utils.RABBIT_EMERGENCY_ROUTING_KEY
         body = '{"foo":"bar"}'
-        handler, thread = self.make_returnhandler(error=pika.exceptions.ChannelClosed)
+        handler, thread = self.make_returnhandler(error=pika.exceptions.ChannelClosed(reply_code=0, reply_text='Channel Closed'))
         # <Basic.Return(['exchange=rabbitsender_integration_tests', 'reply_code=312', 'reply_text=NO_ROUTE', 'routing_key=cmip6.publisher.HASH.cart.datasets'])>"
         frame = mock.MagicMock()
         frame.reply_text = 'NO_ROUTE'
@@ -136,6 +144,7 @@ class ThreadReturnerTestCase(unittest.TestCase):
 
         # Check result:
         # Can not check if error was raised...
-        thread.send_a_message.assert_called_once()
-        expected = '{"original_routing_key": "None", "foo": "bar", "ROUTING_KEY": "%s"}' % (emergency_routing_key)
-        thread.send_a_message.assert_called_with(expected)
+        thread.send_a_message.assert_called_once_with(mock.ANY)
+        call_args, call_kwargs = thread.send_a_message.call_args
+        expected = {"foo": "bar", "ROUTING_KEY": emergency_routing_key, "original_routing_key": "None"}
+        self.assertEqual(json.loads(call_args[0]), expected)

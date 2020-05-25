@@ -104,9 +104,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
@@ -143,9 +143,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     #
@@ -182,9 +182,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
@@ -220,10 +220,11 @@ class CheckTestCase(unittest.TestCase):
         
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
+
 
 
     '''Test if the correct error message gets printed by the check method on connection failure.'''
@@ -268,9 +269,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
@@ -307,7 +308,7 @@ class CheckTestCase(unittest.TestCase):
             if params.host == 'tomato.salad-with-spam.fr':
                 return tests.resources.pikamock.MockPikaBlockingConnection(mock.MagicMock())
             else:
-                raise pika.exceptions.ConnectionClosed      
+                raise pika.exceptions.ConnectionClosed(reply_code=0, reply_text='Connection Closed')      
         connection_patch.side_effect = different_mock_response_depending_on_host
 
         # Run code to be tested and capture stout:
@@ -324,9 +325,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
 
@@ -363,9 +364,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
 
@@ -413,9 +414,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     #
@@ -451,9 +452,9 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
 
     @mock.patch('esgfpid.check.RabbitChecker._RabbitChecker__pika_blocking_connection')
@@ -509,7 +510,7 @@ class CheckTestCase(unittest.TestCase):
 
         # Check result:
         output = out.getvalue().strip()
-        self.assertEquals(expected_message, output,
+        self.assertEqual(expected_message, output,
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
-        self.assertEquals(expected_return, returned_msg,
+        self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))

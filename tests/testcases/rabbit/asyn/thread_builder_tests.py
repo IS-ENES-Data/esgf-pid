@@ -66,7 +66,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder.first_connection()
 
         # Check result:
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         builder.thread._connection.ioloop.start.assert_called_with()
         builder.thread.continue_gently_closing_if_applicable.assert_called_with()
 
@@ -103,7 +103,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder.first_connection()
 
         # Check result:
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         builder.on_connection_error.assert_called()
         mock_connection.ioloop.start.assert_called_with()
         builder.thread.continue_gently_closing_if_applicable.assert_called_with()
@@ -142,7 +142,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder.first_connection()
 
         # Check result:
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         builder.on_connection_error.assert_called()
         mock_connection.ioloop.start.assert_called_with()
         builder.thread.continue_gently_closing_if_applicable.assert_called_with()
@@ -170,7 +170,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder.on_connection_open(unused_connection)
 
         # Check result:
-        self.assertEquals(channelpatch.call_count, 1)
+        self.assertEqual(channelpatch.call_count, 1)
         builder.thread.tell_publisher_to_stop_waiting_for_thread_to_accept_events.assert_called_with()
 
     #
@@ -285,6 +285,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder = self.make_builder()
         builder._ConnectionBuilder__start_connect_time = datetime.datetime.now()
         builder.statemachine.set_to_wanting_to_stop()
+        builder.thread.get_num_unpublished.return_value = 0
         testchannel = mock.MagicMock()
 
         # Run code to be tested:
@@ -343,9 +344,9 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Mock the connection
         mock_connection = mock.MagicMock()
-        def side_effect_add_timeout(wait_seconds, callback):
+        def side_effect_call_later(wait_seconds, callback):
             callback()
-        mock_connection.add_timeout.side_effect = side_effect_add_timeout
+        mock_connection.ioloop.call_later.side_effect = side_effect_call_later
 
         # Run code to be tested:
         builder.on_connection_error(mock_connection, 'foo message')
@@ -353,11 +354,11 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # Check result:
         # Reconnect was called:
         wait_seconds = 0
-        mock_connection.add_timeout.assert_called_with(wait_seconds, builder.reconnect)
+        mock_connection.ioloop.call_later.assert_called_with(wait_seconds, builder.reconnect)
         # This was called inside reconnect:
         builder.thread._connection.ioloop.stop.assert_called()
         connpatch.assert_called()
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
         self.assertFalse(builder.statemachine.is_AVAILABLE())
@@ -377,9 +378,9 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Mock the connection
         mock_connection = mock.MagicMock()
-        def side_effect_add_timeout(wait_seconds, callback):
+        def side_effect_call_later(wait_seconds, callback):
             callback()
-        mock_connection.add_timeout.side_effect = side_effect_add_timeout
+        mock_connection.ioloop.call_later.side_effect = side_effect_call_later
 
         # Run code to be tested:
         with self.assertRaises(esgfpid.rabbit.exceptions.PIDServerException) as e:
@@ -387,7 +388,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Check result:
         # Reconnect was not called:
-        mock_connection.add_timeout.assert_not_called()
+        mock_connection.ioloop.call_later.assert_not_called()
         connpatch.assert_not_called()
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
@@ -413,9 +414,9 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Mock the connection
         mock_connection = mock.MagicMock()
-        def side_effect_add_timeout(wait_seconds, callback):
+        def side_effect_call_later(wait_seconds, callback):
             callback()
-        mock_connection.add_timeout.side_effect = side_effect_add_timeout
+        mock_connection.ioloop.call_later.side_effect = side_effect_call_later
 
         # Run code to be tested:
         builder.on_connection_error(mock_connection, 'foo message')
@@ -423,11 +424,11 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # Check result:
         # Reconnect was called:
         wait_seconds = esgfpid.defaults.RABBIT_RECONNECTION_SECONDS
-        mock_connection.add_timeout.assert_called_with(wait_seconds, builder.reconnect)
+        mock_connection.ioloop.call_later.assert_called_with(wait_seconds, builder.reconnect)
         # This was called inside reconnect:
         builder.thread._connection.ioloop.stop.assert_called()
         connpatch.assert_called()
-        self.assertEquals(connpatch.call_count, 1)
+        self.assertEqual(connpatch.call_count, 1)
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
         self.assertFalse(builder.statemachine.is_AVAILABLE())
@@ -457,7 +458,7 @@ class ThreadBuilderTestCase(unittest.TestCase):
         self.assertIn('Permanently failed to connect to RabbitMQ.', str(e.exception))
         self.assertIn('Tried all hosts 3 times.', str(e.exception))
         self.assertIn('Giving up. No PID requests will be sent.', str(e.exception))
-        mock_connection.add_timeout.assert_not_called()
+        mock_connection.ioloop.call_later.assert_not_called()
         builder.thread.add_event_publish_message.assert_not_called()
         builder.thread.add_event_publish_message.call_count >= 0
         self.assertTrue(builder.statemachine.is_PERMANENTLY_UNAVAILABLE())
@@ -487,9 +488,9 @@ class ThreadBuilderTestCase(unittest.TestCase):
         # Check result:
         self.assertIn('until received a force-finish. Giving up', str(e.exception))
         builder.statemachine.is_FORCE_FINISHED.assert_called()
-        self.assertEquals(builder.statemachine.is_FORCE_FINISHED.call_count, 4)
+        self.assertEqual(builder.statemachine.is_FORCE_FINISHED.call_count, 4)
         # Reconnect was called:
-        mock_connection.add_timeout.assert_not_called()
+        mock_connection.ioloop.call_later.assert_not_called()
         # As the connection is never built, no messages are sent, it is not set to available:
         builder.thread.add_event_publish_message.assert_not_called()
         self.assertFalse(builder.statemachine.is_AVAILABLE())
@@ -513,7 +514,8 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Run code to be tested:
         testchannel = None
-        builder.on_channel_closed(testchannel, 111, 'foo')
+        exception = None
+        builder.on_channel_closed(testchannel, exception)
 
         # Check result
         builder.thread._connection.close.assert_not_called()
@@ -533,7 +535,8 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Run code to be tested:
         testchannel = None
-        builder.on_channel_closed(testchannel, 111, 'foo')
+        exception = None
+        builder.on_channel_closed(testchannel, exception)
 
         # Check result
         builder.thread._connection.close.assert_called_with()
@@ -551,7 +554,8 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Run code to be tested:
         testchannel = None
-        builder.on_channel_closed(testchannel, 404, 'foo')
+        exception = pika.exceptions.ChannelClosed(404, 'foo')
+        builder.on_channel_closed(testchannel, exception)
 
         # Check result
         builder.thread._connection.close.assert_not_called()
@@ -574,7 +578,8 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Run code to be tested:
         testchannel = None
-        builder.on_channel_closed(testchannel, 404, "NOT_FOUND - no exchange 'FALLBACK'")
+        exception = pika.exceptions.ChannelClosed(404, "NOT_FOUND - no exchange 'FALLBACK'")
+        builder.on_channel_closed(testchannel, exception)
 
         # Check result
         builder.thread._connection.close.assert_called()
@@ -591,7 +596,8 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Run code to be tested:
         testconnection = None
-        builder.on_connection_closed(testconnection, 999, 'foo(not reopen)foo')
+        exception = pika.exceptions.ConnectionClosed(999, 'foo(not reopen)foo')
+        builder.on_connection_closed(testconnection, exception)
 
         # Check result
         builder.thread._connection.ioloop.stop.assert_called_with()
@@ -606,7 +612,8 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Run code to be tested:
         testconnection = None
-        builder.on_connection_closed(testconnection, 999, 'foo(forced finish)foo')
+        exception = pika.exceptions.ConnectionClosed(999, 'foo(forced finish)foo')
+        builder.on_connection_closed(testconnection, exception)
 
         # Check result
         builder.thread._connection.ioloop.stop.assert_called_with()
@@ -622,12 +629,13 @@ class ThreadBuilderTestCase(unittest.TestCase):
         builder._ConnectionBuilder__start_connect_time = datetime.datetime.now()
 
         # Run code to be tested:
-        builder.on_connection_closed(builder.thread._connection, 111, '(foo)')
+        exception = pika.exceptions.ConnectionClosed(111, '(foo)')
+        builder.on_connection_closed(builder.thread._connection, exception)
 
         # Check result
         builder.thread._connection.ioloop.stop.assert_not_called()
         self.assertTrue(builder.statemachine.is_WAITING_TO_BE_AVAILABLE())
-        builder.thread._connection.add_timeout.assert_called_with(0, builder.reconnect)
+        builder.thread._connection.ioloop.call_later.assert_called_with(0, builder.reconnect)
 
     def test_on_connection_closed_permanent_error_ok(self):
 
@@ -638,7 +646,8 @@ class ThreadBuilderTestCase(unittest.TestCase):
 
         # Run code to be tested:
         testconnection = None
-        builder.on_connection_closed(testconnection, 999, 'foo(permanent error)foo')
+        exception = pika.exceptions.ConnectionClosed(999, 'foo(permanent error)foo')
+        builder.on_connection_closed(testconnection, exception)
 
         # Check result
         builder.thread._connection.ioloop.stop.assert_called_with()

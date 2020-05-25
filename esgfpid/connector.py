@@ -202,13 +202,13 @@ class Connector(object):
                 raise esgfpid.exceptions.ArgumentError(errmsg)
 
             # Mandatory:
-            self.__check_presence_and_type('url', credentials, basestring)
-            self.__check_presence_and_type('user', credentials, basestring)
-            self.__check_presence_and_type('password', credentials, basestring) # If you want open nodes to be enabled again, remove this!
+            self.__check_presence_and_type('url', credentials, str)
+            self.__check_presence_and_type('user', credentials, str)
+            self.__check_presence_and_type('password', credentials, str) # If you want open nodes to be enabled again, remove this!
             
             # Optional:
-            self.__check_and_adapt_type_if_exists('password', credentials, basestring)
-            self.__check_and_adapt_type_if_exists('vhost', credentials, basestring)
+            self.__check_and_adapt_type_if_exists('password', credentials, str)
+            self.__check_and_adapt_type_if_exists('vhost', credentials, str)
             self.__check_and_adapt_type_if_exists('port', credentials, int)
             self.__check_and_adapt_type_if_exists('ssl_enabled', credentials, bool)
 
@@ -253,13 +253,13 @@ class Connector(object):
 
     def __try_conversion(self, value, desiredtype):
         if desiredtype == bool:
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 if str.lower(value) == 'true':
                     return True
                 elif str.lower(value) == 'false':
                     return False
             raise ValueError()
-        if desiredtype == basestring:
+        if desiredtype == str:
             #return str(value)
             raise ValueError('Not transforming booleans')
         if desiredtype == int:

@@ -48,7 +48,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         # Check result
         self.assertIsInstance(testsolr, esgfpid.solr.serverconnector.SolrServerConnector, 'Constructor fail.')
         self.assertFalse(testsolr._SolrServerConnector__https_verify, 'HTTPS verify not set to False.')
-        self.assertEquals(testsolr._SolrServerConnector__solr_url, 'blablabla', 'Wrong url.')
+        self.assertEqual(testsolr._SolrServerConnector__solr_url, 'blablabla', 'Wrong url.')
 
 
     def test_init_with_optional_args(self):
@@ -94,7 +94,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query('blah')
-        self.assertIn('empty response', raised.exception.message)
+        self.assertIn('empty response', repr(raised.exception))
 
     @mock.patch('esgfpid.solr.serverconnector.requests.get')
     def test_send_query_broken_json_patched(self, getpatch):
@@ -110,7 +110,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query('blah')
-        self.assertIn('no valid JSON', raised.exception.message)
+        self.assertIn('no valid JSON', repr(raised.exception))
 
     @mock.patch('esgfpid.solr.serverconnector.requests.get')
     def test_send_query_return_none_patched(self, getpatch):
@@ -124,7 +124,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query('blah')
-        self.assertIn('no response', raised.exception.message)
+        self.assertIn('no response', repr(raised.exception))
 
     @mock.patch('esgfpid.solr.serverconnector.requests.get')
     def test_send_query_http_404_patched(self, getpatch):
@@ -139,7 +139,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query('blah')
-        self.assertIn('HTTP 404', raised.exception.message)
+        self.assertIn('HTTP 404', repr(raised.exception))
 
     @mock.patch('esgfpid.solr.serverconnector.requests.get')
     def test_send_query_patched_connection_error(self, getpatch):
@@ -153,7 +153,7 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query('blah')
-        self.assertIn('ConnectionError', raised.exception.message)
+        self.assertIn('ConnectionError', repr(raised.exception))
 
     @mock.patch('esgfpid.solr.serverconnector.requests.get')
     def test_send_query_patched_5000(self, getpatch):
@@ -168,4 +168,4 @@ class SolrServerConnectorTestCase(unittest.TestCase):
         # Run code to be tested and check exception:
         with self.assertRaises(esgfpid.exceptions.SolrError) as raised:
             response = testsolr.send_query('blah')
-        self.assertIn('code 5000', raised.exception.message)
+        self.assertIn('code 5000', repr(raised.exception))

@@ -1,6 +1,10 @@
 import logging
 import pika
-import Queue
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
 from .. import rabbitutils
 import esgfpid.defaults as defaults
 from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
@@ -86,7 +90,7 @@ class RabbitFeeder(object):
         try:
             return self.__publish_message()
         except Exception as e:
-            logwarn(LOGGER, 'Error in feeder.publish_message(): %s: %s', e.__class__.__name__, e.message)
+            logwarn(LOGGER, 'Error in feeder.publish_message(): %s: %s', e.__class__.__name__, repr(e))
             raise e
 
     def __publish_message(self):
@@ -151,7 +155,7 @@ class RabbitFeeder(object):
         # If no messages left, well, nothing to publish!
         try:
             message = self.__get_message_from_stack()
-        except Queue.Empty as e:
+        except queue.Empty as e:
             logtrace(LOGGER, 'Queue empty. No more messages to be published.')
             return
 
@@ -165,17 +169,17 @@ class RabbitFeeder(object):
 
         # Treat various errors that may occur during publishing:
         except pika.exceptions.ChannelClosed as e:
-            logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because the Channel is closed (%s)', self.__delivery_number+1, e.message)
+            logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because the Channel is closed (%s)', self.__delivery_number+1, repr(e))
 
         except AttributeError as e:
             if self.thread._channel is None:
                 logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ because there is no channel.', self.__delivery_number+1)
             else:
-                logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ (unexpected error %s:%s)', self.__delivery_number+1, e.__class__.__name__, e.message)
+                logwarn(LOGGER, 'Cannot publish message %i to RabbitMQ (unexpected error %s:%s)', self.__delivery_number+1, e.__class__.__name__, repr(e))
 
         except AssertionError as e:
             logwarn(LOGGER, 'Cannot publish message to RabbitMQ %i because of AssertionError: "%s"', self.__delivery_number+1,e)
-            if e.message == 'A non-string value was supplied for self.exchange':
+            if 'A non-string value was supplied for self.exchange' in repr(e):
                 exch = self.thread.get_exchange_name()
                 logwarn(LOGGER, 'Exchange was "%s" (type %s)', exch, type(exch))
 
@@ -185,7 +189,7 @@ class RabbitFeeder(object):
     Note: May block for up to 2 seconds.
 
     :return: A message from the stack of unpublished messages.
-    :raises: Queue.Empty.
+    :raises: queue.Empty.
     '''
     def __get_message_from_stack(self, seconds=0):
         message = self.thread.get_message_from_unpublished_stack(seconds)
@@ -226,7 +230,7 @@ class RabbitFeeder(object):
         # for further handling:
         except Exception as e:
             success = False
-            logwarn(LOGGER, 'Message was not published. Putting back to queue. Reason: %s: "%s"',e.__class__.__name__, e.message)
+            logwarn(LOGGER, 'Message was not published. Putting back to queue. Reason: %s: "%s"',e.__class__.__name__, repr(e))
             self.thread.put_one_message_into_queue_of_unsent_messages(message)
             logtrace(LOGGER, 'Now (after putting back) left in queue to be published: %i messages.', self.thread.get_num_unpublished())
             raise e

@@ -185,8 +185,8 @@ class ConnectionBuilder(object):
 
     def __make_error_name(self, ex, custom_text=None):
         errorname = ex.__class__.__name__
-        if not ex.message == '':
-            errorname += ': '+ex.message
+        if not repr(ex) == '':
+            errorname += ': '+repr(ex)
         if custom_text is not None:
             errorname += ' ('+custom_text+')'
         return errorname
@@ -211,14 +211,9 @@ class ConnectionBuilder(object):
             parameters=params,
             on_open_callback=self.on_connection_open,
             on_open_error_callback=self.on_connection_error,
-            on_close_callback=self.on_connection_closed,
-            stop_ioloop_on_close=False # why? see below. 
+            on_close_callback=self.on_connection_closed
+            # Removed parameter, see https://github.com/pika/pika/issues/961
         )
-        # Don't stop ioloop on connection close, because
-        # otherwise the thread would not accept more events/
-        # messages (and might end) after a connection is
-        # closed. We still want to accept messages and try
-        # to reconnect and send them then.
 
     ''' Callback, called by RabbitMQ.'''
     def on_connection_open(self, unused_connection):
@@ -284,7 +279,7 @@ class ConnectionBuilder(object):
 
     def __make_channel_confirm_delivery(self):
         logtrace(LOGGER, 'Set confirm delivery... (Issue Confirm.Select RPC command)')
-        self.thread._channel.confirm_delivery(callback=self.confirmer.on_delivery_confirmation)
+        self.thread._channel.confirm_delivery(ack_nack_callback=self.confirmer.on_delivery_confirmation)
         logdebug(LOGGER, 'Set confirm delivery... done.')
  
     def __make_ready_for_publishing(self):
@@ -327,7 +322,7 @@ class ConnectionBuilder(object):
         num = self.thread.get_num_unpublished()
         if num > 0:
             loginfo(LOGGER, 'Ready to publish messages to RabbitMQ. %s messages are already waiting to be published.', num)
-            for i in xrange(int(num*1.1)):
+            for i in range(int(num*1.1)):
                 self.thread.add_event_publish_message()
         else:
             loginfo(LOGGER, 'Ready to publish messages to RabbitMQ.')
@@ -490,7 +485,19 @@ class ConnectionBuilder(object):
         In this case, we want to reopen a connection.
 
     '''
-    def on_channel_closed(self, channel, reply_code, reply_text):
+    def on_channel_closed(self, connection, exception):
+
+        # From the docs: The exception will either be an instance of
+        # exceptions.ConnectionClosed if a fully-open connection was closed
+        # by user or broker or exception of another type (...)
+        if isinstance(exception, pika.exceptions.ChannelClosed):
+            reply_code = exception.reply_code
+            reply_text = exception.reply_text
+        else:
+            # TODO Not sure when this might happen, could not reproduce.
+            reply_code = -1
+            reply_text = str(exception)
+
         logdebug(LOGGER, 'Channel was closed: %s (code %s)', reply_text, reply_code)
 
         # Channel closed because user wants to close:
@@ -553,7 +560,19 @@ class ConnectionBuilder(object):
     (2) There was some other problem that closed the connection.
 
     '''
-    def on_connection_closed(self, connection, reply_code, reply_text):
+    def on_connection_closed(self, connection, exception):
+
+        # From the docs: The exception will either be an instance of
+        # exceptions.ConnectionClosed if a fully-open connection was closed
+        # by user or broker or exception of another type (...)
+        if isinstance(exception, pika.exceptions.ConnectionClosed):
+            reply_code = exception.reply_code
+            reply_text = exception.reply_text
+        else:
+            # TODO Not sure when this might happen, could not reproduce.
+            reply_code = -1 
+            reply_text = str(exception)
+
         loginfo(LOGGER, 'Connection to RabbitMQ was closed. Reason: %s.', reply_text)
         self.thread._channel = None
         if self.__was_user_shutdown(reply_code, reply_text):
@@ -640,7 +659,7 @@ class ConnectionBuilder(object):
         else:
             self.statemachine.set_to_waiting_to_be_available()
             loginfo(LOGGER, 'Trying to reconnect to RabbitMQ in %s seconds.', wait_seconds)
-            connection.add_timeout(wait_seconds, self.reconnect)
+            connection.ioloop.call_later(wait_seconds, self.reconnect)
             logtrace(LOGGER, 'Reconnect event added to connection %s (not to %s)', connection, self.thread._connection)
 
     ###########################

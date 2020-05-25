@@ -117,8 +117,8 @@ class PublishTestCase(unittest.TestCase):
         # Run code to be tested:
         with self.assertRaises(esgfpid.exceptions.ArgumentError) as raised:
             assistant = DatasetPublicationAssistant(coupler=testcoupler, **args)
-        self.assertIn('"Maybe" could not be parsed to boolean', raised.exception.message,
-            'Unexpected error message: %s' % raised.exception.message)
+        self.assertIn('"Maybe" could not be parsed to boolean', repr(raised.exception),
+            'Unexpected error message: %s' % repr(raised.exception))
 
     #
     # Testing entire publication
@@ -204,8 +204,8 @@ class PublishTestCase(unittest.TestCase):
         # Run code to be tested:
         with self.assertRaises(esgfpid.exceptions.ESGFException) as raised:
             assistant.add_file(**fileargs)
-        self.assertIn('ESGF rule violation', raised.exception.message,
-            'Unexpected message: %s' % raised.exception.message)
+        self.assertIn('ESGF rule violation', repr(raised.exception),
+            'Unexpected message: %s' % repr(raised.exception))
 
     def test_add_file_without_hdl_in_handle(self):
 

@@ -66,7 +66,7 @@ class RabbitIntegrationTestCase(unittest.TestCase):
             time.sleep(5)
 
             # Run code to be tested:
-            for i in xrange(num_messages):
+            for i in range(num_messages):
                 testrabbit.send_message_to_queue({"stuffy":"foo", "routing_key:": routing_key, "num":str(i+1)})
 
             # Close connection:
@@ -101,7 +101,7 @@ class RabbitIntegrationTestCase(unittest.TestCase):
             time.sleep(5)
 
             # Run code to be tested:
-            for i in xrange(num_messages):
+            for i in range(num_messages):
                 testrabbit.send_message_to_queue({"stuffo":"foo","num":str(i+1)})
 
             # Close connection:
@@ -135,7 +135,7 @@ class RabbitIntegrationTestCase(unittest.TestCase):
             testrabbit.start()
 
             # Run code to be tested:
-            for i in xrange(num_messages):
+            for i in range(num_messages):
                 testrabbit.send_message_to_queue({"stuffee":"foo","num":str(i+1)})
 
             # Close connection after some time:
@@ -161,7 +161,7 @@ class RabbitIntegrationTestCase(unittest.TestCase):
             time.sleep(0.1)
 
             # Run code to be tested:
-            for i in xrange(num_messages):
+            for i in range(num_messages):
                 testrabbit.send_message_to_queue({"stuff":"foo","num":str(i+1)})
 
             # Close connection after some time:

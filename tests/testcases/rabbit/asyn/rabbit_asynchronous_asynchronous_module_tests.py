@@ -1,3 +1,5 @@
+
+
 import unittest
 import mock
 import logging
@@ -135,7 +137,7 @@ class RabbitAsynModuleTestCase(unittest.TestCase):
         self.rabbit.finish_rabbit_thread()
 
         # Check result: Are 4 messages published?
-        self.assertEquals(self.channel.publish_counter, 4)
+        self.assertEqual(self.channel.publish_counter, 4)
 
     @mock.patch('esgfpid.rabbit.asynchronous.thread_builder.ConnectionBuilder._ConnectionBuilder__please_open_connection')
     def test_finish_ok(self, open_connection_patch):

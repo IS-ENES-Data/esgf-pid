@@ -35,7 +35,7 @@ class ShutDowner(object):
         try:
             return self.__force_finish('Forced finish from outside the thread.')
         except Exception as e:
-            logwarn(LOGGER, 'Error in shutter.force_finish(): %s: %s', e.__class__.__name__, e.message)
+            logwarn(LOGGER, 'Error in shutter.force_finish(): %s: %s', e.__class__.__name__, repr(e))
             raise e
 
     #####################
@@ -46,7 +46,7 @@ class ShutDowner(object):
         try:
             return self.__finish_gently()
         except Exception as e:
-            logwarn(LOGGER, 'Error in shutter.finish_gently(): %s: %s', e.__class__.__name__, e.message)
+            logwarn(LOGGER, 'Error in shutter.finish_gently(): %s: %s', e.__class__.__name__, repr(e))
             raise e
 
     def __finish_gently(self):
@@ -78,7 +78,7 @@ class ShutDowner(object):
             logdebug(LOGGER, 'Continue gentle shutdown even after reconnect (iteration %i)...', self.__close_decision_iterations)
             if self.thread._connection is not None:
                 wait_seconds = defaults.RABBIT_ASYN_FINISH_WAIT_SECONDS
-                self.thread._connection.add_timeout(wait_seconds, self.recursive_decision_about_closing)
+                self.thread._connection.ioloop.call_later(wait_seconds, self.recursive_decision_about_closing)
             else:
                 logerror(LOGGER, 'Connection was None when trying to wait for pending messages (after reconnect). Synchronization error between threads!')
 
@@ -102,7 +102,7 @@ class ShutDowner(object):
             # were lost during reconnecting or something...
             num_unpub = self.thread.get_num_unpublished()
             logdebug(LOGGER, 'Triggering %i publish events...' % num_unpub)
-            for i in xrange(int(1.1*num_unpub)):
+            for i in range(int(1.1*num_unpub)):
                 self.thread.add_event_publish_message()
             # Now wait some more...
             self.__wait_some_more_and_redecide(iteration)
@@ -167,7 +167,7 @@ class ShutDowner(object):
         # Instead of time.sleep(), add an event to the thread's ioloop
         self.__close_decision_iterations += 1
         if self.thread._connection is not None:
-            self.thread._connection.add_timeout(wait_seconds, self.recursive_decision_about_closing)
+            self.thread._connection.ioloop.call_later(wait_seconds, self.recursive_decision_about_closing)
             self.__is_in_process_of_gently_closing = True
             # Problem: If a reconnect occurs after this, this event will be lost.
             # I cannot retrieve if from the ioloop and pass it to the new one.
@@ -288,7 +288,7 @@ class ShutDowner(object):
                 logerror(LOGGER, 'Connection was None when trying to close. Synchronization error between threads!')
 
         except AttributeError as e:
-            logdebug(LOGGER, 'AttributeError from pika during connection closedown (%s: %s)', e.__class__.__name__, e.message)
+            logdebug(LOGGER, 'AttributeError from pika during connection closedown (%s: %s)', e.__class__.__name__, repr(e))
 
     def __inform_about_state_at_shutdown(self):
         unsent = self.thread.get_num_unpublished()
