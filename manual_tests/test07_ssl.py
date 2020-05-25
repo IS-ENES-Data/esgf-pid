@@ -15,7 +15,7 @@ HOST = sys.argv[1]
 USER = sys.argv[2]
 PW = sys.argv[3]
 VHOST = 'esgf-pid'
-AMQP_PORT = 5672
+AMQP_PORT = 5671 # TLS on different port!!
 EXCH = 'test123'
 # This exchange needs to have bindings to a queue using these routing keys:
 # 2114100.HASH.fresh.publi-ds-repli
@@ -101,8 +101,7 @@ pid_connector.unpublish_all_versions(drs_id=datasetName)
 pid_connector.finish_messaging_thread()
 
 print('Check log for errors (none expected)')
-tmp1 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-onevers"\nContent:\t"{"operation": "unpublish_one_version", "aggregation_level": "dataset", [...]"'
-tmp2 = 'Routing Key:\t"2114100.HASH.fresh.unpubli-allvers"\nContent:\t"{"operation": "unpublish_all_versions", "aggregation_level": "dataset",  [...]'
-print('Check queue for two new messages:\n%s\n%s' % (tmp1, tmp2))
+tmp = 'Routing Key:\t"2114100.HASH.fresh.unpubli-allvers"\nContent:\t"{"operation": "unpublish_all_versions", "aggregation_level": "dataset",  [...]'
+print('Check queue for one new message:\n%s' % tmp)
 LOGGER.warning('___________ DONE _______________________________________')
 
