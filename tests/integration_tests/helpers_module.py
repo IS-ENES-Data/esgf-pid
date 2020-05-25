@@ -1,5 +1,3 @@
-
-
 from rabbitcredentials_SECRET import PREFIX, RABBIT_EXCHANGE
 import esgfpid
 import time

@@ -1,5 +1,3 @@
-
-
 import mock
 import copy
 import esgfpid

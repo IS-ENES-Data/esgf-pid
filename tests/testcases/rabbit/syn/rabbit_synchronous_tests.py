@@ -1,5 +1,3 @@
-
-
 import unittest
 import mock
 import logging

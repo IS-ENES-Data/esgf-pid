@@ -1,5 +1,3 @@
-
-
 import unittest
 import mock
 import logging
@@ -226,6 +224,7 @@ class CheckTestCase(unittest.TestCase):
             'Wrong stdout message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_message, output))
         self.assertEqual(expected_return, returned_msg,
             'Wrong return message.\n\nWe expected:\n\n%s\n\nWe got:\n\n%s\n' % (expected_return, returned_msg))
+
 
 
     '''Test if the correct error message gets printed by the check method on connection failure.'''
