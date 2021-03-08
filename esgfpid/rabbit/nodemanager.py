@@ -5,7 +5,7 @@ import logging
 import random
 import esgfpid.defaults
 import esgfpid.exceptions
-from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times
+from esgfpid.utils import loginfo, logdebug, logtrace, logerror, logwarn, log_every_x_times, make_logsafe
 from .naturalsorting import natural_keys
 import esgfpid.utils
 
@@ -126,7 +126,8 @@ class NodeManager(object):
             #store_archive[node_info['priority']].append(copy.deepcopy(node_info))
             return node_info
         else:
-            raise esgfpid.exceptions.ArgumentError('Cannot add this RabbitMQ node. Missing info. Required: username, password, host and exchange_name. Provided: '+str(kwargs))
+            kwargs_logsafe = make_logsafe(kwargs)
+            raise esgfpid.exceptions.ArgumentError('Cannot add this RabbitMQ node. Missing info. Required: username, password, host and exchange_name. Provided: '+str(kwargs_logsafe))
 
     def __compare_nodes(self, cand1, cand2):
         # These cannot be compared by "==".
@@ -156,7 +157,8 @@ class NodeManager(object):
     def __move_to_last_prio(self, current_prio, all_nodes):
 
         list_candidates = all_nodes[current_prio]
-        loginfo(LOGGER, 'Nodes of prio "%s": %s', current_prio, list_candidates)
+        logsafe = make_logsafe(list_candidates)
+        loginfo(LOGGER, 'Nodes of prio "%s": %s', current_prio, logsafe)
 
         for i in range(len(list_candidates)):
             candidate = list_candidates[i]
@@ -204,7 +206,8 @@ class NodeManager(object):
             if moved: return # changed successfully!
 
         except KeyError as e:
-            errmsg = 'No node of prio %s found. Nodes: %s.' % (current_prio, where_to_look)
+            logsafe = make_logsafe(where_to_look)
+            errmsg = 'No node of prio %s found. Nodes: %s.' % (current_prio, logsafe)
             logwarn(LOGGER, errmsg)
 
             # The node had already been added to the last-prio nodes ?!
@@ -217,7 +220,8 @@ class NodeManager(object):
         if (not moved) and (not last_already):
             errmsg = 'Could not find this node\'s priority (%s), nor the last-priority (%s). Somehow this node\'s priority was changed weirdly.' % (current_prio, LAST_PRIO)
             logwarn(LOGGER, errmsg)
-            logwarn(LOGGER, 'All nodes: %s' % where_to_look)
+            logsafe = make_logsafe(where_to_look)
+            logwarn(LOGGER, 'All nodes: %s' % logsafe)
 
             # No matter where the node is stored, move it to "last" prio:
             for prio, nodes in where_to_look.items():
