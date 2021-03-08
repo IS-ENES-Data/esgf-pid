@@ -1,4 +1,5 @@
 import esgfpid.defaults
+import copy
 
 #
 # Logging helpers
