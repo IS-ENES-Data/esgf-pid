@@ -162,6 +162,25 @@ class NodemanagerTestCase(unittest.TestCase):
             mynodemanager.add_trusted_node(username='foo', exchange_name='bar')
 
     '''
+    Test exception if I miss info, and check if password is printed
+    (it should not!)
+    '''
+    def test_add_nodes_missing_info_2(self):
+
+        # Test variables:
+        # Make test node manager:
+        mynodemanager = esgfpid.rabbit.nodemanager.NodeManager()
+
+        # Run code to be tested and check exception:
+        with self.assertRaises(esgfpid.exceptions.ArgumentError) as context_manager:
+            mynodemanager.add_trusted_node(username='foo', exchange_name='bar',
+                password='einekleinenachtmusik')
+
+        # Check exception content:
+        ex = context_manager.exception
+        self.assertTrue('einekleinenachtmusik' not in ex.msg, ex)
+
+    '''
     Test exception if I miss info
     '''
     @unittest.skipIf(globalvar.RABBIT_OPEN_NOT_ALLOWED, '(this test uses open rabbit nodes)')
