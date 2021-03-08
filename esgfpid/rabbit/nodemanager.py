@@ -532,7 +532,7 @@ class NodeManager(object):
             where_to_look = self.__trusted_nodes_archive
 
         if not type(where_to_look) == type(dict()):
-            raise ValueError('%s is not a dict!')
+            raise ValueError('%s is not a dict!' % where_to_look)
 
         for prio, nodes in where_to_look.items():
             for candidate in nodes:
