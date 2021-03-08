@@ -29,3 +29,5 @@ IGNORE
 
 # Virtualenv
 /venv
+venv*
+
