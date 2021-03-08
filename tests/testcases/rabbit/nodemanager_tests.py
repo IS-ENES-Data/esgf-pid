@@ -640,6 +640,27 @@ class NodemanagerTestCase(unittest.TestCase):
         self.assertEqual(new_prio, 'zzzz_last',   'Prio after changing prio is %s, expected zzzz_last' % new_prio)
 
 
+
+    '''
+    Test setting the priority to the lowest value, once.
+    Check if the password is masked from log output.
+    '''
+    def test_change_prio_pw_masking(self):
+
+        # Test variables:
+        mynodemanager = esgfpid.rabbit.nodemanager.NodeManager()
+        mynodemanager.add_trusted_node(**TESTHELPERS.get_args_for_nodemanager())
+        mynodemanager.set_next_host()
+
+        # Run code to be tested:
+        with self.assertLogs() as context_manager:
+            mynodemanager.set_priority_low_for_current()
+
+        # Check result
+        self.assertTrue('pw_foo' not in str(context_manager.output), 'Password (pw_foo) is not masked: %s' % context_manager.output)
+        self.assertTrue('pw_' in str(context_manager.output), 'Masked password stub (pw_f) missing: %s' % context_manager.output)
+
+
     '''
     Test setting the priority to the lowest value, twice.
     This tests whether the function can handle nodes that "already"
@@ -692,3 +713,4 @@ class NodemanagerTestCase(unittest.TestCase):
         self.assertEqual(old_prio, 'dummy_prio', 'Default prio is %s, expected dummy_prio' % old_prio)
         self.assertEqual(new_prio1, 'zzzz_last',  'Prio after changing prio is %s, expected zzzz_last' % new_prio1)
         self.assertEqual(new_prio2, 'zzzz_last',  'Prio after changing prio is %s, expected zzzz_last' % new_prio2)
+
