@@ -260,15 +260,12 @@ class UtilsLoggingTestCase(unittest.TestCase):
         input_list = [{'a':'aaa', 'b':'bbb', 'c':'einekleinenachtmusik'},
                       {'a':'111', 'b':'222', 'c':'unpetitemusique'}]
         output = esgfpid.utils.make_logsafe(input_list)
-        self.assertTrue('einekleinenachtmusik' not in str(output))
-        self.assertTrue('unpetitemusique' not in str(output))
         self.assertEqual(input_list, output)
 
     def test_make_logsafe_list_differentword(self):
         input_list = [{'a':'aaa', 'b':'bbb', 'c':'einekleinenachtmusik'},
                       {'a':'111', 'b':'222', 'motdepasse':'unpetitemusique'}]
         output = esgfpid.utils.make_logsafe(input_list, 'motdepasse')
-        self.assertTrue('einekleinenachtmusik' not in str(output))
         self.assertTrue('unpetitemusique' not in str(output))
 
     def test_make_logsafe_dict_normal(self):
