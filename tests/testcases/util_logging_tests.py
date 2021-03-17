@@ -241,3 +241,45 @@ class UtilsLoggingTestCase(unittest.TestCase):
         expected_messages = 'Foobar1, Foobar10, Foobar20, Foobar30'
         self.assertEqual([],logger.info_messages,'Received info messages: "%s" (should be empty list).' % logger.info_messages)
         self.assertEqual(expected_messages, received_messages, 'Received messages: %s (should be %s).' % (received_messages,expected_messages))
+
+
+    def test_make_logsafe_list_normal(self):
+        input_list = [{'a':'aaa', 'b':'bbb', 'password':'einekleinenachtmusik'},
+                      {'a':'111', 'b':'222', 'c':'333'}]
+        output = esgfpid.utils.make_logsafe(input_list)
+        self.assertTrue('einekleinenachtmusik' not in str(output))
+
+    def test_make_logsafe_list_several(self):
+        input_list = [{'a':'aaa', 'b':'bbb', 'password':'einekleinenachtmusik'},
+                      {'a':'111', 'b':'222', 'password':'unpetitemusique'}]
+        output = esgfpid.utils.make_logsafe(input_list)
+        self.assertTrue('einekleinenachtmusik' not in str(output))
+        self.assertTrue('unpetitemusique' not in str(output))
+    
+    def test_make_logsafe_list_none(self):
+        input_list = [{'a':'aaa', 'b':'bbb', 'c':'einekleinenachtmusik'},
+                      {'a':'111', 'b':'222', 'c':'unpetitemusique'}]
+        output = esgfpid.utils.make_logsafe(input_list)
+        self.assertEqual(input_list, output)
+
+    def test_make_logsafe_list_differentword(self):
+        input_list = [{'a':'aaa', 'b':'bbb', 'c':'einekleinenachtmusik'},
+                      {'a':'111', 'b':'222', 'motdepasse':'unpetitemusique'}]
+        output = esgfpid.utils.make_logsafe(input_list, 'motdepasse')
+        self.assertTrue('unpetitemusique' not in str(output))
+
+    def test_make_logsafe_dict_normal(self):
+        input_dict = {'a':'aaa', 'b':'bbb', 'password':'einekleinenachtmusik'}
+        output = esgfpid.utils.make_logsafe(input_dict)
+        self.assertTrue('einekleinenachtmusik' not in str(output))
+
+    def test_make_logsafe_dict_several(self):
+        input_dict = {'a':'aaa', 'password':'maismusica', 'password':'einekleinenachtmusik'}
+        output = esgfpid.utils.make_logsafe(input_dict)
+        self.assertTrue('einekleinenachtmusik' not in str(output))
+        self.assertTrue('maismusica' not in str(output))
+
+    def test_make_logsafe_dict_differentword(self):
+        input_dict = {'a':'aaa', 'b':'bbb', 'motdepasse':'einekleinenachtmusik'}
+        output = esgfpid.utils.esgfpid.utils.make_logsafe(input_dict, 'motdepasse')
+        self.assertTrue('einekleinenachtmusik' not in str(output))
