@@ -4,7 +4,8 @@
 ACCEPTED_PREFIXES = ['21.14100','21.14101','21.14102','21.14103', '21.14104', '21.14foo']
 # 21.14100: CMIP6, input4MIPs
 # 21.14101: datacarts
-# 21.14102: obs4MIPs Handles 
+# 21.14102: obs4MIPs Handles
+# 21.14203: Cordex
 # 21.14104: CMIP-Adjust
 
 # Custom logging
