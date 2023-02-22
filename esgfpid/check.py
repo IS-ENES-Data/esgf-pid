@@ -111,7 +111,7 @@ class RabbitChecker(object):
             msg = self.__assemble_error_message()
 
         if self.connection is not None:
-            self.connection.close()
+            self.connection.close(reply_text='Normal shutdown after check')
         return msg
 
     def __iterate_over_all_hosts(self):
