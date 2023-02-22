@@ -285,6 +285,15 @@ class NodeManager(object):
         ssl_enabled = False
         if 'ssl_enabled' in node_info_dict and node_info_dict['ssl_enabled'] is not None:
             ssl_enabled = node_info_dict['ssl_enabled']
+        heartbeat = None # Accepts server's suggestion
+        if 'heartbeat' in node_info_dict and node_info_dict['heartbeat'] is not None:
+            heartbeat = node_info_dict['heartbeat']
+        socket_timeout = 10.0 # pika default
+        if 'socket_timeout' in node_info_dict and node_info_dict['socket_timeout'] is not None:
+            socket_timeout = node_info_dict['socket_timeout']
+        stack_timeout = 15.0 # pika default
+        if 'stack_timeout' in node_info_dict and node_info_dict['stack_timeout'] is not None:
+            stack_timeout = node_info_dict['stack_timeout']
 
         # Create SSLOptions if SSL is enabled
         ssl_options = None
@@ -310,7 +319,10 @@ class NodeManager(object):
             credentials=credentials,
             socket_timeout=socket_timeout,
             connection_attempts=connection_attempts,
-            retry_delay=retry_delay
+            retry_delay=retry_delay,
+            heartbeat=heartbeat,
+            socket_timeout=socket_timeout,
+            stack_timeout=stack_timeout
         )
 
         node_info_dict['params'] = params
