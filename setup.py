@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 # Dependencies for using the library:
 dependencies = [
-    'pika>=1.0.1,<=1.1.0',
+    'pika>=1.0.1,<=1.2.1',
     'requests>=2.22.0'
 ]
 
