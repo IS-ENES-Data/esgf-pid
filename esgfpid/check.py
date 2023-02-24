@@ -211,9 +211,9 @@ class RabbitChecker(object):
                 properties=props,
                 mandatory=True
             )
-            self.__loginfo(' .. checking message ... ok.')
+            self.__loginfo(' .. checking message during connection check... ok.')
         except pika.exceptions.UnroutableError:
-            self.__loginfo(' .. checking message ... failed.')
+            self.__loginfo(' .. checking message during connection check... failed.')
             self.__add_error_message_message_fail(rkey)
             raise ValueError('Could not send message to messaging service host %s' %
                     (self.__current_rabbit_host))
@@ -223,12 +223,12 @@ class RabbitChecker(object):
         channel = None
         try:
             channel = self.__open_channel(connection)
-            self.__loginfo(' .. checking channel ... ok.')
+            self.__loginfo(' .. checking channel during connection check... ok.')
 
         except pika.exceptions.ChannelClosed:
-            self.__loginfo(' .. checking channel ... FAILED.')
+            self.__loginfo(' .. checking channel during connection check... FAILED.')
             self.__add_error_message_channel_closed()
-            raise ValueError('Channel failed, please try next.')
+            raise ValueError('Channel failed during connection check, please try next.')
 
         return channel
 
@@ -243,30 +243,30 @@ class RabbitChecker(object):
             connection = self.__open_rabbit_connection()
 
         except pika.exceptions.ProbableAuthenticationError:
-            self.__loginfo(' .. checking authentication (%s)... FAILED.' % self.__current_rabbit_host)
+            self.__loginfo(' .. checking authentication (%s) during connection check... FAILED.' % self.__current_rabbit_host)
             self.__add_error_message_authentication_error()
-            raise ValueError('Connection failed, please try next.')
+            raise ValueError('Connection failed during connection check, please try next.')
 
         except pika.exceptions.ProbableAccessDeniedError as e:
-            self.__loginfo(' .. checking access (%s)... FAILED.' % self.__current_rabbit_host)
+            self.__loginfo(' .. checking access (%s) during connection check... FAILED.' % self.__current_rabbit_host)
             vh = self.__nodemanager.get_connection_parameters().virtual_host
             if ('vhost %s not found' % vh) in str(e):
                 self.__add_error_message_access_denied()
             else:
                 self.__add_error_message_access_denied_unclear()
-            raise ValueError('Access failed, please try next.')
+            raise ValueError('Access failed during connection check, please try next.')
 
         except (pika.exceptions.ConnectionClosed, socket.gaierror):
-            self.__loginfo(' .. checking connection (%s)... FAILED.' % self.__current_rabbit_host)
+            self.__loginfo(' .. checking connection (%s) during connection check... FAILED.' % self.__current_rabbit_host)
             self.__add_error_message_connection_closed()
             raise ValueError('Connection failed, please try next.')
         
         if connection is None or not connection.is_open:
             self.__loginfo(' .. checking connection (%s)... FAILED.' % self.__current_rabbit_host)
             self.__add_error_message_connection_problem()
-            raise ValueError('Connection failed, please try next.')
+            raise ValueError('Connection failed during connection check, please try next.')
 
-        self.__loginfo(' .. checking authentication and connection (%s)... ok.' % self.__current_rabbit_host)
+        self.__loginfo(' .. checking authentication and connection (%s) during connection check... ok.' % self.__current_rabbit_host)
         return connection
 
     def __open_rabbit_connection(self):
@@ -289,28 +289,28 @@ class RabbitChecker(object):
         self.__error_messages.append('PLEASE NOTIFY handle@dkrz.de AND INCLUDE THIS ERROR MESSAGE.')
 
     def __add_error_message_message_fail(self, rkey):
-        msg = ' - host "%s": Message failure with routing key "%s".' % (self.__current_rabbit_host, rkey)
+        msg = ' - host "%s": Message failure with routing key "%s" during connection check.' % (self.__current_rabbit_host, rkey)
         self.__error_messages.append(msg)
 
     def __add_error_message_channel_closed(self):
-        msg = ' - host "%s": Channel failure.' % self.__current_rabbit_host
+        msg = ' - host "%s": Channel failure during connection check.' % self.__current_rabbit_host
         self.__error_messages.append(msg)
 
     def __add_error_message_access_denied(self):
         vh = self.__nodemanager.get_connection_parameters().virtual_host
-        msg = ' - host "%s": Virtual host "%s" does not exist.' % (self.__current_rabbit_host, vh)
+        msg = ' - host "%s": Virtual host "%s" does not exist during connection check.' % (self.__current_rabbit_host, vh)
         self.__error_messages.append(msg)
 
     def __add_error_message_access_denied_unclear(self):
-        msg = ' - host "%s": Access denied.' % (self.__current_rabbit_host)
+        msg = ' - host "%s": Access denied during connection check.' % (self.__current_rabbit_host)
         self.__error_messages.append(msg)
 
     def __add_error_message_no_exchange(self):
-        msg = ' - host "%s": Exchange %s does not exist.' % (self.__current_rabbit_host, self.__exchange_name)
+        msg = ' - host "%s": Exchange %s does not exist during connection check.' % (self.__current_rabbit_host, self.__exchange_name)
         self.__error_messages.append(msg)
 
     def __add_error_message_authentication_error(self):
-        msg = (' - host "%s": Authentication failure (user %s, password %s).' % (
+        msg = (' - host "%s": Authentication failure (user %s, password %s) during connection check.' % (
             self.__current_rabbit_host,
             self.__nodemanager.get_connection_parameters().credentials.username,
             self.__nodemanager.get_connection_parameters().credentials.password
@@ -318,11 +318,11 @@ class RabbitChecker(object):
         self.__error_messages.append(msg)
 
     def __add_error_message_connection_closed(self):
-        msg = ' - host "%s": Connection failure (wrong host or port?).' % self.__current_rabbit_host
+        msg = ' - host "%s": Connection failure (wrong host or port?) during connection check.' % self.__current_rabbit_host
         self.__error_messages.append(msg)
 
     def __add_error_message_connection_problem(self):
-        msg = ' - host "%s": Unknown connection failure.' % self.__current_rabbit_host
+        msg = ' - host "%s": Unknown connection failure during connection check.' % self.__current_rabbit_host
         self.__error_messages.append(msg)
 
     #
